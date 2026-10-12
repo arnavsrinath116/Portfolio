@@ -3,6 +3,17 @@
 A running record of what has been built, what changed, and what's next.
 Newest entries at the top. Add an entry whenever a meaningful chunk of work lands.
 
+## Totals so far
+
+| | |
+|---|---|
+| **Time spent** | ~6 h 10 min of build time (one Claude Code session, 2026-10-12 13:00 → 19:11 UTC) |
+| **Usage** | Claude Pro plan, no extra paid usage. About **49% of one 5-hour limit** and **17% of the weekly limit** used as of 2026-10-12 19:11 UTC |
+| **Context** | ~900k tokens of conversation in the session |
+| **Commits** | 3 (`ad09e6f`, `0405d8d`, `cc7234b`) plus this update |
+
+*Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
+
 ---
 
 ## 2026-10-13 · Header bar removed
