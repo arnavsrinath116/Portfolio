@@ -12,7 +12,7 @@ import { gsap } from 'gsap';
  * Over an interactive element the same body flows onto the element's edge
  * and spreads around it from where you entered (Venom-style), thinning as it
  * goes; leaving drains it back into a drop that pulls away to the pointer.
- * Nearby elements tug the drop and raise magnetic spikes toward them.
+ * Nearby elements tug the drop into a smooth bulge toward them.
  * The menu flood is the same liquid filling the screen.
  */
 
@@ -38,7 +38,7 @@ uniform float uTime;
 uniform vec3 uHead;     // x, y, radius
 uniform vec3 uTail;     // x, y, radius
 uniform vec3 uWob;      // squash amount, squash angle, ripple amplitude
-uniform vec3 uMag;      // dir.xy, spike amplitude
+uniform vec3 uMag;      // dir.xy, bulge amplitude
 uniform vec4 uRect;     // center.xy, half size.xy
 uniform float uRectP;   // how far the liquid has spread around (0..1)
 uniform float uEntry;   // angle where it arrived
@@ -89,16 +89,15 @@ float body(vec2 p) {
   vec2 t = jelly(uTail.xy - uHead.xy);
   float d = dot(t, t) < 0.25 ? length(q) - uHead.z : sdRoundCone(q, vec2(0.0), t, uHead.z, uTail.z);
 
-  // ripple running round the surface after a click
+  // soft wobble running round the surface after a click (low order: no facets)
   float ang = atan(q.y, q.x);
-  d -= uWob.z * sin(ang * 6.0 - uTime * 16.0);
+  d -= uWob.z * sin(ang * 3.0 - uTime * 12.0);
 
-  // magnetic spikes pointing at the nearest element
+  // a smooth single bulge leaning toward the nearest element (liquid tug)
   vec2 w = p - uHead.xy;
-  float wa = atan(w.y, w.x);
-  float da = wrapAng(wa - atan(uMag.y, uMag.x));
-  float spikes = pow(0.5 + 0.5 * cos(wa * 11.0 + uTime * 1.4), 7.0) * exp(-da * da * 3.0) * uMag.z;
-  return d - spikes * smoothstep(uHead.z * 2.5, uHead.z * 0.6, length(w));
+  float da = wrapAng(atan(w.y, w.x) - atan(uMag.y, uMag.x));
+  float lean = pow(max(cos(da), 0.0), 3.0) * uMag.z;
+  return d - lean * smoothstep(uHead.z * 3.0, 0.0, length(w));
 }
 
 float scene(vec2 p) {
@@ -109,7 +108,7 @@ float scene(vec2 p) {
     float rd = sdBox(rp, uRect.zw, 3.0);
     float a = atan(rp.y / max(uRect.w, 1.0), rp.x / max(uRect.z, 1.0));
     float ad = abs(wrapAng(a - uEntry)) / 3.14159;
-    float th = (1.4 + 0.7 * sin(a * 11.0 + uTime * 2.0)) * uRectOn;
+    float th = (1.7 + 0.35 * sin(a * 3.0 + uTime * 1.6)) * uRectOn; // even line, slow undulation
     float ring = abs(rd) - th;
     ring += max(0.0, ad - uRectP) * 80.0;      // only where the liquid has reached
     d = smin(d, ring, 10.0);                    // joined to the drop: one body
@@ -331,7 +330,7 @@ export function initFluid(): Fluid | null {
       // a press squashes the drop and sends a ripple round it
       wob.v += 9;
       wob.angle = Math.random() * Math.PI;
-      wob.ripple = 1.6;
+      wob.ripple = 0.9;
       size.v -= 7;
       kick();
     });
@@ -398,7 +397,7 @@ export function initFluid(): Fluid | null {
     }
     const pull = best < MAGNET_RANGE ? Math.pow(1 - best / MAGNET_RANGE, 1.4) : 0;
     const km = 1 - Math.exp(-dt * 10);
-    mag.amp += (pull * 7 - mag.amp) * km;
+    mag.amp += (pull * 5 - mag.amp) * km;
     mag.x += (dirX - mag.x) * km;
     mag.y += (dirY - mag.y) * km;
 
@@ -415,13 +414,14 @@ export function initFluid(): Fluid | null {
       }
     }
 
-    let n = Math.ceil(dt / SUB);
+    // dt is clamped >= 0 by the caller; always take at least one bounded step
+    const n = Math.min(64, Math.max(1, Math.ceil(dt / SUB)));
     const h = dt / n;
-    while (n--) {
+    for (let i = 0; i < n; i++) {
       [head.x, head.vx] = spring(head.x, head.vx, tx, 820, 0.62, h);
       [head.y, head.vy] = spring(head.y, head.vy, ty, 820, 0.62, h);
-      [tail.x, tail.vx] = spring(tail.x, tail.vx, head.x, 150, 0.72, h);
-      [tail.y, tail.vy] = spring(tail.y, tail.vy, head.y, 150, 0.72, h);
+      [tail.x, tail.vx] = spring(tail.x, tail.vx, head.x, 280, 0.8, h);
+      [tail.y, tail.vy] = spring(tail.y, tail.vy, head.y, 280, 0.8, h);
       [size.s, size.v] = spring(size.s, size.v, size.target, 260, 0.45, h);
       [wob.w, wob.v] = spring(wob.w, wob.v, 0, 340, 0.18, h); // jelly: very underdamped
     }
@@ -430,7 +430,7 @@ export function initFluid(): Fluid | null {
     const dx = tail.x - head.x;
     const dy = tail.y - head.y;
     const len = Math.hypot(dx, dy);
-    const maxLen = 64;
+    const maxLen = 30; // a drop, not a rod
     if (len > maxLen) {
       tail.x = head.x + (dx / len) * maxLen;
       tail.y = head.y + (dy / len) * maxLen;
@@ -446,7 +446,7 @@ export function initFluid(): Fluid | null {
     }
     lastVx = head.vx;
     lastVy = head.vy;
-    wob.ripple *= Math.exp(-dt * 5);
+    wob.ripple *= Math.exp(-dt * 6);
 
     flood.hole += ((flood.r > 60 ? 7 : 0) - flood.hole) * (1 - Math.exp(-dt * 12));
 
@@ -465,8 +465,8 @@ export function initFluid(): Fluid | null {
     const s = Math.max(0, size.s);
     // volume-ish: the drop thins as it stretches, and gives itself to the wrap
     const base = (R + (R_WRAP - R) * wrap.p) * s;
-    const r1 = base * (1 - Math.min(len / 140, 0.28));
-    const r2 = r1 * (1 - 0.62 * Math.min(len / 48, 1));
+    const r1 = base * (1 - Math.min(len / 120, 0.18));
+    const r2 = r1 * (1 - 0.45 * Math.min(len / 30, 1));
 
     gl.disable(gl.SCISSOR_TEST);
     gl.clearColor(0, 0, 0, 0);
@@ -516,7 +516,8 @@ export function initFluid(): Fluid | null {
 
   const loop = (now: number) => {
     // real elapsed time (sub-stepped), so the liquid stays true on slow frames
-    const dt = Math.min(0.12, (now - last) / 1000);
+    // the rAF timestamp can precede the moment we were kicked: never negative
+    const dt = Math.max(0, Math.min(0.12, (now - last) / 1000));
     last = now;
     const { busy, rect, len } = step(dt);
     render(now, rect, len);

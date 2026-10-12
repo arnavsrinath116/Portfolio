@@ -10,7 +10,7 @@ const projects = [
 
 <section class="work" id="work" aria-labelledby="work-title" data-work>
   <div class="work-head" data-guide-a>
-    <h2 id="work-title" class="work-title">Selected work</h2>
+    <h2 id="work-title" class="work-title" data-dim="w-top" data-dim-text>Selected work</h2>
     <p class="work-note">
       Three case studies are in progress: a product, a UX project and an HMI. Each one appears here as it is
       finished.
@@ -20,7 +20,7 @@ const projects = [
   <div class="work-grid">
     {
       projects.map((p) => (
-        <article class={`panel panel-${p.key}`} data-panel={p.key}>
+        <article class={`panel panel-${p.key}`} data-panel={p.key} data-dim={p.key === 'product' ? 'h-left' : undefined}>
           <div class="panel-frame" aria-hidden="true" />
           <div class="panel-meta">
             <h3 class="panel-title">{p.discipline}</h3>

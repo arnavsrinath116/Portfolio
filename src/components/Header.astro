@@ -43,20 +43,20 @@ import { site } from '../data/site';
     grid-template-columns: 1fr 1fr;
     align-items: center;
     padding: 0 var(--gutter);
-    border-bottom: 1px solid var(--line);
-    background: var(--slate-2);
+    /* no bar: just the mark and the menu floating over the page */
+    background: transparent;
+    pointer-events: none;
     transition:
       transform 0.6s var(--ease-out),
-      background-color var(--dur-base) var(--ease-out),
-      border-color var(--dur-base) var(--ease-out),
       color var(--dur-base) var(--ease-out);
+  }
+  .site-header > * {
+    pointer-events: auto;
   }
   .site-header:global(.is-hidden) {
     transform: translateY(calc(-100% - var(--frame) - 2px));
   }
   :global(html.menu-open) .site-header {
-    background: transparent;
-    border-color: transparent;
     color: var(--mercury-ink);
     transform: none;
   }

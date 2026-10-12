@@ -23,6 +23,7 @@ import { site } from '../data/site';
   <!-- the guiding line runs behind everything from here to the contact slab -->
   <div class="flow" data-flow>
     <svg class="guide" aria-hidden="true" data-guide></svg>
+    <svg class="annotations dims" aria-hidden="true" data-dims></svg>
     <Work />
     <Footer />
   </div>
@@ -37,6 +38,14 @@ import { site } from '../data/site';
     top: 0;
     left: 0;
     z-index: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .dims {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2; /* measurements sit over everything, never hidden by a slab */
     overflow: visible;
     pointer-events: none;
   }

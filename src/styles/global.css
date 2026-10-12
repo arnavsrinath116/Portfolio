@@ -133,6 +133,16 @@ ol {
   transform: none;
 }
 
+/* ---------- Ambient dust: fixed behind every section (sections are positioned) ---------- */
+.dust-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* ---------- Ferrofluid cursor: native pointer hidden only when it runs ---------- */
 html.has-fluid,
 html.has-fluid * {

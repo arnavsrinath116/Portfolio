@@ -1,0 +1,83 @@
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { hDim, vDim, PX_TO_MM } from './dimension';
+
+/**
+ * Scroll-measured dimensions outside the hero. Tag an element:
+ *   data-dim="w-top" | "w-bottom" | "h-left" | "h-right"   (space-separated)
+ *   data-dim-text   measure the lettering, not the box
+ * Each is drawn and counted up (true mm) as the element scrolls into view.
+ */
+const OFFSET = 26; // distance from the object to its dimension line
+
+export function initDims({ reduce }: { reduce: boolean }) {
+  const host = document.querySelector<HTMLElement>('[data-flow]');
+  const svg = document.querySelector<SVGSVGElement>('[data-dims]');
+  if (!host || !svg) return;
+  const targets = Array.from(document.querySelectorAll<HTMLElement>('[data-dim]'));
+  let triggers: ScrollTrigger[] = [];
+
+  const build = () => {
+    triggers.forEach((t) => t.kill());
+    triggers = [];
+    svg.replaceChildren();
+    const f = host.getBoundingClientRect();
+    svg.setAttribute('width', String(f.width));
+    svg.setAttribute('height', String(f.height));
+    const narrow = f.width < 700; // phone margins are too tight for vertical dimensions
+
+    for (const el of targets) {
+      // layout box (minus any scroll-driven y offset), or the lettering's extent
+      const dy = Number(gsap.getProperty(el, 'y')) || 0;
+      let r = el.getBoundingClientRect();
+      if (el.hasAttribute('data-dim-text')) {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const rects = Array.from(range.getClientRects());
+        if (rects.length) {
+          const l = Math.min(...rects.map((q) => q.left));
+          const rr = Math.max(...rects.map((q) => q.right));
+          r = new DOMRect(l, r.top, rr - l, r.height);
+        }
+      }
+      const box = { l: r.left - f.left, r: r.right - f.left, t: r.top - f.top - dy, b: r.bottom - f.top - dy };
+      const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
+      let at = 0;
+      for (const s of (el.dataset.dim || '').split(/\s+/).filter(Boolean)) {
+        if (s === 'w-top') hDim(svg, tl, at, box.l, box.r, box.t, box.t - OFFSET, 'W ', (box.r - box.l) * PX_TO_MM);
+        else if (s === 'w-bottom')
+          hDim(svg, tl, at, box.l, box.r, box.b, box.b + OFFSET, 'W ', (box.r - box.l) * PX_TO_MM, true);
+        else if (s === 'h-left' && !narrow)
+          vDim(svg, tl, at, box.l - OFFSET, box.l, box.t, box.b, 'H ', (box.b - box.t) * PX_TO_MM);
+        else if (s === 'h-right' && !narrow)
+          vDim(svg, tl, at, box.r + OFFSET, box.r, box.t, box.b, 'H ', (box.b - box.t) * PX_TO_MM);
+        else continue;
+        at += 0.14;
+      }
+      if (reduce) {
+        tl.progress(1);
+        continue;
+      }
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: el,
+          // clamp(): elements near the page end still finish drawing at max scroll
+          start: 'clamp(top 88%)',
+          end: 'clamp(top 42%)',
+          scrub: 0.6,
+          animation: tl,
+        }),
+      );
+    }
+  };
+
+  build();
+  let timer = 0;
+  new ResizeObserver(() => {
+    clearTimeout(timer);
+    timer = window.setTimeout(() => {
+      build();
+      ScrollTrigger.refresh();
+    }, 220);
+  }).observe(host);
+}

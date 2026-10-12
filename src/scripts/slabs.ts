@@ -12,11 +12,13 @@ export function initSlabs({ reduce }: { reduce: boolean }) {
   const slabs = Array.from(stack.querySelectorAll<HTMLElement>('[data-slab]'));
   if (reduce) return;
 
-  // fan out sideways with scroll (never upward into the heading)
+  // fan out sideways with scroll (never upward into the heading); scaled to the
+  // screen so the back slab never slides off a phone's edge
+  const k = Math.min(1, window.innerWidth / 1100);
   const spread = [
-    { x: -110, y: 6, r: -2.2 },
-    { x: -54, y: 3, r: -1 },
-    { x: 6, y: -4, r: 0.5 },
+    { x: -110 * k, y: 6, r: -2.2 },
+    { x: -54 * k, y: 3, r: -1 },
+    { x: 6 * k, y: -4, r: 0.5 },
   ];
   gsap
     .timeline({
