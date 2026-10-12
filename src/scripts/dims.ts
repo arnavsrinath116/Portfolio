@@ -28,7 +28,7 @@ export function initDims({ reduce }: { reduce: boolean }) {
 
     for (const el of targets) {
       // layout box (minus any scroll-driven y offset), or the lettering's extent
-      const dy = Number(gsap.getProperty(el, 'y')) || 0;
+      const dy = parseFloat(getComputedStyle(el).getPropertyValue('--rise')) || 0;
       let r = el.getBoundingClientRect();
       if (el.hasAttribute('data-dim-text')) {
         const range = document.createRange();

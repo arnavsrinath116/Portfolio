@@ -53,7 +53,7 @@ export function initGuide({ reduce }: { reduce: boolean }) {
     // layout box, ignoring any scroll-driven y offset GSAP has applied
     const rel = (el: HTMLElement) => {
       const r = el.getBoundingClientRect();
-      const dy = Number(gsap.getProperty(el, 'y')) || 0;
+      const dy = parseFloat(getComputedStyle(el).getPropertyValue('--rise')) || 0;
       return { l: r.left - f.left, r: r.right - f.left, t: r.top - f.top - dy, b: r.bottom - f.top - dy, w: r.width, h: r.height };
     };
     const W = f.width;
@@ -116,19 +116,16 @@ export function initGuide({ reduce }: { reduce: boolean }) {
     }, 200);
   }).observe(flow);
 
-  // panels rise into place with scroll (scrubbed, staggered)
+  // panels arrive together: one quick rise when the grid comes into view (not scrubbed,
+  // so the small cards never trail behind the big one)
   if (!reduce) {
-    gsap.utils.toArray<HTMLElement>('[data-panel]').forEach((panel, i) => {
-      gsap.fromTo(
-        panel,
-        { y: 70 + i * 24, opacity: 0.2 },
-        {
-          y: 0,
-          opacity: 1,
-          ease: 'none',
-          scrollTrigger: { trigger: panel, start: 'top 98%', end: 'top 62%', scrub: 0.6 },
-        },
-      );
-    });
+    const panels = gsap.utils.toArray<HTMLElement>('[data-panel]');
+    if (panels.length) {
+      gsap.set(panels, { '--rise': '90px', opacity: 0 });
+      const tl = gsap.timeline({ scrollTrigger: { trigger: panels[0], start: 'top 80%', once: true } });
+      // fade on an even curve so it reads; the rise eases out so it still lands quickly
+      tl.to(panels, { opacity: 1, duration: 0.7, ease: 'power1.out', stagger: 0.07 }, 0);
+      tl.to(panels, { '--rise': '0px', duration: 0.85, ease: 'power3.out', stagger: 0.07 }, 0);
+    }
   }
 }

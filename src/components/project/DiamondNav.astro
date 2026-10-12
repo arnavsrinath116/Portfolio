@@ -1,0 +1,145 @@
+---
+import type { Phase } from '../../data/projects';
+
+interface Props {
+  phases: Phase[];
+  /** project slug: section ids are prefixed so several projects can share a page */
+  prefix: string;
+}
+const { phases, prefix } = Astro.props;
+
+// The double diamond, drawn as four halves: discover diverges, define converges
+// (the problem), develop diverges, deliver converges (the solution).
+const halves = [
+  { key: 'discover', d: 'M0 40 L50 2 L50 78 Z' },
+  { key: 'define', d: 'M50 2 L98 40 L50 78 Z' },
+  { key: 'develop', d: 'M102 40 L150 2 L150 78 Z' },
+  { key: 'deliver', d: 'M150 2 L198 40 L150 78 Z' },
+];
+---
+
+<nav class="diamond-nav" aria-label="Case study sections" data-diamond-nav>
+  <svg class="diamond" viewBox="0 0 200 80" aria-hidden="true">
+    {halves.map((h) => <path class="half" d={h.d} data-half={h.key} />)}
+    <path class="outline" d="M0 40 L50 2 L98 40 L50 78 Z M102 40 L150 2 L198 40 L150 78 Z" />
+  </svg>
+  <p class="diamond-labels" aria-hidden="true">
+    <span>Problem</span>
+    <span>Solution</span>
+  </p>
+  <ol class="phase-links">
+    {
+      phases.map((p) => (
+        <li>
+          <a href={`#${prefix}-${p.key}`} data-phase-link={p.key}>
+            {p.title}
+          </a>
+        </li>
+      ))
+    }
+    <li>
+      <a href={`#${prefix}-outcome`} data-phase-link="outcome">Outcome</a>
+    </li>
+  </ol>
+</nav>
+
+<style>
+  .diamond-nav {
+    position: sticky;
+    top: 28px; /* pinned inside the project card's own scroll */
+    display: grid;
+    gap: 18px;
+  }
+  .diamond {
+    width: 100%;
+    max-width: 220px;
+    overflow: visible;
+  }
+  .half {
+    fill: transparent;
+    stroke: none;
+    transition: fill var(--dur-slow) var(--ease-out);
+  }
+  .half:global(.is-done) {
+    fill: rgb(230 220 200 / 0.08);
+  }
+  .half:global(.is-active) {
+    fill: rgb(255 107 44 / 0.22);
+  }
+  .outline {
+    fill: none;
+    stroke: var(--sand-3);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .diamond-labels {
+    display: flex;
+    justify-content: space-around;
+    max-width: 220px;
+    margin-top: -8px;
+    font-size: 0.75rem;
+    color: var(--sand-3);
+  }
+  .phase-links {
+    display: grid;
+    gap: 2px;
+    border-left: 1px solid var(--line);
+  }
+  .phase-links a {
+    display: block;
+    padding: 6px 0 6px 14px;
+    margin-left: -1px;
+    border-left: 1px solid transparent;
+    color: var(--sand-3);
+    font-size: 0.9375rem;
+    transition:
+      color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+  .phase-links a:hover {
+    color: var(--sand);
+  }
+  .phase-links a:global(.is-active) {
+    color: var(--sand);
+    border-left-color: var(--orange);
+  }
+
+  /* narrow screens: a slim bar pinned under the header with the diamond + current phase */
+  @media (max-width: 900px) {
+    .diamond-nav {
+      top: 0; /* the aside around it is what sticks */
+      margin-right: 46px; /* the card's × sits just to the right */
+      grid-template-columns: 96px 1fr;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      background: var(--slate-2);
+      border-radius: 10px;
+      border-top: 1px solid var(--slate-edge);
+      box-shadow: var(--slab-shadow);
+      z-index: 5;
+    }
+    .diamond-labels {
+      display: none;
+    }
+    .phase-links {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      border-left: 0;
+      scrollbar-width: none;
+      /* tabs past the edge fade out, so it reads as scrollable */
+      mask-image: linear-gradient(to right, #000 82%, transparent);
+    }
+    .phase-links a {
+      padding: 4px 0;
+      border-left: 0;
+      border-bottom: 1px solid transparent;
+      white-space: nowrap;
+      font-size: 0.875rem;
+    }
+    .phase-links a:global(.is-active) {
+      border-bottom-color: var(--orange);
+    }
+  }
+</style>

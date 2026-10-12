@@ -16,6 +16,36 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-13 · Project case studies as expanding cards (Double Diamond)
+
+**Built**
+- **Data:** `src/data/projects.ts` holds the 3 projects (Product, UX, HMI). Each has a title, summary, role/team/duration/tools, four Double Diamond phases (intent, body, number of media slots), an outcome and learnings. All content is a **placeholder** until the owner sends the projects.
+- **Project card** (`components/project/ProjectModal.astro`, `ProjectContent.astro`, `scripts/projectModal.ts`). A project never becomes a full webpage; it stays a card floating over the page.
+  - **Opening:** the clicked slab itself grows into the card. Position, size, corner radius and colour all morph together (0.8s, expo in-out). The page dims behind it, and the case study starts rising in as the card settles.
+  - **Inside:** the card has its own scroll, while the page behind stays put.
+  - **The × button** is pinned top-right and always visible. Esc and clicking outside also close the card.
+  - **Closing:** the card shrinks back into the slab it came from.
+  - **Other case studies** at the bottom of each card swap the project inside the same card.
+  - **Links:** the address carries `#project-<slug>`, so a card can be linked to directly. It also opens when the hash changes on an already-loaded page.
+- **Accessibility:** focus moves into the card and is trapped there while it is open, then returns to the slab on close. Reduced motion skips the morph.
+- **Double Diamond navigator** (`components/project/DiamondNav.astro`): a line-art double diamond pinned in the card.
+  - The half for the phase you're reading fills orange, and earlier halves stay faintly filled.
+  - The matching link is marked (`aria-current`).
+  - On phones it becomes a slim pinned bar next to the ×. Its tabs scroll, keep the active one centred, and fade at the edge.
+- **Cursor:** the liquid ring now follows an element's own corners (round around the round ×). It lets go when the card closes.
+- **Work cards** open the project card ("Open case study") and lift on hover. The scroll-rise and the hover lift combine through CSS variables (`--rise`, `--lift`).
+- **Faster card entrance:** the three work cards used to rise one by one, each tied to its own scroll position, so the small ones trailed behind. Now all three rise together in one timed move as the grid comes into view: a 0.7s fade on an even curve so it reads, and a 90px rise that eases out in 0.85s, 70ms apart.
+- **Replaced** the earlier `/work/<slug>/` pages and their View Transition, after feedback that the card should stay a card.
+
+**Tested** (real-time headless Chrome, 1440×900 and 390×844):
+- Open, phase tracking, scroll lock, switching projects, ×, Esc (including mid-animation) and deep links all work.
+- The × is visible and clickable at every scroll position.
+- No horizontal overflow on phones.
+
+**Needs from the owner:** for each project, the title, one-line summary, role, team, duration and tools; text for each of the four phases; images, sketches and CAD renders; and the outcome and learnings.
+
+---
+
 ## 2026-10-13 · Header bar removed
 
 - The owner felt the solid header bar was a heavy block of colour that took away from the page.

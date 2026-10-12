@@ -1,0 +1,99 @@
+---
+import ProjectContent from './ProjectContent.astro';
+import { projects } from '../../data/projects';
+---
+
+<div class="pm" role="dialog" aria-modal="true" aria-label="Case study" hidden data-pm>
+  <div class="pm-backdrop" data-pm-backdrop></div>
+  <!-- the card that grows out of the clicked slab; it always stays a card -->
+  <div class="pm-card" data-pm-card>
+    <button type="button" class="pm-close" aria-label="Close case study" data-pm-close data-magnet>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+        <path d="M2 2 14 14M14 2 2 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"></path>
+      </svg>
+    </button>
+    <div class="pm-scroll" data-pm-scroll data-lenis-prevent>
+      {projects.map((p) => <ProjectContent project={p} />)}
+    </div>
+  </div>
+</div>
+
+<style>
+  .pm {
+    position: fixed;
+    inset: 0;
+    z-index: 8400; /* above the page, below the menu flood (8500) and cursor (9000) */
+  }
+  .pm[hidden] {
+    display: none;
+  }
+  .pm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgb(12 14 16 / 0.72);
+    opacity: 0;
+  }
+  .pm-card {
+    position: fixed;
+    /* final resting geometry; the opening animation starts from the clicked slab */
+    top: var(--pm-inset);
+    left: var(--pm-inset);
+    width: calc(100vw - var(--pm-inset) * 2);
+    height: calc(100svh - var(--pm-inset) * 2);
+    --pm-inset: clamp(10px, 3.2vw, 44px);
+    background: var(--slate-3);
+    border-radius: 18px;
+    border-top: 1px solid var(--slate-edge);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.04) inset,
+      0 40px 90px -20px rgb(0 0 0 / 0.7),
+      0 12px 24px -10px rgb(0 0 0 / 0.5);
+    overflow: hidden;
+  }
+  .pm-scroll {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  /* no scrollbar flicker while the card grows out of / back into its slab */
+  .pm-card.is-moving .pm-scroll {
+    overflow: hidden;
+  }
+  .pm-close {
+    position: absolute;
+    top: clamp(14px, 1.8vw, 22px);
+    right: clamp(14px, 1.8vw, 22px);
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--slate-2);
+    border: 1px solid rgb(230 220 200 / 0.14);
+    color: var(--sand);
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .pm-close:hover {
+      color: var(--orange);
+      border-color: var(--orange);
+      transform: rotate(90deg);
+    }
+  }
+  .pm-close:focus-visible {
+    outline-offset: 3px;
+  }
+
+  /* while a card is open the page header steps back */
+  :global(html.pm-open) :global(.site-header) {
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>

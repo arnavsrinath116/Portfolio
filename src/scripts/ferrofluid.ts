@@ -40,6 +40,7 @@ uniform vec3 uTail;     // x, y, radius
 uniform vec3 uWob;      // squash amount, squash angle, ripple amplitude
 uniform vec3 uMag;      // dir.xy, bulge amplitude
 uniform vec4 uRect;     // center.xy, half size.xy
+uniform float uRectR;   // corner radius of the wrapped element (+ gap)
 uniform float uRectP;   // how far the liquid has spread around (0..1)
 uniform float uEntry;   // angle where it arrived
 uniform float uRectOn;
@@ -105,7 +106,7 @@ float scene(vec2 p) {
 
   if (uRectOn > 0.001) {
     vec2 rp = p - uRect.xy;
-    float rd = sdBox(rp, uRect.zw, 3.0);
+    float rd = sdBox(rp, uRect.zw, min(uRectR, min(uRect.z, uRect.w)));
     float a = atan(rp.y / max(uRect.w, 1.0), rp.x / max(uRect.z, 1.0));
     float ad = abs(wrapAng(a - uEntry)) / 3.14159;
     float th = (1.7 + 0.35 * sin(a * 3.0 + uTime * 1.6)) * uRectOn; // even line, slow undulation
@@ -244,6 +245,7 @@ export function initFluid(): Fluid | null {
     wob: U('uWob'),
     mag: U('uMag'),
     rect: U('uRect'),
+    rectR: U('uRectR'),
     rectP: U('uRectP'),
     entry: U('uEntry'),
     rectOn: U('uRectOn'),
@@ -265,7 +267,7 @@ export function initFluid(): Fluid | null {
   const size = { s: 0, v: 0, target: 0 }; // overall presence (appear / leave)
   const wob = { w: 0, v: 0, angle: 0, ripple: 0 };
   const mag = { x: 1, y: 0, amp: 0 };
-  const wrap = { on: 0, p: 0, entry: 0, el: null as HTMLElement | null, leaving: false };
+  const wrap = { on: 0, p: 0, entry: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
   const flood = { x: 0, y: 0, r: 0, hole: 0 };
   let lastVx = 0;
   let lastVy = 0;
@@ -342,6 +344,10 @@ export function initFluid(): Fluid | null {
       const cy = r.top + r.height / 2;
       wrap.el = el;
       wrap.leaving = false;
+      // follow the element's own corners: a round button gets a round ring
+      const br = getComputedStyle(el).borderTopLeftRadius;
+      const rad = br.endsWith('%') ? (parseFloat(br) / 100) * Math.min(r.width, r.height) : parseFloat(br) || 0;
+      wrap.radius = Math.max(3, rad + PAD);
       wrap.entry = Math.atan2((mouse.y - cy) / (r.height / 2), (mouse.x - cx) / (r.width / 2));
       gsap.killTweensOf(wrap);
       gsap.to(wrap, { on: 1, duration: 0.2, ease: 'power2.out' });
@@ -365,6 +371,8 @@ export function initFluid(): Fluid | null {
       });
       kick();
     };
+    // a wrapped element that is about to vanish (a closing card) lets go of the liquid
+    document.addEventListener('fluid:release', leave);
     document.addEventListener('pointerover', (e) => {
       if (e.pointerType === 'touch') return;
       const el = (e.target as HTMLElement).closest<HTMLElement>('[data-magnet]');
@@ -505,6 +513,7 @@ export function initFluid(): Fluid | null {
     gl.uniform3f(u.mag, mag.x, mag.y, mag.amp * s);
     if (rect) {
       gl.uniform4f(u.rect, rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width / 2 + PAD, rect.height / 2 + PAD);
+      gl.uniform1f(u.rectR, wrap.radius);
     }
     gl.uniform1f(u.rectP, wrap.p);
     gl.uniform1f(u.entry, wrap.entry);

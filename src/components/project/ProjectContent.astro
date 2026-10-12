@@ -1,0 +1,261 @@
+---
+import DiamondNav from './DiamondNav.astro';
+import type { Project } from '../../data/projects';
+import { projects } from '../../data/projects';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const others = projects.filter((p) => p.slug !== project.slug);
+const media = ['Image', 'Sketch', 'CAD view', 'Prototype', 'Screen'];
+const id = (s: string) => `${project.slug}-${s}`;
+---
+
+<article class="pc" data-project={project.slug} aria-labelledby={id('title')} hidden>
+  <header class="pc-hero" data-pc-rise>
+    <p class="pc-discipline">{project.discipline}</p>
+    <h2 class="pc-title" id={id('title')}>{project.title}</h2>
+    <div class="pc-hero-grid">
+      <p class="pc-summary">{project.summary}</p>
+      <dl class="pc-meta">
+        <div><dt>Role</dt><dd>{project.role}</dd></div>
+        <div><dt>Team</dt><dd>{project.team}</dd></div>
+        <div><dt>Duration</dt><dd>{project.duration}</dd></div>
+        <div><dt>Tools</dt><dd>{project.tools.join(', ')}</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <div class="pc-cover media-slot" data-pc-rise aria-label="Cover image to come"><span>Cover image</span></div>
+
+  <div class="pc-body">
+    <aside class="pc-aside">
+      <DiamondNav phases={project.phases} prefix={project.slug} />
+    </aside>
+
+    <div class="pc-phases">
+      {
+        project.phases.map((ph) => (
+          <section class="phase" id={id(ph.key)} data-phase={ph.key} aria-labelledby={id(`${ph.key}-t`)}>
+            <h3 class="phase-title" id={id(`${ph.key}-t`)}>
+              {ph.title}
+            </h3>
+            <p class="phase-intent">{ph.intent}</p>
+            {ph.body.map((para) => (
+              <p class="phase-body">{para}</p>
+            ))}
+            <div class={`media-grid media-${Math.min(ph.media, 3)}`}>
+              {Array.from({ length: ph.media }, (_, i) => (
+                <div class="media-slot" aria-label={`${media[i % media.length]} to come`}>
+                  <span>{media[i % media.length]}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))
+      }
+      <section class="phase" id={id('outcome')} data-phase="outcome" aria-labelledby={id('outcome-t')}>
+        <h3 class="phase-title" id={id('outcome-t')}>Outcome</h3>
+        <p class="phase-body">{project.outcome}</p>
+        <h4 class="learn-title">What I would do differently</h4>
+        <p class="phase-body">{project.learnings}</p>
+      </section>
+    </div>
+  </div>
+
+  <nav class="pc-others" aria-label="Other case studies">
+    <p class="pc-others-label">Other case studies</p>
+    <div class="pc-others-grid">
+      {
+        others.map((o) => (
+          <button type="button" class="pc-other" data-switch-project={o.slug} data-magnet>
+            <span class="pc-other-disc">{o.discipline}</span>
+            <span class="pc-other-title">{o.title}</span>
+          </button>
+        ))
+      }
+    </div>
+  </nav>
+</article>
+
+<style>
+  .pc {
+    padding: clamp(28px, 4vw, 64px) clamp(22px, 4vw, 64px) clamp(32px, 5vw, 64px);
+  }
+  .pc[hidden] {
+    display: none;
+  }
+  .pc-discipline {
+    font-size: 0.9375rem;
+    color: var(--orange);
+  }
+  .pc-title {
+    margin-top: 10px;
+    padding-right: 56px; /* clear the close button */
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(2.2rem, 5.4vw, 4.75rem);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .pc-hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 24px clamp(32px, 5vw, 80px);
+    align-items: end;
+    margin-top: 20px;
+  }
+  .pc-summary {
+    max-width: 46ch;
+    font-size: clamp(1rem, 1.3vw, 1.1875rem);
+    line-height: 1.5;
+    color: var(--sand-2);
+  }
+  .pc-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+  }
+  .pc-meta dt {
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+  .pc-meta dd {
+    margin-top: 2px;
+  }
+
+  .media-slot {
+    display: grid;
+    place-items: center;
+    min-height: 180px;
+    border: 1px dashed rgb(230 220 200 / 0.18);
+    border-radius: 10px;
+    background: rgb(20 23 26 / 0.35);
+    color: var(--sand-3);
+    font-size: 0.8125rem;
+  }
+  .pc-cover {
+    margin-top: clamp(28px, 4vh, 44px);
+    min-height: clamp(220px, 40vh, 440px);
+  }
+
+  .pc-body {
+    display: grid;
+    grid-template-columns: minmax(170px, 210px) minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 80px);
+    padding-top: clamp(56px, 9vh, 110px);
+  }
+  .phase {
+    padding-bottom: clamp(56px, 9vh, 100px);
+  }
+  .phase + .phase {
+    padding-top: clamp(36px, 5vh, 56px);
+    border-top: 1px solid var(--line);
+  }
+  .phase-title {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .phase-intent {
+    margin-top: 12px;
+    color: var(--sand-3);
+    font-size: 0.9375rem;
+  }
+  .phase-body {
+    margin-top: 20px;
+    max-width: 62ch;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--sand-2);
+  }
+  .learn-title {
+    margin-top: 32px;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .media-grid {
+    display: grid;
+    gap: 14px;
+    margin-top: 28px;
+  }
+  .media-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+  .media-3 {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+  .media-1 .media-slot {
+    min-height: 300px;
+  }
+
+  .pc-others {
+    margin-top: clamp(24px, 4vh, 40px);
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .pc-others-label {
+    font-size: 0.875rem;
+    color: var(--sand-3);
+  }
+  .pc-others-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 14px;
+  }
+  .pc-other {
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    padding: 20px 22px;
+    border-radius: 12px;
+    background: var(--slate-2);
+    border-top: 1px solid var(--slate-edge);
+    transition:
+      transform var(--dur-slow) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .pc-other:hover {
+      transform: translateY(-3px);
+      background: var(--slate-4);
+    }
+  }
+  .pc-other-disc {
+    font-size: 0.8125rem;
+    color: var(--orange);
+  }
+  .pc-other-title {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: 1.125rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 900px) {
+    .pc-hero-grid,
+    .pc-body {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pc-aside {
+      position: sticky;
+      top: 12px; /* level with the card's × */
+      z-index: 5;
+    }
+  }
+  @media (max-width: 600px) {
+    .media-2,
+    .media-3,
+    .pc-others-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

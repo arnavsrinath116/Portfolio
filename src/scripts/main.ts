@@ -8,6 +8,7 @@ import { initHeroAnnotations } from './annotate';
 import { initSlabs } from './slabs';
 import { initGuide } from './guide';
 import { initDims } from './dims';
+import { initProjectModal } from './projectModal';
 import { initFooter } from './footer';
 import { initMenu } from './menu';
 import { initHeader } from './header';
@@ -39,6 +40,7 @@ document.fonts.ready.then(() => {
   initSlabs({ reduce });
   initGuide({ reduce });
   initDims({ reduce });
+  initProjectModal({ lenis, reduce });
   initFooter({ reduce });
   playIntro();
   ScrollTrigger.refresh();
