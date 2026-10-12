@@ -1,0 +1,284 @@
+@import '@fontsource-variable/archivo/wdth.css';
+@import '@fontsource-variable/geist-mono/index.css';
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--slate);
+  color: var(--sand);
+  font-family: var(--font-letter);
+  font-size: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scrollbar-color: var(--line) var(--slate);
+  scrollbar-width: thin;
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--slate);
+  font-size: 1rem;
+  line-height: 1.5;
+  overflow-x: clip;
+}
+
+/* Board grain: a fixed tooth over the slate, never over the cursor */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: url('/textures/grain.png') repeat;
+  background-size: 256px 256px;
+  opacity: 0.045;
+}
+
+::selection {
+  background: var(--orange);
+  color: var(--slate);
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--slate);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border: 2px solid var(--slate);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 1px solid var(--orange);
+  outline-offset: 6px;
+}
+
+h1,
+h2,
+h3,
+p,
+ul,
+ol,
+dl,
+dd,
+figure {
+  margin: 0;
+}
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 10001;
+  padding: 10px 14px;
+  background: var(--sand);
+  color: var(--slate);
+  transform: translateY(-160%);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ---------- Ferrofluid cursor: native pointer hidden only when it runs ---------- */
+html.has-fluid,
+html.has-fluid * {
+  cursor: none !important;
+}
+
+.fluid-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9000;
+  pointer-events: none;
+}
+html.menu-open .fluid-canvas {
+  z-index: 8000;
+}
+
+/* ---------- Bracket hover: [ label ] closes in ---------- */
+.bracket {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.55em 0.9em;
+  transition: color var(--dur-base) var(--ease-out);
+}
+.bracket::before,
+.bracket::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0.42em;
+  border: 1px solid currentColor;
+  opacity: 0;
+  transition:
+    transform var(--dur-base) var(--ease-out),
+    opacity var(--dur-fast) var(--ease-out);
+}
+.bracket::before {
+  left: 0;
+  border-right: 0;
+  transform: translateX(-0.9em);
+}
+.bracket::after {
+  right: 0;
+  border-left: 0;
+  transform: translateX(0.9em);
+}
+@media (hover: hover) {
+  .bracket:hover {
+    color: var(--orange);
+  }
+  .bracket:hover::before,
+  .bracket:hover::after {
+    opacity: 1;
+    transform: none;
+  }
+}
+.bracket:focus-visible {
+  outline: none;
+  color: var(--orange);
+}
+.bracket:focus-visible::before,
+.bracket:focus-visible::after {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- Hero annotations (built by scripts/annotate.ts) ---------- */
+.annotations .ext,
+.annotations .dimline {
+  fill: none;
+  stroke-width: 1;
+  stroke-dasharray: 1;
+}
+.annotations .ext {
+  stroke: var(--sand-3);
+}
+.annotations .dimline {
+  stroke: var(--orange);
+}
+.annotations .tick {
+  stroke: var(--orange);
+  stroke-width: 1.25;
+}
+.annotations .label-bg {
+  fill: var(--slate);
+}
+.annotations text {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+.annotations .dim-label {
+  fill: var(--orange);
+}
+
+/* ---------- Intro: the plotter sweep reveals the sheet ---------- */
+html.intro-pending [data-reveal] {
+  clip-path: inset(0 100% 0 0);
+}
+.plotter {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 9500;
+  width: 0;
+  pointer-events: none;
+  display: none;
+}
+html.intro-pending .plotter {
+  display: block;
+}
+.plotter-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--orange);
+}
+.plotter-head {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 9px;
+  height: 9px;
+  margin: -4px 0 0 -4px;
+  border: 1px solid var(--orange);
+  background: var(--slate);
+}
+.plotter-readout {
+  position: absolute;
+  top: calc(50% + 14px);
+  left: 10px;
+  color: var(--orange);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -1,5 +1,9 @@
+
+# Raw screen recordings (convert to .mp4 before saving references)
+*.mov
 .DS_Store
-node_modules/
-dist/
+.astro/
 .env
 .env.*
+dist/
+node_modules/

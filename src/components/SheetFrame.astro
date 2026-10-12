@@ -1,0 +1,113 @@
+---
+// Fixed drawing-sheet border with zone markers. Columns A–H track the cursor,
+// rows 1–6 track scroll progress: the frame doubles as the progress indicator.
+const cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+const rows = ['1', '2', '3', '4', '5', '6'];
+---
+
+<div class="sheet-frame" aria-hidden="true" data-frame data-reveal>
+  <div class="zones zones-x">
+    {cols.map((c) => <span data-zone-x>{c}</span>)}
+  </div>
+  <div class="zones zones-y">
+    {rows.map((r) => <span data-zone-y>{r}</span>)}
+  </div>
+  <span class="reg reg-tl"></span>
+  <span class="reg reg-tr"></span>
+  <span class="reg reg-bl"></span>
+  <span class="reg reg-br"></span>
+</div>
+
+<style>
+  .sheet-frame {
+    position: fixed;
+    inset: var(--frame);
+    z-index: 40;
+    pointer-events: none;
+    border: 1px solid var(--line);
+  }
+  .zones {
+    position: absolute;
+    display: flex;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--sand-3);
+    opacity: 0.7;
+  }
+  .zones span {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color var(--dur-base) var(--ease-out);
+  }
+  .zones span:global(.is-active) {
+    color: var(--orange);
+    opacity: 1;
+  }
+  .zones-x {
+    left: 0;
+    right: 0;
+    top: calc(var(--frame) * -1);
+    height: var(--frame);
+  }
+  .zones-x span + span {
+    border-left: 1px solid var(--line);
+  }
+  .zones-y {
+    top: 0;
+    bottom: 0;
+    left: calc(var(--frame) * -1);
+    width: var(--frame);
+    flex-direction: column;
+  }
+  .zones-y span + span {
+    border-top: 1px solid var(--line);
+  }
+  /* registration marks at the sheet corners */
+  .reg {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+  }
+  .reg::before,
+  .reg::after {
+    content: '';
+    position: absolute;
+    background: var(--sand-3);
+  }
+  .reg::before {
+    left: 5px;
+    top: 0;
+    width: 1px;
+    height: 11px;
+  }
+  .reg::after {
+    top: 5px;
+    left: 0;
+    width: 11px;
+    height: 1px;
+  }
+  .reg-tl {
+    top: -6px;
+    left: -6px;
+  }
+  .reg-tr {
+    top: -6px;
+    right: -6px;
+  }
+  .reg-bl {
+    bottom: -6px;
+    left: -6px;
+  }
+  .reg-br {
+    bottom: -6px;
+    right: -6px;
+  }
+  @media (max-width: 700px) {
+    .zones {
+      display: none;
+    }
+  }
+</style>

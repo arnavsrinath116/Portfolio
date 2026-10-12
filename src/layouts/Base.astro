@@ -1,0 +1,55 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#14171a" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={site.name} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline>
+      // Decide before first paint: run the plotter intro once per session,
+      // never under reduced motion, and never let it hide content for long.
+      (function () {
+        var d = document.documentElement;
+        d.classList.add('js');
+        var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var seen = false;
+        try {
+          seen = sessionStorage.getItem('as-intro') === '1';
+        } catch (e) {}
+        if (!reduce && !seen) {
+          d.classList.add('intro-pending');
+          setTimeout(function () {
+            d.classList.remove('intro-pending');
+          }, 2600);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="plotter" aria-hidden="true" data-plotter>
+      <span class="plotter-line"></span>
+      <span class="plotter-head"></span>
+      <span class="plotter-readout mono" data-plotter-readout>X 0000.0</span>
+    </div>
+    <slot />
+    <script>
+      import '../scripts/main';
+    </script>
+  </body>
+</html>

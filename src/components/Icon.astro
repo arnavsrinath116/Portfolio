@@ -1,0 +1,26 @@
+---
+// One drawn icon set: 12px grid, 1.25 stroke, square caps, like drafting arrows.
+interface Props {
+  name: 'arrow-up-right' | 'arrow-down' | 'arrow-up';
+  size?: number;
+}
+const { name, size = 12 } = Astro.props;
+const paths: Record<Props['name'], string> = {
+  'arrow-up-right': 'M3 9 9 3M4 3h5v5',
+  'arrow-down': 'M6 1.5v9M2.5 7 6 10.5 9.5 7',
+  'arrow-up': 'M6 10.5v-9M2.5 5 6 1.5 9.5 5',
+};
+---
+
+<svg
+  class="icon"
+  width={size}
+  height={size}
+  viewBox="0 0 12 12"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="1.25"
+  stroke-linecap="square"
+  aria-hidden="true"
+  focusable="false"><path d={paths[name]}></path></svg
+>

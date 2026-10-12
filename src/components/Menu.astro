@@ -1,0 +1,168 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+
+// Sheets that exist are links; sheets still being drawn are listed honestly.
+const items = [
+  { label: 'Work', href: '#work' },
+  { label: 'Sketchbook', href: null },
+  { label: 'About', href: null },
+  { label: 'Contact', href: '#contact' },
+];
+---
+
+<div
+  class="site-menu"
+  id="site-menu"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Menu"
+  hidden
+  data-menu
+>
+  <div class="menu-surface" data-menu-surface></div>
+  <nav class="menu-inner" aria-label="Sheets">
+    <ol class="menu-list">
+      {
+        items.map((item) => (
+          <li class="menu-row" data-menu-row>
+            {item.href ? (
+              <a class="menu-link bracket" href={item.href} data-magnet data-menu-close>
+                {item.label}
+              </a>
+            ) : (
+              <span class="menu-link is-drafting">
+                {item.label}
+                <span class="drafting-tag">In progress</span>
+              </span>
+            )}
+          </li>
+        ))
+      }
+    </ol>
+    <ul class="menu-contact" data-menu-row>
+      <li>
+        <a class="bracket" href={`mailto:${site.email}`} data-magnet>
+          {site.email}<Icon name="arrow-up-right" />
+        </a>
+      </li>
+      <li>
+        <a class="bracket" href={site.linkedin} target="_blank" rel="noopener" data-magnet>
+          LinkedIn<Icon name="arrow-up-right" />
+        </a>
+      </li>
+      <li>
+        <a class="bracket" href={site.resume} data-magnet>Résumé<Icon name="arrow-down" /></a>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<style>
+  .site-menu {
+    position: fixed;
+    inset: 0;
+    z-index: 8500;
+    color: var(--mercury-ink);
+  }
+  .site-menu[hidden] {
+    display: none;
+  }
+  /* Honest flat silver, only when WebGL (and so the real flood) is unavailable */
+  .menu-surface {
+    position: absolute;
+    inset: 0;
+    background: #c9ccd0;
+    opacity: 0;
+  }
+  :global(html:not(.has-flood)) .menu-surface {
+    opacity: 1;
+  }
+  .menu-inner {
+    position: relative;
+    height: 100%;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: calc(var(--header-h) + var(--frame) + 6vh) calc(var(--gutter) + var(--frame))
+      calc(var(--frame) + 40px);
+  }
+  .menu-list {
+    align-self: center;
+  }
+  .menu-row {
+    display: block;
+    border-top: 1px solid rgb(20 23 26 / 0.22);
+    padding: 0.6vh 0;
+  }
+  .menu-row:last-child {
+    border-bottom: 1px solid rgb(20 23 26 / 0.22);
+  }
+  /* all text on the flood is full ink: the liquid's darkest reflection still
+     holds >=5:1, so hierarchy comes from weight and line style, not fading */
+  .menu-link {
+    justify-self: start;
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(2.25rem, 6.4vw, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    padding: 0.08em 0.22em;
+    margin-left: -0.22em;
+  }
+  .menu-link.bracket:hover {
+    color: var(--slate);
+  }
+  .menu-link.bracket::before,
+  .menu-link.bracket::after {
+    border-width: 2px;
+  }
+  .is-drafting {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    color: var(--mercury-ink);
+    font-weight: 380;
+    text-decoration: underline dashed 1px var(--mercury-ink);
+    text-underline-offset: 0.12em;
+  }
+  .drafting-tag {
+    font-size: 0.8125rem;
+    font-stretch: 100%;
+    text-transform: none;
+    display: inline-block; /* lets it opt out of the parent's dashed underline */
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--mercury-ink);
+  }
+  .menu-contact {
+    font-size: 0.9375rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    margin-left: -0.9em;
+  }
+  .menu-contact a {
+    gap: 0.5em;
+  }
+  .menu-contact a:hover {
+    color: var(--slate);
+  }
+
+  @media (max-width: 700px) {
+    .menu-inner {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .menu-row {
+      padding: 10px 0 12px;
+    }
+    .menu-link {
+      font-size: clamp(2rem, 10.6vw, 3rem);
+      font-stretch: 108%;
+    }
+    .is-drafting {
+      flex-wrap: wrap;
+      row-gap: 4px;
+    }
+  }
+</style>

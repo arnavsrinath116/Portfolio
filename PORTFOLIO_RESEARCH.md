@@ -16,6 +16,18 @@ Add to it whenever something catches your eye. Last updated: 2026-10-12.
   3.
 - **Must-have pages:** Home · Projects · About · Contact · (Blog?) · (Resume?)
 
+### Design direction (set 2026-10-12)
+
+| Layer | Reference | What it gives |
+|---|---|---|
+| **Standard: colors, type, layout** | [Heron AI](references/sites/heron.md) ⭐ | Blueprint on warm paper: ink text, one orange accent, hairline grid, mono annotations. [Palette →](references/type-and-color/palette.md) |
+| **Structure and user flow** | [Sahor](references/sites/sahor.md) | Content-first order, work filter + grid/list, circle wipe light↔dark, scroll *into* a hero object, contact form + book a call |
+| **Motion and interaction** | [Lusion](references/motion/lusion.md) | Easing and duration tokens, letter-roll and dot-fill hovers, scroll-drawn line, card → full-width expand |
+| **Technical touches** | [Igloo](references/sites/igloo.md) | Text scramble, story loader, projects as objects |
+| **Project case-study pages** | [Midu: Nova](references/sections/projects/midu-nova.md) | Pinned expanding table of contents + big image cards |
+
+**Brief:** Heron's look, with **better animations** (Lusion-level polish) and a **better user flow** (fast first paint, short pins, visible progress, best work early, reduced-motion and dark mode).
+
 ---
 
 ## 1. Inspiration galleries (where to browse)
@@ -32,7 +44,7 @@ Add to it whenever something catches your eye. Last updated: 2026-10-12.
 | [emmabostian/developer-portfolios](https://github.com/emmabostian/developer-portfolios) | Huge community list of real dev portfolios (~25k ⭐). Has a "Random Portfolio" link |
 | [Dribbble](https://dribbble.com/search/portfolio-website) | Visual mockups. Good for layout ideas, but not real, shipped sites |
 
-**Tip:** screenshot anything you like into a `/inspiration` folder and write one line about *why* you like it.
+**Tip:** screenshot anything you like into [`references/`](references/README.md) and log one line about *why* you like it.
 
 ---
 
@@ -82,6 +94,8 @@ What's worth taking from each one, so you're borrowing ideas and not copying sit
 5. **Contact:** email + GitHub + LinkedIn (+ resume PDF)
 
 ### Project case study template
+**Visual reference:** [Midu: Nova](references/sections/projects/midu-nova.md), with a pinned expanding table of contents and big image cards.
+
 Use the same structure for every project so readers know where to look:
 
 ```

@@ -1,0 +1,58 @@
+---
+import Base from '../layouts/Base.astro';
+import SheetFrame from '../components/SheetFrame.astro';
+import Header from '../components/Header.astro';
+import Menu from '../components/Menu.astro';
+import Hero from '../components/Hero.astro';
+import Work from '../components/Work.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+---
+
+<Base
+  title={`${site.name}: Portfolio`}
+  description={`${site.name}, designer working across product, UX and HMI: the objects and the interfaces that control them.`}
+>
+  <SheetFrame />
+  <Header />
+  <Menu />
+  <span id="top"></span>
+  <main id="main">
+    <Hero />
+  </main>
+  <!-- the guiding line runs behind everything from here to the contact slab -->
+  <div class="flow" data-flow>
+    <svg class="guide" aria-hidden="true" data-guide></svg>
+    <Work />
+    <Footer />
+  </div>
+</Base>
+
+<style>
+  .flow {
+    position: relative;
+  }
+  .guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .guide :global(.guide-path) {
+    fill: none;
+    stroke: var(--sand-2);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+  }
+  .guide :global(.guide-tip) {
+    fill: var(--orange);
+  }
+  .guide :global(.guide-halo) {
+    fill: none;
+    stroke: var(--orange);
+    stroke-width: 1;
+    opacity: 0.5;
+  }
+</style>

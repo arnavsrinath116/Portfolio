@@ -1,0 +1,41 @@
+:root {
+  /* Sheet + slate slabs (cool, stone-like steps; each step reads as a raised surface) */
+  --slate: #14171a;
+  --slate-2: #1b2025;
+  --slate-3: #232a31;
+  --slate-4: #2d353e;
+  --slate-edge: rgb(230 220 200 / 0.09); /* lit top edge of a slab */
+  --slab-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset, 0 24px 48px -16px rgb(0 0 0 / 0.55),
+    0 8px 16px -8px rgb(0 0 0 / 0.4);
+  --radius-slab: 14px;
+
+  /* Linework + lettering */
+  --sand: #e6dcc8;
+  --sand-2: #b8af9d;
+  --sand-3: #928b7c;
+  --line: #4a4740;
+  --line-faint: rgb(230 220 200 / 0.07);
+
+  /* Accent: dimensions, leaders, live state */
+  --orange: #ff6b2c;
+
+  /* Mercury (menu flood surface) */
+  --mercury-ink: #14171a;
+
+  /* Type */
+  --font-letter: 'Archivo Variable', 'Archivo', sans-serif;
+  --font-mono: 'Geist Mono Variable', 'Geist Mono', ui-monospace, monospace;
+
+  /* Sheet geometry */
+  --frame: clamp(10px, 1.2vw, 18px);
+  --gutter: clamp(20px, 4vw, 64px);
+  --header-h: 76px;
+
+  /* Motion (Lusion-derived) */
+  --ease-out: cubic-bezier(0.35, 0, 0, 1);
+  --ease-inout: cubic-bezier(0.4, 0, 0.1, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.3s;
+  --dur-base: 0.4s;
+  --dur-slow: 0.5s;
+}
