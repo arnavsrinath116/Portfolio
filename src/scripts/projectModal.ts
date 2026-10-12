@@ -6,7 +6,8 @@ import type Lenis from 'lenis';
  * page (geometry, corner radius and colour animate together), the case study
  * rises in, and the card scrolls on its own. × / Esc / backdrop shrink it back
  * into the slab it came from. "Other case studies" swaps the project inside
- * the same card. The address carries #project-<slug> for shareable links.
+ * the same card. The address carries #project-<slug> (or #skill-<slug> for a
+ * software card) for shareable links.
  */
 export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduce: boolean }) {
   const modal = document.querySelector<HTMLElement>('[data-pm]');
@@ -26,6 +27,14 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
   let currentSlug = '';
   let source: HTMLElement | null = null;
   let observer: IntersectionObserver | null = null;
+
+  // case studies are keyed by slug ("ux"), software cards by "skill-<slug>"
+  const hashOf = (key: string) => (key.startsWith('skill-') ? `#${key}` : `#project-${key}`);
+  const keyOf = (hash: string) => {
+    const m = hash.match(/^#(?:project-(.+)|(skill-.+))$/);
+    const key = m ? (m[1] ?? m[2]) : '';
+    return articles.has(key) ? key : '';
+  };
 
   const slabColor = (el: HTMLElement | null) => (el ? getComputedStyle(el).backgroundColor : '');
   const finalBox = () => {
@@ -111,7 +120,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     modal.hidden = false;
     html.classList.add('pm-open');
     lenis?.stop();
-    history.replaceState(null, '', `#project-${slug}`);
+    history.replaceState(null, '', hashOf(slug));
     const article = show(slug);
     gsap.set(article.querySelectorAll('[data-pc-rise], .pc-body'), { opacity: 0 });
     closeBtn.style.opacity = '0';
@@ -205,7 +214,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     source = document.querySelector<HTMLElement>(`[data-open-project="${slug}"]`) ?? source;
     triggers().forEach((t) => (t.style.visibility = t === source ? 'hidden' : ''));
     const article = show(slug);
-    history.replaceState(null, '', `#project-${slug}`);
+    history.replaceState(null, '', hashOf(slug));
     busy = false;
     closeBtn.focus({ preventScroll: true });
     riseIn(article);
@@ -244,14 +253,14 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     }
   });
 
-  // deep link: /#project-ux opens that card, on load or when the hash changes later
+  // deep link: /#project-ux or /#skill-figma opens that card, on load or when the hash changes later
   const fromHash = () => {
-    const m = location.hash.match(/^#project-(.+)$/);
-    if (!m || !articles.has(m[1])) return;
-    if (open) switchProject(m[1]);
-    else openProject(m[1], document.querySelector<HTMLElement>(`[data-open-project="${m[1]}"]`));
+    const key = keyOf(location.hash);
+    if (!key) return;
+    if (open) switchProject(key);
+    else openProject(key, document.querySelector<HTMLElement>(`[data-open-project="${key}"]`));
   };
   window.addEventListener('hashchange', fromHash);
-  const initial = location.hash.match(/^#project-(.+)$/);
-  if (initial) setTimeout(() => openProject(initial[1], null), 300); // no slab in view yet: the card fades in
+  const initial = keyOf(location.hash);
+  if (initial) setTimeout(() => openProject(initial, null), 300); // no slab in view yet: the card fades in
 }

@@ -9,6 +9,7 @@ import { initSlabs } from './slabs';
 import { initGuide } from './guide';
 import { initDims } from './dims';
 import { initProjectModal } from './projectModal';
+import { initWire } from './wire';
 import { initFooter } from './footer';
 import { initMenu } from './menu';
 import { initHeader } from './header';
@@ -40,6 +41,7 @@ document.fonts.ready.then(() => {
   initSlabs({ reduce });
   initGuide({ reduce });
   initDims({ reduce });
+  initWire({ reduce });
   initProjectModal({ lenis, reduce });
   initFooter({ reduce });
   playIntro();

@@ -1,0 +1,174 @@
+---
+import Icon from './Icon.astro';
+import WireLogo from './WireLogo.astro';
+import { skills } from '../data/skills';
+---
+
+<section class="skills" id="skills" aria-labelledby="skills-title">
+  <div class="skills-head">
+    <h2 id="skills-title" class="skills-title">Skills</h2>
+    <p class="skills-note">The software I model, draw, prototype and render with. Open one to see the work made with it.</p>
+  </div>
+
+  <div class="skills-grid" data-rise-group data-skills>
+    {
+      skills.map((s) => (
+        <a href={`#skill-${s.slug}`} class="tile" data-open-project={`skill-${s.slug}`} data-panel={`skill-${s.slug}`} data-wire-host>
+          <div class="tile-logo">
+            <WireLogo paths={s.logo} label={`${s.name} logo, drawn as a wireframe`} />
+          </div>
+          <div class="tile-meta">
+            <h3 class="tile-name">{s.name}</h3>
+            <p class="tile-use">{s.use}</p>
+            <p class="tile-status">
+              <span class="status-dot" aria-hidden="true" />
+              {s.works.length} works
+              <Icon name="arrow-up-right" />
+            </p>
+          </div>
+        </a>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .skills {
+    position: relative;
+    padding: clamp(20px, 4vh, 48px) calc(var(--frame) + var(--gutter)) clamp(90px, 14vh, 160px);
+  }
+  .skills-head {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    gap: 24px clamp(32px, 6vw, 96px);
+    align-items: end;
+    margin-bottom: clamp(32px, 6vh, 60px);
+  }
+  .skills-title {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(2rem, 4.4vw, 3.75rem);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .skills-note {
+    max-width: 40ch;
+    color: var(--sand-2);
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(14px, 1.6vw, 24px);
+  }
+  .tile {
+    --rise: 0px; /* scroll entrance (guide.ts) */
+    --lift: 0px; /* hover */
+    position: relative;
+    z-index: 1; /* the guiding line passes behind */
+    display: grid;
+    grid-template-rows: 1fr auto;
+    gap: 18px;
+    padding: clamp(16px, 1.6vw, 22px);
+    border-radius: var(--radius-slab);
+    background: var(--slate-2);
+    border-top: 1px solid var(--slate-edge);
+    box-shadow: var(--slab-shadow);
+    color: inherit;
+    transform: translateY(calc(var(--rise) + var(--lift)));
+    transition:
+      transform var(--dur-slow) var(--ease-out),
+      box-shadow var(--dur-slow) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+  .tile-logo {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    padding: 14%;
+    border-radius: 9px;
+    background: rgb(20 23 26 / 0.35);
+  }
+  .tile-meta {
+    display: grid;
+    gap: 5px;
+  }
+  .tile-name {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(1.05rem, 1.5vw, 1.375rem);
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  .tile-use {
+    color: var(--sand-2);
+    font-size: 0.875rem;
+    line-height: 1.45;
+  }
+  .tile-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 6px;
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border: 1px solid var(--orange);
+  }
+  .tile-status :global(.icon) {
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .tile:hover {
+      --lift: -6px;
+      --wire-ink: var(--orange);
+      background: var(--slate-3);
+      border-top-color: rgb(230 220 200 / 0.2);
+      box-shadow:
+        0 1px 0 rgb(255 255 255 / 0.04) inset,
+        0 36px 64px -18px rgb(0 0 0 / 0.65),
+        0 10px 20px -8px rgb(0 0 0 / 0.45);
+    }
+    .tile:hover .tile-status {
+      color: var(--orange);
+    }
+    .tile:hover .tile-status :global(.icon) {
+      transform: translate(2px, -2px);
+    }
+  }
+  .tile:focus-visible {
+    --wire-ink: var(--orange);
+    outline-offset: 4px;
+  }
+
+  @media (max-width: 1000px) {
+    .skills-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 860px) {
+    .skills-head {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .tile {
+      gap: 12px;
+    }
+    .tile-use {
+      display: none; /* two small tiles a row: name and count are enough */
+    }
+    .tile-name {
+      font-size: 0.9375rem; /* "Illustrator" fits a half-width tile */
+    }
+  }
+</style>

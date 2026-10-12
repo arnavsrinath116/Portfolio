@@ -16,6 +16,33 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-13 · Skills section with wireframe logos
+
+**Built**
+- **Skills section** (`components/Skills.astro`) under Selected Work: four slate tiles for Fusion 360, Illustrator, Figma and Blender, four across on desktop and two on phones.
+- **Wireframe logos** (`components/WireLogo.astro` + `scripts/wire.ts`): each logo is a line-art outline (`src/data/skills.ts`) that the script extrudes into a 3D CAD-style wireframe.
+  - It draws the front edge, a faint back edge, and connecting edges at every corner and along the curves.
+  - The logos sway slowly like a turntable, turn to face the pointer over their tile, and turn orange on hover.
+  - Without JavaScript they show as flat outlines; with reduced motion they stay still.
+- **Skill cards:** clicking a tile opens the same expanding card as the case studies (`components/project/SkillContent.astro`), with the same ×, Esc, scroll and switching. Each card has:
+  - a large turning logo;
+  - the case studies that used the tool. These are found automatically from each project's `tools` list, and open the case study in the same card;
+  - a grid of works made with the tool;
+  - links to the other three tools.
+  - Links: `#skill-<slug>`.
+- **Guiding line** now runs through the skills section on its way to the contact slab.
+- **Menu:** added a Skills link.
+- **Entrances:** each grid (work, skills) fades and rises in on its own when it comes into view.
+
+**Tested** (real-time headless Chrome, 1440×900 and 390×844):
+- The logos render and turn, and hover works.
+- Opening a card, jumping from it to a case study, and closing all work.
+- No horizontal overflow and no script errors.
+
+**Needs from the owner:** for each tool, how long it has been used and the real works (title, type, year, one-line caption, image).
+
+---
+
 ## 2026-10-13 · Project case studies as expanding cards (Double Diamond)
 
 **Built**

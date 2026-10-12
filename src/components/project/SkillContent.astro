@@ -1,0 +1,315 @@
+---
+import WireLogo from '../WireLogo.astro';
+import type { Skill } from '../../data/skills';
+import { skills } from '../../data/skills';
+import { projects } from '../../data/projects';
+
+interface Props {
+  skill: Skill;
+}
+const { skill } = Astro.props;
+const key = `skill-${skill.slug}`;
+const others = skills.filter((s) => s.slug !== skill.slug);
+const studies = projects.filter((p) => p.tools.includes(skill.name));
+---
+
+<article class="sk" data-project={key} aria-labelledby={`${key}-title`} hidden>
+  <header class="sk-hero" data-pc-rise data-wire-host>
+    <div class="sk-intro">
+      <p class="sk-maker">{skill.maker}</p>
+      <h2 class="sk-title" id={`${key}-title`}>{skill.name}</h2>
+      <p class="sk-summary">{skill.summary}</p>
+      <dl class="sk-meta">
+        <div><dt>Using it</dt><dd>{skill.since}</dd></div>
+        <div><dt>Works</dt><dd>{skill.works.length}</dd></div>
+        <div><dt>Case studies</dt><dd>{studies.length}</dd></div>
+      </dl>
+    </div>
+    <div class="sk-logo">
+      <WireLogo paths={skill.logo} label={`${skill.name} logo, drawn as a wireframe`} />
+    </div>
+  </header>
+
+  {
+    studies.length > 0 && (
+      <section class="sk-block" data-pc-rise aria-labelledby={`${key}-studies`}>
+        <h3 class="sk-block-title" id={`${key}-studies`}>
+          Case studies made with it
+        </h3>
+        <div class="sk-studies">
+          {studies.map((p) => (
+            <button type="button" class="sk-study" data-switch-project={p.slug} data-magnet>
+              <span class="sk-study-disc">{p.discipline}</span>
+              <span class="sk-study-title">{p.title}</span>
+              <span class="sk-study-go">Open case study</span>
+            </button>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="sk-block" data-pc-rise aria-labelledby={`${key}-works`}>
+    <h3 class="sk-block-title" id={`${key}-works`}>Work made with {skill.name}</h3>
+    <ul class="sk-works">
+      {
+        skill.works.map((w) => (
+          <li class="sk-work">
+            <div class="sk-media" aria-label={`${w.kind} image to come`}>
+              <span>{w.kind}</span>
+            </div>
+            <div class="sk-work-meta">
+              <h4 class="sk-work-title">{w.title}</h4>
+              <span class="sk-work-year">{w.year}</span>
+            </div>
+            <p class="sk-work-caption">{w.caption}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  <nav class="sk-others pc-others" aria-label="Other software">
+    <p class="sk-others-label">Other software</p>
+    <div class="sk-others-grid">
+      {
+        others.map((o) => (
+          <button type="button" class="sk-other" data-switch-project={`skill-${o.slug}`} data-magnet>
+            <span class="sk-other-logo" aria-hidden="true">
+              <svg viewBox="-10 -10 120 120">
+                {o.logo.map((d) => (
+                  <path d={d} />
+                ))}
+              </svg>
+            </span>
+            <span class="sk-other-name">{o.name}</span>
+          </button>
+        ))
+      }
+    </div>
+  </nav>
+</article>
+
+<style>
+  .sk {
+    padding: clamp(28px, 4vw, 64px) clamp(22px, 4vw, 64px) clamp(32px, 5vw, 64px);
+  }
+  .sk[hidden] {
+    display: none;
+  }
+  .sk-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    gap: 24px clamp(32px, 5vw, 80px);
+    align-items: center;
+  }
+  .sk-maker {
+    font-size: 0.9375rem;
+    color: var(--orange);
+  }
+  .sk-title {
+    margin-top: 10px;
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(2.2rem, 5.4vw, 4.75rem);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .sk-summary {
+    margin-top: 20px;
+    max-width: 46ch;
+    font-size: clamp(1rem, 1.3vw, 1.1875rem);
+    line-height: 1.5;
+    color: var(--sand-2);
+  }
+  .sk-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px clamp(24px, 4vw, 48px);
+    margin-top: 28px;
+  }
+  .sk-meta dt {
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+  .sk-meta dd {
+    margin-top: 2px;
+  }
+  .sk-logo {
+    justify-self: center;
+    width: min(100%, 300px);
+    margin-right: 40px; /* clear the close button's column */
+  }
+
+  .sk-block {
+    margin-top: clamp(48px, 8vh, 88px);
+  }
+  .sk-block-title {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--line);
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+    letter-spacing: -0.015em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .sk-studies {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+  .sk-study {
+    display: grid;
+    gap: 4px;
+    text-align: left;
+    padding: 20px 22px;
+    border-radius: 12px;
+    background: var(--slate-2);
+    border-top: 1px solid var(--slate-edge);
+    transition:
+      transform var(--dur-slow) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out);
+  }
+  .sk-study-disc {
+    font-size: 0.8125rem;
+    color: var(--orange);
+  }
+  .sk-study-title {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: 1.125rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .sk-study-go {
+    margin-top: 8px;
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+
+  .sk-works {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(24px, 3vw, 40px) clamp(16px, 2vw, 28px);
+    margin-top: 24px;
+  }
+  .sk-media {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 3;
+    border: 1px dashed rgb(230 220 200 / 0.18);
+    border-radius: 10px;
+    background: rgb(20 23 26 / 0.35);
+    color: var(--sand-3);
+    font-size: 0.8125rem;
+  }
+  .sk-work-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .sk-work-title {
+    margin: 0;
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+  .sk-work-year {
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+    white-space: nowrap;
+  }
+  .sk-work-caption {
+    margin-top: 6px;
+    max-width: 52ch;
+    color: var(--sand-2);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+
+  .sk-others {
+    margin-top: clamp(48px, 8vh, 88px);
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .sk-others-label {
+    font-size: 0.875rem;
+    color: var(--sand-3);
+  }
+  .sk-others-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+  }
+  .sk-other {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    text-align: left;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: var(--slate-2);
+    border-top: 1px solid var(--slate-edge);
+    transition:
+      transform var(--dur-slow) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out);
+  }
+  .sk-other-logo {
+    flex: none;
+    width: 34px;
+  }
+  .sk-other-logo svg {
+    display: block;
+    width: 100%;
+    fill: none;
+    stroke: var(--sand-2);
+    stroke-width: 4;
+    stroke-linejoin: round;
+    transition: stroke var(--dur-base) var(--ease-out);
+  }
+  .sk-other-name {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: 1rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  @media (hover: hover) {
+    .sk-study:hover,
+    .sk-other:hover {
+      transform: translateY(-3px);
+      background: var(--slate-4);
+    }
+    .sk-study:hover .sk-study-go {
+      color: var(--orange);
+    }
+    .sk-other:hover .sk-other-logo svg {
+      stroke: var(--orange);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .sk-hero {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sk-logo {
+      order: -1;
+      justify-self: start;
+      width: 132px;
+      margin: 0;
+    }
+  }
+  @media (max-width: 600px) {
+    .sk-works,
+    .sk-others-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

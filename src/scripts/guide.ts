@@ -2,9 +2,9 @@ import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 /**
- * One guiding line, drawn by scroll from the work section down to the
- * contact slab. It weaves through the margins and passes behind the slate
- * panels; an orange pen tip rides its leading end.
+ * One guiding line, drawn by scroll from the work section, through the
+ * skills, down to the contact slab. It weaves through the margins and passes
+ * behind the slate panels; an orange pen tip rides its leading end.
  */
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -32,6 +32,7 @@ export function initGuide({ reduce }: { reduce: boolean }) {
   const product = document.querySelector<HTMLElement>('[data-panel="product"]');
   const ux = document.querySelector<HTMLElement>('[data-panel="ux"]');
   const hmi = document.querySelector<HTMLElement>('[data-panel="hmi"]');
+  const skills = document.querySelector<HTMLElement>('[data-skills]');
   const contact = document.querySelector<HTMLElement>('[data-contact]');
   if (!flow || !svg || !head || !product || !ux || !hmi || !contact) return;
 
@@ -66,6 +67,7 @@ export function initGuide({ reduce }: { reduce: boolean }) {
     const u = rel(ux);
     const hm = rel(hmi);
     const c = rel(contact);
+    const sk = skills ? rel(skills) : null;
     const margin = Math.max(14, hd.l * 0.45);
 
     const pts: P[] = [
@@ -74,7 +76,13 @@ export function initGuide({ reduce }: { reduce: boolean }) {
       { x: pr.l + pr.w * 0.55, y: pr.t + pr.h * 0.42 }, // behind the large slab
       { x: Math.min(W - margin, u.r + (W - u.r) * 0.5), y: (u.b + hm.t) / 2 }, // out in the right margin
       { x: hm.l + hm.w * 0.4, y: hm.t + hm.h * 0.6 }, // behind the HMI slab
-      { x: margin, y: (Math.max(pr.b, hm.b) + c.t) / 2 }, // across the gap, left margin
+      ...(sk
+        ? [
+            { x: margin, y: (Math.max(pr.b, hm.b) + sk.t) / 2 }, // across the gap, left margin
+            { x: sk.l + sk.w * 0.58, y: sk.t + sk.h * 0.45 }, // behind the skill tiles
+            { x: W - margin, y: (sk.b + c.t) / 2 }, // out in the right margin
+          ]
+        : [{ x: margin, y: (Math.max(pr.b, hm.b) + c.t) / 2 }]),
       { x: c.l + c.w * 0.6, y: c.t }, // plugs into the contact slab
     ];
     path.setAttribute('d', spline(pts));
@@ -116,16 +124,17 @@ export function initGuide({ reduce }: { reduce: boolean }) {
     }, 200);
   }).observe(flow);
 
-  // panels arrive together: one quick rise when the grid comes into view (not scrubbed,
-  // so the small cards never trail behind the big one)
+  // each grid's panels arrive together: one quick rise when the grid comes into view
+  // (not scrubbed, so the small cards never trail behind the big one)
   if (!reduce) {
-    const panels = gsap.utils.toArray<HTMLElement>('[data-panel]');
-    if (panels.length) {
+    document.querySelectorAll<HTMLElement>('[data-rise-group]').forEach((group) => {
+      const panels = gsap.utils.toArray<HTMLElement>(group.querySelectorAll('[data-panel]'));
+      if (!panels.length) return;
       gsap.set(panels, { '--rise': '90px', opacity: 0 });
       const tl = gsap.timeline({ scrollTrigger: { trigger: panels[0], start: 'top 80%', once: true } });
       // fade on an even curve so it reads; the rise eases out so it still lands quickly
       tl.to(panels, { opacity: 1, duration: 0.7, ease: 'power1.out', stagger: 0.07 }, 0);
       tl.to(panels, { '--rise': '0px', duration: 0.85, ease: 'power3.out', stagger: 0.07 }, 0);
-    }
+    });
   }
 }

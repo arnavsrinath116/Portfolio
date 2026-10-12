@@ -1,0 +1,46 @@
+---
+interface Props {
+  paths: string[];
+  label: string;
+  class?: string;
+}
+const { paths, label, class: cls } = Astro.props;
+---
+
+<!-- flat line-art outline; wire.ts extrudes it into a turning 3D wireframe -->
+<svg class:list={['wire', cls]} viewBox="-10 -10 120 120" role="img" aria-label={label} data-wire>
+  {paths.map((d) => <path class="wire-src" d={d} />)}
+</svg>
+
+<style>
+  .wire {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    fill: none;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .wire :global(.wire-src),
+  .wire :global(.wire-front) {
+    stroke: var(--wire-ink, var(--sand));
+    stroke-width: 1.15;
+    vector-effect: non-scaling-stroke;
+    transition: stroke var(--dur-base) var(--ease-out);
+  }
+  .wire :global(.wire-back) {
+    stroke: var(--wire-ink, var(--sand));
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.32;
+    transition: stroke var(--dur-base) var(--ease-out);
+  }
+  .wire :global(.wire-ribs) {
+    stroke: var(--wire-ink, var(--sand));
+    stroke-width: 0.75;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.22;
+    transition: stroke var(--dur-base) var(--ease-out);
+  }
+</style>
