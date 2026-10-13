@@ -44,8 +44,13 @@ export const skills: Skill[] = [
     summary: 'Parametric modelling for products: from first sketches to parts that can be printed, machined and assembled.',
     since: 'Since TBD',
     works: [work('CAD model', 1), work('Assembly', 2), work('Render', 3), work('Drawing', 4)],
-    // a slanted "F"
-    logo: ['M28 14 H80 L72 32 H48 V43 H70 L62 61 H48 V86 H28 Z'],
+    // the product tile: square face, folded strip on its left, bold "F" top-left
+    // (the extrusion supplies the tile's darker side)
+    logo: [
+      'M26 14 H86 V82 H26 Z',
+      'M14 14 H26 V82 L14 72 Z',
+      'M36 24 H66 V35 H48 V42 H61 V52 H48 V64 H36 Z',
+    ],
   },
   {
     slug: 'illustrator',
@@ -89,11 +94,12 @@ export const skills: Skill[] = [
     summary: 'Rendering and visualisation: materials, lighting and short animations that show a product in use.',
     since: 'Since TBD',
     works: [work('Render', 1), work('Animation', 2), work('Material study', 3), work('Scene', 4)],
-    // the ring with its three prongs, and the eye inside
+    // the official mark (outline from Simple Icons, CC0), scaled into the 100 box:
+    // the eye, the ring with its three prongs, and the ring's opening
     logo: [
-      'M60 32 A26 26 0 1 1 42 77 L29 85 Q24 87 25 82 L33 67 L22 62 Q17 58 22 55 L35 49 L14 47 Q8 46 9 41.5 Q10 37 15 37 L46 36 Q52 32 60 32 Z',
-      'M76 58 A16 16 0 1 1 44 58 A16 16 0 1 1 76 58 Z',
-      'M69 58 A9 9 0 1 1 51 58 A9 9 0 1 1 69 58 Z',
+      'M51.95 54.65C52.13 51.59 53.63 48.88 55.9 46.96A13.13 13.13 0 0 1 64.38 43.94C67.64 43.94 70.63 45.09 72.86 46.96C75.13 48.88 76.63 51.59 76.8 54.65C76.97 57.8 75.71 60.73 73.48 62.9A12.99 12.99 0 0 1 64.38 66.5A13.01 13.01 0 0 1 55.27 62.9C53.05 60.73 51.79 57.8 51.96 54.65Z',
+      'M32.17 60.85C32.2 62.06 32.58 64.39 33.16 66.21A28.26 28.26 0 0 0 39.26 76.78A31.54 31.54 0 0 0 49.95 84.45A34.3 34.3 0 0 0 63.98 87.36A34.36 34.36 0 0 0 77.99 84.4A31.76 31.76 0 0 0 88.67 76.7A28.47 28.47 0 0 0 94.77 66.11A26.7 26.7 0 0 0 95.73 54.33A27.3 27.3 0 0 0 91.84 43.67A29.76 29.76 0 0 0 84.74 35.84L56 13.77L55.93 13.72C54.04 12.27 50.87 12.28 48.8 13.73C46.7 15.19 46.46 17.62 48.32 19.15L60.3 28.9L23.77 28.94L23.72 28.94C20.7 28.94 17.8 30.93 17.22 33.43C16.63 35.98 18.68 38.1 21.82 38.11L40.34 38.08L7.3 63.44L7.17 63.54C4.05 65.92 3.05 69.89 5.01 72.41C7 74.96 11.24 74.97 14.39 72.42L32.42 57.67S32.16 59.66 32.18 60.85Z',
+      'M78.52 67.53C74.8 71.31 69.6 73.46 63.97 73.47C58.34 73.48 53.14 71.35 49.42 67.57A17.29 17.29 0 0 1 45.45 61.35A16.41 16.41 0 0 1 46.53 47.86A18.02 18.02 0 0 1 50.95 42.61C54.56 39.67 59.15 38.07 63.96 38.07C68.78 38.06 73.38 39.64 76.99 42.57C78.83 44.07 80.32 45.84 81.41 47.81A16.41 16.41 0 0 1 83.41 54.35A16.24 16.24 0 0 1 82.49 61.29A17.4 17.4 0 0 1 78.52 67.53Z',
     ],
   },
 ];

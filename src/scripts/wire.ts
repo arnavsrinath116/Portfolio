@@ -2,13 +2,18 @@
  * Wireframe logos: each flat outline in an svg[data-wire] is sampled into
  * points, extruded into depth and drawn in perspective as a CAD wireframe —
  * front edge, faint back edge and the ribs between them. At rest the logos
- * sway slowly; over their tile they turn to face the pointer.
+ * sway slowly; over their tile they ease round to face the pointer, blending
+ * between the two so nothing ever snaps.
  */
 const NS = 'http://www.w3.org/2000/svg';
 const DEPTH = 16; // extrusion, in logo units (the logo box is 100)
 const STEP = 1.6; // sampling step along each outline
 const RIB = 11; // spacing of the edges drawn along curved outlines
-const CAM = 240; // perspective distance
+const IDLE_Y = 0.36; // idle sway, radians either side
+const IDLE_X = -0.16; // resting tilt: seen a little from above
+const SPRING = 60;
+const DAMP = 2 * Math.sqrt(SPRING);
+const CAM = 420; // perspective distance: long, so the extrusion stays true at an angle
 
 type Pt = [number, number];
 type Shape = { pts: Pt[]; ribs: number[] };
@@ -18,11 +23,14 @@ type Wire = {
   front: SVGPathElement;
   back: SVGPathElement;
   ribs: SVGPathElement;
-  ry: number;
+  ry: number; // current turn
   rx: number;
-  ty: number;
-  tx: number;
+  vy: number; // turn velocity (spring)
+  vx: number;
+  px: number; // pointer over the host, -0.5..0.5
+  py: number;
   hover: boolean;
+  h: number; // 0 = idle sway, 1 = following the pointer; eased between
   phase: number;
   visible: boolean;
 };
@@ -89,19 +97,23 @@ export function initWire({ reduce }: { reduce: boolean }) {
     const ribs = mk('wire-ribs');
     const front = mk('wire-front');
     svg.append(back, ribs, front);
-    const w: Wire = { svg, shapes, front, back, ribs, ry: -0.42, rx: -0.2, ty: -0.42, tx: -0.2, hover: false, phase: i * 1.7, visible: true };
+    const phase = i * 1.7;
+    const w: Wire = {
+      svg, shapes, front, back, ribs,
+      ry: Math.sin(phase) * IDLE_Y, rx: IDLE_X, vy: 0, vx: 0,
+      px: 0, py: 0, hover: false, h: 0, phase, visible: true,
+    };
     wires.push(w);
 
     // turn to face the pointer over the tile (or card hero) that holds it
     const host = svg.closest<HTMLElement>('[data-wire-host]');
     if (host && !reduce) {
       host.addEventListener('pointermove', (e) => {
+        if (e.pointerType === 'touch') return;
         const r = host.getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
+        w.px = Math.max(-0.5, Math.min(0.5, (e.clientX - r.left) / r.width - 0.5));
+        w.py = Math.max(-0.5, Math.min(0.5, (e.clientY - r.top) / r.height - 0.5));
         w.hover = true;
-        w.ty = px * 1.3;
-        w.tx = -py * 0.9;
       });
       host.addEventListener('pointerleave', () => (w.hover = false));
     }
@@ -122,16 +134,23 @@ export function initWire({ reduce }: { reduce: boolean }) {
     const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
     last = now;
     const t = now / 1000;
-    const k = 1 - Math.exp(-dt * 6);
+    const kh = 1 - Math.exp(-dt * 3.5);
     for (const w of wires) {
       if (!w.visible) continue;
-      if (!w.hover) {
-        // idle: a slow turntable sway, a little different for each logo
-        w.ty = Math.sin(t * 0.55 + w.phase) * 0.55;
-        w.tx = -0.22 + Math.sin(t * 0.4 + w.phase * 1.3) * 0.08;
-      }
-      w.ry += (w.ty - w.ry) * k;
-      w.rx += (w.tx - w.rx) * k;
+      // idle: a slow turntable sway, a little different for each logo
+      const iy = Math.sin(t * 0.42 + w.phase) * IDLE_Y;
+      const ix = IDLE_X + Math.sin(t * 0.31 + w.phase * 1.3) * 0.05;
+      // pointer: turn toward it, within a modest range
+      const fy = w.px * 0.8;
+      const fx = IDLE_X - w.py * 0.5;
+      w.h += ((w.hover ? 1 : 0) - w.h) * kh;
+      const ty = iy + (fy - iy) * w.h;
+      const tx = ix + (fx - ix) * w.h;
+      // critically damped spring: smooth start and stop, no overshoot
+      w.vy += (SPRING * (ty - w.ry) - DAMP * w.vy) * dt;
+      w.vx += (SPRING * (tx - w.rx) - DAMP * w.vx) * dt;
+      w.ry += w.vy * dt;
+      w.rx += w.vx * dt;
       draw(w);
     }
     requestAnimationFrame(tick);

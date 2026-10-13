@@ -14,17 +14,19 @@ import { skills } from '../data/skills';
     {
       skills.map((s) => (
         <a href={`#skill-${s.slug}`} class="tile" data-open-project={`skill-${s.slug}`} data-panel={`skill-${s.slug}`} data-wire-host>
-          <div class="tile-logo">
-            <WireLogo paths={s.logo} label={`${s.name} logo, drawn as a wireframe`} />
-          </div>
-          <div class="tile-meta">
-            <h3 class="tile-name">{s.name}</h3>
-            <p class="tile-use">{s.use}</p>
-            <p class="tile-status">
-              <span class="status-dot" aria-hidden="true" />
-              {s.works.length} works
-              <Icon name="arrow-up-right" />
-            </p>
+          <div class="tile-body" data-slab>
+            <div class="tile-logo">
+              <WireLogo paths={s.logo} label={`${s.name} logo, drawn as a wireframe`} />
+            </div>
+            <div class="tile-meta">
+              <h3 class="tile-name">{s.name}</h3>
+              <p class="tile-use">{s.use}</p>
+              <p class="tile-status">
+                <span class="status-dot" aria-hidden="true" />
+                {s.works.length} works
+                <Icon name="arrow-up-right" />
+              </p>
+            </div>
           </div>
         </a>
       ))
@@ -66,11 +68,18 @@ import { skills } from '../data/skills';
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: clamp(14px, 1.6vw, 24px);
   }
+  /* the link is a still hit area (it only carries the scroll entrance); the slab
+     inside is what lifts, so hovering near an edge can't flicker on and off */
   .tile {
     --rise: 0px; /* scroll entrance (guide.ts) */
-    --lift: 0px; /* hover */
     position: relative;
     z-index: 1; /* the guiding line passes behind */
+    display: grid;
+    border-radius: var(--radius-slab);
+    color: inherit;
+    transform: translateY(var(--rise));
+  }
+  .tile-body {
     display: grid;
     grid-template-rows: 1fr auto;
     gap: 18px;
@@ -79,13 +88,13 @@ import { skills } from '../data/skills';
     background: var(--slate-2);
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
-    color: inherit;
-    transform: translateY(calc(var(--rise) + var(--lift)));
+    /* a hover answers at once and settles softly: a fast-start curve, not the
+       slow-start --ease-out used for scroll-driven motion */
     transition:
-      transform var(--dur-slow) var(--ease-out),
-      box-shadow var(--dur-slow) var(--ease-out),
-      background-color var(--dur-base) var(--ease-out),
-      border-color var(--dur-base) var(--ease-out);
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 240ms ease-out,
+      border-color 240ms ease-out;
   }
   .tile-logo {
     display: grid;
@@ -129,8 +138,10 @@ import { skills } from '../data/skills';
   }
   @media (hover: hover) {
     .tile:hover {
-      --lift: -6px;
       --wire-ink: var(--orange);
+    }
+    .tile:hover .tile-body {
+      transform: translateY(-4px);
       background: var(--slate-3);
       border-top-color: rgb(230 220 200 / 0.2);
       box-shadow:
@@ -161,7 +172,7 @@ import { skills } from '../data/skills';
     }
   }
   @media (max-width: 480px) {
-    .tile {
+    .tile-body {
       gap: 12px;
     }
     .tile-use {

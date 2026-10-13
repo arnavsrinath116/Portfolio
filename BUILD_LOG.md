@@ -16,6 +16,25 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-13 · Skills: truer logos, steadier hover
+
+**Changed**
+- **Fusion logo:** redrawn as the current Autodesk Fusion product tile: a square face, the lighter folded strip on its left, and the bold "F" top-left. The 3D extrusion supplies the tile's darker side.
+- **Blender logo:** now the official mark's outline (path data from Simple Icons, CC0), converted into the logo box: the eye, the ring with its three prongs, and the ring's opening.
+- **Hover, fixed:** it felt wonky for three reasons.
+  1. The whole tile lifted, so with the pointer near its bottom edge the hover switched on and off in a loop. Now the link stays still as the hit area and only the slab inside lifts (4px).
+  2. The logo snapped from its idle sway to following the pointer. Now the two blend over about a third of a second, and the turn runs on a critically damped spring, so it starts and stops smoothly without overshooting.
+  3. The turn range and perspective were too strong, so the extrusion warped at an angle. The range is now about 20° either way, with a longer camera.
+- The hover uses a fast-start curve, so it responds immediately.
+- The expanding card now morphs from the tile's slab.
+
+**Tested** (real-time headless Chrome):
+- The pointer resting 2px inside a tile's bottom edge stays hovered (16 of 16 samples).
+- The logos render.
+- Opening, switching and closing the card all still work, with no script errors.
+
+---
+
 ## 2026-10-13 · Skills section with wireframe logos
 
 **Built**

@@ -36,7 +36,12 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     return articles.has(key) ? key : '';
   };
 
-  const slabColor = (el: HTMLElement | null) => (el ? getComputedStyle(el).backgroundColor : '');
+  // the visible slab of a trigger: the trigger itself, or a [data-slab] inside it (skill tiles)
+  const slabOf = (el: HTMLElement | null) => el?.querySelector<HTMLElement>('[data-slab]') ?? el;
+  const slabColor = (el: HTMLElement | null) => {
+    const s = slabOf(el);
+    return s ? getComputedStyle(s).backgroundColor : '';
+  };
   const finalBox = () => {
     const prevT = card.style.cssText;
     card.style.cssText = '';
@@ -126,7 +131,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     closeBtn.style.opacity = '0';
 
     const end = finalBox();
-    const start = from?.getBoundingClientRect();
+    const start = slabOf(from)?.getBoundingClientRect();
     if (start && !reduce) {
       place(start, 14);
       card.classList.add('is-moving');
@@ -165,7 +170,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     gsap.killTweensOf(rising);
     document.dispatchEvent(new Event('fluid:release'));
     closeBtn.style.pointerEvents = 'none';
-    const target = source && document.contains(source) ? source.getBoundingClientRect() : null;
+    const target = source && document.contains(source) ? slabOf(source)!.getBoundingClientRect() : null;
     if (!reduce) {
       await gsap.to([closeBtn, ...article.querySelectorAll('[data-pc-rise], .pc-body, .pc-others')], {
         opacity: 0,
