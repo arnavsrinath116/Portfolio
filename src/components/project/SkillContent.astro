@@ -1,5 +1,6 @@
 ---
 import WireLogo from '../WireLogo.astro';
+import ModelViewer from '../ModelViewer.astro';
 import type { Skill } from '../../data/skills';
 import { skills } from '../../data/skills';
 import { projects } from '../../data/projects';
@@ -54,10 +55,14 @@ const studies = projects.filter((p) => p.tools.includes(skill.name));
     <ul class="sk-works">
       {
         skill.works.map((w) => (
-          <li class="sk-work">
-            <div class="sk-media" aria-label={`${w.kind} image to come`}>
-              <span>{w.kind}</span>
-            </div>
+          <li class:list={['sk-work', { 'has-model': w.model }]}>
+            {w.model ? (
+              <ModelViewer model={w.model} title={w.title} />
+            ) : (
+              <div class="sk-media" aria-label={`${w.kind} image to come`}>
+                <span>{w.kind}</span>
+              </div>
+            )}
             <div class="sk-work-meta">
               <h4 class="sk-work-title">{w.title}</h4>
               <span class="sk-work-year">{w.year}</span>
@@ -197,6 +202,10 @@ const studies = projects.filter((p) => p.tools.includes(skill.name));
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: clamp(24px, 3vw, 40px) clamp(16px, 2vw, 28px);
     margin-top: 24px;
+  }
+  /* a 3D model gets the full width of the card */
+  .sk-work.has-model {
+    grid-column: 1 / -1;
   }
   .sk-media {
     display: grid;

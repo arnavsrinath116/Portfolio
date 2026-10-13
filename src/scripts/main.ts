@@ -10,6 +10,7 @@ import { initGuide } from './guide';
 import { initDims } from './dims';
 import { initProjectModal } from './projectModal';
 import { initWire } from './wire';
+import { initModelViewers } from './modelViewer';
 import { initFooter } from './footer';
 import { initMenu } from './menu';
 import { initHeader } from './header';
@@ -42,6 +43,7 @@ document.fonts.ready.then(() => {
   initGuide({ reduce });
   initDims({ reduce });
   initWire({ reduce });
+  initModelViewers({ reduce });
   initProjectModal({ lenis, reduce });
   initFooter({ reduce });
   playIntro();

@@ -1,0 +1,161 @@
+---
+import type { SkillModel } from '../data/skills';
+
+interface Props {
+  model: SkillModel;
+  title: string;
+}
+const { model, title } = Astro.props;
+const mm = (n: number) => (Number.isInteger(n) ? String(n) : n.toFixed(1));
+const [x, y, z] = model.size;
+---
+
+<!-- a Fusion model, turned by hand: modelViewer.ts loads three.js only when this scrolls into view -->
+<figure class="mv" data-model={model.src} data-section={model.section ? '' : undefined}>
+  <div
+    class="mv-stage"
+    tabindex="0"
+    role="img"
+    aria-label={`3D model of the ${title}. Drag, or use the left and right arrow keys, to turn it.`}
+    data-mv-stage
+  >
+    <p class="mv-status" data-mv-status>Loading model</p>
+  </div>
+  <figcaption class="mv-bar">
+    <span class="mv-dims">{mm(x)} × {mm(y)} × {mm(z)} mm</span>
+    <span class="mv-parts">{model.parts} {model.parts === 1 ? 'part' : 'parts'}</span>
+    <span class="mv-tools">
+      {
+        model.section && (
+          <button type="button" class="mv-btn" aria-pressed="true" data-mv-section>
+            Section
+          </button>
+        )
+      }
+      <button type="button" class="mv-btn" data-mv-reset>Reset view</button>
+    </span>
+  </figcaption>
+  <p class="mv-hint">Drag to turn · hold <kbd data-mv-key>⌘</kbd> and scroll, or pinch, to zoom</p>
+</figure>
+
+<style>
+  .mv {
+    margin: 0;
+  }
+  .mv-stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-height: 560px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    background:
+      radial-gradient(120% 90% at 50% 40%, rgb(230 220 200 / 0.05), transparent 60%),
+      rgb(20 23 26 / 0.55);
+    border: 1px solid rgb(230 220 200 / 0.08);
+    cursor: grab;
+  }
+  .mv-stage:active {
+    cursor: grabbing;
+  }
+  .mv-stage:focus-visible {
+    outline: 1px solid var(--orange);
+    outline-offset: 3px;
+  }
+  .mv-stage :global(canvas) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 600ms ease-out;
+  }
+  .mv-stage:global(.is-ready) :global(canvas) {
+    opacity: 1;
+  }
+  .mv-status {
+    position: absolute;
+    inset: 0;
+    pointer-events: none; /* it sits over the canvas: never let it catch a drag or a scroll */
+    display: grid;
+    place-items: center;
+    color: var(--sand-3);
+    font-size: 0.8125rem;
+    transition: opacity 300ms ease-out;
+  }
+  .mv-stage:global(.is-ready) .mv-status {
+    opacity: 0;
+  }
+  .mv-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 18px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+  /* a measurement: the one place mono type is used */
+  .mv-dims {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    color: var(--orange);
+  }
+  .mv-tools {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .mv-btn {
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgb(230 220 200 / 0.16);
+    color: var(--sand-2);
+    font-size: 0.8125rem;
+    transition:
+      color 200ms ease-out,
+      border-color 200ms ease-out,
+      background-color 200ms ease-out;
+  }
+  .mv-btn[aria-pressed='true'] {
+    color: var(--slate);
+    background: var(--sand);
+    border-color: var(--sand);
+  }
+  @media (hover: hover) {
+    .mv-btn:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+    .mv-btn[aria-pressed='true']:hover {
+      color: var(--slate);
+      background: var(--orange);
+    }
+  }
+  .mv-hint {
+    margin-top: 6px;
+    font-size: 0.75rem;
+    color: var(--sand-3);
+  }
+  .mv-hint kbd {
+    padding: 1px 5px;
+    border: 1px solid rgb(230 220 200 / 0.18);
+    border-radius: 4px;
+    font: inherit;
+    color: var(--sand-2);
+  }
+  @media (hover: none) {
+    .mv-hint {
+      display: none; /* touch: dragging and pinching need no explaining */
+    }
+  }
+  @media (max-width: 600px) {
+    .mv-stage {
+      aspect-ratio: 4 / 3;
+    }
+    .mv-tools {
+      margin-left: 0;
+    }
+  }
+</style>

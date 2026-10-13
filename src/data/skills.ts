@@ -8,6 +8,18 @@ export interface SkillWork {
   kind: string;
   year: string;
   caption: string;
+  /** a 3D model shown in an interactive viewer in place of an image */
+  model?: SkillModel;
+}
+
+export interface SkillModel {
+  /** Draco-compressed GLB in /public/models, centred and scaled to fit a 2-unit box */
+  src: string;
+  /** overall size of the real part, in mm (x × y × z) */
+  size: [number, number, number];
+  parts: number;
+  /** open with a section cut through the long axis, so the inside shows */
+  section?: boolean;
 }
 
 export interface Skill {
@@ -43,7 +55,30 @@ export const skills: Skill[] = [
     use: 'CAD, parametric parts and assemblies',
     summary: 'Parametric modelling for products: from first sketches to parts that can be printed, machined and assembled.',
     since: 'Since TBD',
-    works: [work('CAD model', 1), work('Assembly', 2), work('Render', 3), work('Drawing', 4)],
+    // exported from the Fusion designs (visible bodies only), reduced and compressed for the web
+    works: [
+      {
+        title: 'Turbojet engine',
+        kind: 'Assembly',
+        year: 'Year TBD',
+        caption: 'A turbojet modelled part by part, from intake to exhaust. Shown with a section cut so the inside reads.',
+        model: { src: '/models/jet.glb', size: [1330.8, 667.9, 667.7], parts: 38, section: true },
+      },
+      {
+        title: 'Piston and connecting rod',
+        kind: 'Assembly',
+        year: 'Year TBD',
+        caption: 'Piston, connecting rod and gudgeon pin, modelled to fit together.',
+        model: { src: '/models/piston.glb', size: [50, 105, 81.4], parts: 3 },
+      },
+      {
+        title: 'BlackBox casing',
+        kind: 'Enclosure',
+        year: 'Year TBD',
+        caption: 'A printed enclosure with a lid, a dot-matrix display holder and mounts for the electronics inside.',
+        model: { src: '/models/blackbox.glb', size: [64, 64, 72], parts: 6, section: true },
+      },
+    ],
     // the product tile: square face, folded strip on its left, bold "F" top-left
     // (the extrusion supplies the tile's darker side)
     logo: [

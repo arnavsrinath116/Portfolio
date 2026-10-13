@@ -16,6 +16,91 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-13 · BlackBox model updated from Fusion
+
+- **Re-exported BlackBox** from the live Fusion session, including edits not yet saved in Fusion (the Fusion file itself was not saved or changed).
+- **New parts:** it now has 6 visible parts. The new ones are the **Lid** and the **dot-matrix holder**.
+- **Size:** the model is now 64 × 64 × 72 mm, and its GLB is 116 KB.
+- **Card text:** the size, part count and caption are updated.
+- **Fixed `tools/fusion/fexec.mjs`:** it broke on the space in the project folder's path (`%20` in the URL path), so it now uses `fileURLToPath`.
+
+---
+
+## 2026-10-13 · Fusion models: turn left/right only, zoom on a held key
+
+**Changed** (after feedback: free orbit flipped the models, and scrolling kept zooming them)
+- **Turning:** models now turn left and right only. The up/down angle is locked to the starting view, so a model can't tip over or flip. The controls are back on orbit with the polar angle fixed; the left/right arrow keys still turn a focused model.
+- **Zoom only while ⌘ (Ctrl on Windows) is held, or with a trackpad pinch.** A plain scroll over a model always scrolls the card. The hint shows the right key for the keyboard as a keycap.
+- **Touch:** a vertical swipe over a model scrolls the card; a sideways swipe turns it.
+- **Dev setup:** the three.js modules are now pre-bundled in `astro.config.mjs` (Vite `optimizeDeps`). This stops the dev server failing with "Outdated Optimize Dep" whenever the viewer's imports change.
+
+**Tested** (real-time headless Chrome):
+- A vertical drag leaves the model upright; a sideways drag turns it.
+- ⌘-scroll zooms without moving the card.
+- A plain scroll moves the card.
+- No errors.
+
+---
+
+## 2026-10-13 · Fusion models: free orbit and zoom
+
+**Fixed**
+- **Drag and zoom never reached the models.** The faded "Loading model" label sat on top of the canvas and caught every drag and scroll, so the only motion visible was the automatic spin. It now ignores the pointer.
+
+**Changed**
+- **Free orbit:** the controls switched from orbit to trackball, so a model turns any way, over the top and underneath as well. It glides a little after you let go.
+- **Zoom:**
+  - A plain scroll or pinch over a model zooms it, from 0.6× to 1.45× of its framing, in gentle steps.
+  - At either limit the scroll passes on and moves the card, so a model never traps the page.
+  - For 0.4s after a zoom the card stays still, so trackpad momentum doesn't jolt it.
+- **Lighting for every side:** a headlamp travels with the camera and the hemisphere's ground light is brighter, so the undersides read as clearly as the tops.
+- **Reset view** also levels the camera, because the trackball can roll it.
+- **Hint** now reads "Drag to orbit · scroll or pinch to zoom".
+
+**Tested** (real-time headless Chrome):
+- Dragging carries the camera right over the top of the piston.
+- Four zoom-in scroll steps zoom without moving the card.
+- Further scrolling past the zoom-out limit scrolls the card on.
+- No errors.
+
+---
+
+## 2026-10-13 · Fusion models in the Fusion skill card
+
+**Built**
+- **Fusion connected:** turned on Fusion's built-in MCP server (Preferences › General › API › Fusion MCP Server, port 27182) and registered it in `.mcp.json`. Designs are read straight from the Fusion app.
+- **Three designs** chosen by the owner, exported from Fusion with only their visible bodies:
+
+  | Design | Fusion project | Parts | Size (mm) |
+  |---|---|---|---|
+  | Turbojet engine (*Jet*) | complex › TurboJet | 38 | 1330.8 × 667.9 × 667.7 |
+  | Piston and connecting rod (*piston automated*) | Piston engine | 3 | 50 × 105 × 81.4 |
+  | BlackBox casing (*BlackBox*) | My Work | 6 (was 4) | 64 × 64 × 72 (was 40 tall) |
+
+- **Pipeline** (`tools/fusion/`, run with `export-model.sh <name> <file id>`):
+  1. Fusion exports each visible body as STL, along with its place in the assembly. Fusion writes sub-component bodies in local coordinates, so without the transform the jet's core collapsed onto one point.
+  2. Blender, running headless, places and cleans the parts, reduces each to a triangle budget with a minimum per part so big curved shells stay smooth, and smooths curves while keeping sharp CAD edges.
+  3. It exports a Draco-compressed GLB. About 90 MB of STL became about 1.1 MB: jet 985 KB, piston 157 KB, BlackBox 12 KB.
+- **Viewer** (`components/ModelViewer.astro`, `scripts/modelViewer.ts`), in the matte slate style the owner picked:
+  - **Look:** slate solids with sand edge lines at creases only, and the real size shown in mono.
+  - **Section:** the jet and BlackBox open with a section cut that sweeps through, with cut faces in orange like Fusion's section analysis. A Section button toggles it.
+  - **Controls:** drag to turn; pinch or ⌘-scroll to zoom, while a plain scroll still scrolls the card; arrow keys turn a focused model; Reset view.
+  - **Motion:** a slow turntable spin at rest that comes back after a pause. Reduced motion keeps it still.
+  - **Framing:** each model is framed to its actual silhouette, filling about 84% of the stage.
+  - **Loading:** three.js (about 170 KB gzipped) and each model load only when a viewer scrolls into view. Viewers render only while visible, and the main bundle grew about 6 KB.
+
+**Tested** (real-time headless Chrome, desktop and 390px):
+- All three load.
+- The section shows the full engine core.
+- Dragging rotates; a plain wheel over a model scrolls the card.
+- No horizontal overflow and no console errors.
+
+**Note:** installing three.js needed the dev server restarted (`astro dev stop`, then `astro dev --force`), because Vite had cached the old dependencies.
+
+**Needs from the owner:** year and own wording for each caption (the current captions are drafts).
+
+---
+
 ## 2026-10-13 · Skills: truer logos, steadier hover
 
 **Changed**
