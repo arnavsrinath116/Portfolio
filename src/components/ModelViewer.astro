@@ -72,7 +72,7 @@ const [x, y, z] = model.size;
     cursor: grabbing;
   }
   .mv-stage:focus-visible {
-    outline: 1px solid var(--orange);
+    outline: 1px solid var(--accent);
     outline-offset: 3px;
   }
   .mv-stage :global(canvas) {
@@ -113,7 +113,7 @@ const [x, y, z] = model.size;
     font-family: var(--font-mono);
     font-size: 0.75rem;
     letter-spacing: 0.02em;
-    color: var(--orange);
+    color: var(--accent);
   }
   .mv-tools {
     display: flex;
@@ -138,12 +138,12 @@ const [x, y, z] = model.size;
   }
   @media (hover: hover) {
     .mv-btn:hover {
-      border-color: var(--orange);
-      color: var(--orange);
+      border-color: var(--accent);
+      color: var(--accent);
     }
     .mv-btn[aria-pressed='true']:hover {
       color: var(--slate);
-      background: var(--orange);
+      background: var(--accent);
     }
   }
   .mv-hint {

@@ -17,7 +17,7 @@
   --line-faint: rgb(230 220 200 / 0.07);
 
   /* Accent: dimensions, leaders, live state */
-  --orange: #ff6b2c;
+  --accent: #94c4d9; /* sand blue: a dusty light blue that sits with the sand linework */
 
   /* Mercury (menu flood surface) */
   --mercury-ink: #14171a;

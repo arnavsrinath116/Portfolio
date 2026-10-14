@@ -2,7 +2,7 @@ import { gsap } from 'gsap';
 
 
 /**
- * Plotter sweep: an orange carriage crosses the sheet and everything behind it
+ * Plotter sweep: an accent-blue carriage crosses the sheet and everything behind it
  * is revealed. Runs once per session; the inline head script decides whether
  * it is pending and guarantees content is never hidden for long.
  */

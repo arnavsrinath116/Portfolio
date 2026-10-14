@@ -7,7 +7,7 @@ colors:
   sand-2: "#b8af9d"
   sand-3: "#928b7c"
   line: "#4a4740"
-  orange: "#ff6b2c"
+  accent: "#94c4d9"
   mercury-ink: "#14171a"
   mercury-silver: "#c9ccd0"
 typography:
@@ -152,7 +152,7 @@ Against that precise, flat, hairline world there is exactly one material with ma
 A near-monochrome drafting palette (cool slate, warm sand in three strengths, a warm-grey rule) with one saturated accent and one metallic material that appears only as liquid.
 
 ### Primary
-- **Plotter Orange** (#ff6b2c): Dimension lines, ticks and values, leader lines and anchor dots, the active zone letter or number on the frame, the plotter carriage and its X readout, construction points on the footer wordmark, the top face of the logo cube, the status square in the drawing index, hover and focus colour of bracket links, the focus outline, and the text selection fill (with slate text). 6.33:1 on slate, so it is legal as small text. It never covers an area larger than a line, a tick or a 9px square.
+- **Sand Blue** (#94c4d9, token `--accent`; was Plotter Orange #ff6b2c until 2026-10-15): Dimension lines, ticks and values, leader lines and anchor dots, the active zone letter or number on the frame, the plotter carriage and its X readout, construction points on the footer wordmark, the top face of the logo cube, the status square in the drawing index, hover and focus colour of bracket links, the focus outline, and the text selection fill (with slate text). About 9.7:1 on slate, so it is legal as small text. It never covers an area larger than a line, a tick or a 9px square.
 
 ### Neutral
 - **Drafting Slate** (#14171a): The sheet. Page background, scrollbar track, the knock-out fill behind dimension labels, and the ink colour of text set on mercury (as `mercury-ink`). Also `theme-color`.

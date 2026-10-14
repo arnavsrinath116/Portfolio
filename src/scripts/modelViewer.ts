@@ -6,7 +6,7 @@
  * while ⌘ / Ctrl is held.
  *
  * A model marked for a section opens cut through its long axis (like a
- * section analysis in Fusion): the cut faces show in orange.
+ * section analysis in Fusion): the cut faces show in the accent blue.
  */
 type Three = typeof import('three');
 type Lib = {
@@ -18,7 +18,7 @@ type Lib = {
 
 const SLATE = 0x4a535d;
 const SAND = 0xe6dcc8;
-const CUT = 0xc4521f; // the cut faces: a deep orange, like Fusion's section colour
+const CUT = 0x4f8aa3; // the cut faces: a deep sand blue, the accent in shadow
 const EDGE_ANGLE = 30; // degrees between faces before a crease is drawn
 const OFF = 2; // section plane constant that clips nothing (the model fits a 2-unit box)
 

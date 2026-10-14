@@ -54,21 +54,11 @@ const assumptions = [
   { t: 'Existing apps don’t balance convenience with culture', keep: true },
 ];
 
-const ideas = [
-  { t: 'Cooking companion app' },
-  { t: 'Projection', cut: true },
-  { t: 'Family cook guide on the cook’s phone' },
-  { t: 'Reel-style recipe tutorials' },
-  { t: 'Tinder for chefs' },
-  { t: 'Onboarding for new chefs: set it up once', keep: 'Chef onboarding' },
-  { t: '“Cook With Me” hybrid' },
-  { t: 'AI voice, maybe CCTV? Mistrust, so no.', cut: true },
-  { t: 'Refrigerator app', cut: true },
-  { t: 'Exact-instructions cooking app' },
-  { t: 'Ratatouille-style AI chef' },
-  { t: 'Cuisine memory: spice, fasting, Jain, no onion-garlic', keep: 'Preferences, set once' },
-  { t: 'Ingredient approval system', keep: 'Customise your dish' },
-  { t: 'Shopping for chefs' },
+// the directions we weighed: two that were cut, one that went forward
+const directions = [
+  { t: 'Teach them to cook', why: 'A companion app: step-by-step recipes and short videos.', verdict: 'Cut: it still asks a tired person to cook.', cut: true },
+  { t: 'Guide the household cook', why: 'Exact instructions on the phone of the cook a family already has.', verdict: 'Cut: it only works where there’s full-time help.', cut: true },
+  { t: 'Book a chef, made your way', why: 'A home chef cooks to preferences you set once, dish by dish.', verdict: 'Kept: control without the effort.', keep: true },
 ];
 
 const hmw = 'How might we give people the same confidence they feel eating home‑cooked food, even when someone else is cooking it?';
@@ -131,10 +121,10 @@ const journey = [
   <section class="ck-ch" id="cooked-starter" data-phase="starter" aria-label="Starter: the problem">
     <div class="ck-scene" style="--len: 3.2" data-scene="imagine" data-ck-rail>
       <div class="ck-stage">
-        <p class="ck-beat ck-beat-1" data-b1>Imagine this.</p>
-        <p class="ck-beat ck-beat-2" data-b2>A long day. You’re tired.<br /><span>So you order in.</span></p>
+        <p class="ck-beat ck-beat-1" data-b1>Ordering in is easy.</p>
+        <p class="ck-beat ck-beat-2" data-b2>Knowing how it’s made isn’t.<br /><span>Oil, spice, hygiene: you don’t get a say.</span></p>
         <div class="ck-beat ck-beat-3" data-b3>
-          <p>…and you have no real&nbsp;<em data-control>control.</em></p>
+          <p>Convenience wins. You give up&nbsp;<em data-control>control.</em></p>
         </div>
         <div class="ck-seesaw" data-seesaw>
           <svg viewBox="0 0 800 420" role="img" aria-label="A seesaw: convenience outweighs control">
@@ -348,19 +338,21 @@ const journey = [
 
     <div class="ck-scene" style="--len: 1.5" data-scene="ideas" data-ck-rail>
       <div class="ck-stage ck-ideas">
-        <h3 class="ck-h">Ideas on the wall</h3>
-        <ul class="ck-wall">
+        <h3 class="ck-h">Three directions</h3>
+        <ul class="ck-wall ck-dirs">
           {
-            ideas.map((x, i) => (
-              <li class:list={['ck-idea', { 'is-cut': x.cut, 'is-keep': x.keep }]} data-idea style={`--r: ${((i * 37) % 9) - 4}deg`}>
-                {x.t}
+            directions.map((x, i) => (
+              <li class:list={['ck-idea', { 'is-cut': x.cut, 'is-keep': x.keep }]} data-idea style={`--r: ${[-1.5, 1, -0.5][i]}deg`}>
+                <b class="ck-dir-t">{x.t}</b>
+                <span class="ck-dir-why">{x.why}</span>
+                <span class="ck-dir-v">{x.verdict}</span>
                 {x.cut && <span class="ck-idea-x" data-cut />}
-                {x.keep && <span class="ck-idea-tag" data-keep-tag>→ {x.keep}</span>}
+                {x.keep && <span class="ck-idea-tag" data-keep-tag>→ Built</span>}
               </li>
             ))
           }
         </ul>
-        <p class="ck-caption" data-ideas-cap><b>14</b> ideas · <b>3</b> made it to the plate</p>
+        <p class="ck-caption" data-ideas-cap><b>3</b> directions · <b>1</b> made it to the plate</p>
       </div>
     </div>
 
@@ -1572,6 +1564,56 @@ const journey = [
     color: #fff;
     font-size: 0.6875rem;
     white-space: nowrap;
+  }
+
+  /* three directions: wide cards in place of the sticky-note wall */
+  .ck-dirs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 2vw, 28px);
+  }
+  .ck-dirs .ck-idea {
+    aspect-ratio: auto;
+    place-items: start;
+    align-content: start;
+    gap: 10px;
+    padding: clamp(18px, 2vw, 28px);
+    border-radius: 14px;
+    text-align: left;
+    font-weight: 500;
+  }
+  .ck-dir-t {
+    font-size: clamp(1.05rem, 1.5vw, 1.375rem);
+    font-weight: 700;
+    line-height: 1.15;
+  }
+  .ck-dir-why {
+    font-size: 0.9375rem;
+    color: var(--ck-ink-2);
+  }
+  .ck-dir-v {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .ck-dirs .is-keep .ck-dir-v {
+    color: var(--ck-green);
+  }
+  .ck-dirs .ck-idea-x {
+    left: 6%;
+    top: 22px;
+    width: 70%;
+    height: 3px;
+    rotate: -4deg;
+  }
+
+  @media (max-width: 900px) {
+    .ck-wall.ck-dirs {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 12px;
+    }
+    .ck-dirs .ck-idea {
+      padding: 16px 18px;
+      font-size: 0.875rem;
+    }
   }
 
   .ck-sketches {

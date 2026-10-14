@@ -51,11 +51,11 @@ body::after {
 
 /* a key word, picked out in the accent: used sparingly, a word or two per block */
 .hl {
-  color: var(--orange);
+  color: var(--accent);
   white-space: nowrap; /* a highlighted phrase stays in one piece */
 }
 
-/* a major heading's key word on an orange block (highlights.ts wipes it in, left to right,
+/* a major heading's key word on an accent block (highlights.ts wipes it in, left to right,
    when the heading comes into view; without the script it's simply there) */
 .hl-block {
   position: relative;
@@ -71,7 +71,7 @@ body::after {
      a touch because a letter's own left side bearing already adds space there */
   inset: 0.05em -0.1em 0.075em -0.07em;
   z-index: -1;
-  background: var(--orange);
+  background: var(--accent);
   transform-origin: 0 50%;
   transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1) var(--hl-delay, 0s);
 }
@@ -89,7 +89,7 @@ body::after {
 }
 
 ::selection {
-  background: var(--orange);
+  background: var(--accent);
   color: var(--slate);
 }
 
@@ -119,7 +119,7 @@ button {
 }
 
 :focus-visible {
-  outline: 1px solid var(--orange);
+  outline: 1px solid var(--accent);
   outline-offset: 6px;
 }
 
@@ -234,7 +234,7 @@ html.menu-open .fluid-canvas {
 }
 @media (hover: hover) {
   .bracket:hover {
-    color: var(--orange);
+    color: var(--accent);
   }
   .bracket:hover::before,
   .bracket:hover::after {
@@ -244,7 +244,7 @@ html.menu-open .fluid-canvas {
 }
 .bracket:focus-visible {
   outline: none;
-  color: var(--orange);
+  color: var(--accent);
 }
 .bracket:focus-visible::before,
 .bracket:focus-visible::after {
@@ -263,10 +263,10 @@ html.menu-open .fluid-canvas {
   stroke: var(--sand-3);
 }
 .annotations .dimline {
-  stroke: var(--orange);
+  stroke: var(--accent);
 }
 .annotations .tick {
-  stroke: var(--orange);
+  stroke: var(--accent);
   stroke-width: 1.25;
 }
 .annotations .label-bg {
@@ -279,7 +279,7 @@ html.menu-open .fluid-canvas {
   font-variant-numeric: tabular-nums;
 }
 .annotations .dim-label {
-  fill: var(--orange);
+  fill: var(--accent);
 }
 
 /* ---------- Intro: the plotter sweep reveals the sheet ---------- */
@@ -303,7 +303,7 @@ html.intro-pending .plotter {
   bottom: 0;
   left: 0;
   width: 1px;
-  background: var(--orange);
+  background: var(--accent);
 }
 .plotter-head {
   position: absolute;
@@ -312,14 +312,14 @@ html.intro-pending .plotter {
   width: 9px;
   height: 9px;
   margin: -4px 0 0 -4px;
-  border: 1px solid var(--orange);
+  border: 1px solid var(--accent);
   background: var(--slate);
 }
 .plotter-readout {
   position: absolute;
   top: calc(50% + 14px);
   left: 10px;
-  color: var(--orange);
+  color: var(--accent);
   white-space: nowrap;
 }
 

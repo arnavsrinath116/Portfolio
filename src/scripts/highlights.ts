@@ -1,6 +1,6 @@
 /**
  * Block highlights on the major headings (.hl-block): each starts empty and the
- * orange wipes in behind its word the first time the heading comes into view.
+ * accent wipes in behind its word the first time the heading comes into view.
  */
 export function initHighlights({ reduce }: { reduce: boolean }) {
   if (reduce) return;

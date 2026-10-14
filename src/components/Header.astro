@@ -118,7 +118,7 @@ import { site } from '../data/site';
   }
   .top {
     transform: rotateX(90deg) translateZ(calc(var(--s) / 2));
-    border-color: var(--orange);
+    border-color: var(--accent);
   }
   .bottom {
     transform: rotateX(-90deg) translateZ(calc(var(--s) / 2));
@@ -140,7 +140,7 @@ import { site } from '../data/site';
     letter-spacing: 0.04em;
     text-transform: uppercase;
   }
-  /* orange fails on mercury; on the flood the hover stays ink, brackets carry it */
+  /* the accent fails on mercury; on the flood the hover stays ink, brackets carry it */
   :global(html.menu-open) .menu-btn,
   :global(html.menu-open) .menu-btn:hover,
   :global(html.menu-open) .menu-btn:focus-visible {

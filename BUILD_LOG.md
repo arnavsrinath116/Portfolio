@@ -16,6 +16,30 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-15 · Accent: orange → sand blue
+
+- **The colour:** the site accent is now **sand blue, `#94c4d9`**, a dusty light blue that sits with the sand linework. It has about 9.7:1 contrast on the slate, and slate text on a blue block reads the same.
+- **The token:** `--orange` is renamed `--accent` (39 uses). The hard-coded spots follow it:
+  - the case-study nav's fill;
+  - the favicon's top face;
+  - the mercury cursor's glint;
+  - the 3D viewer's section-cut faces, now a deep sand blue (`#4f8aa3`).
+- **Unchanged:** the case studies keep their own worlds, so Cooked stays green and the tracker keeps its copper traces (`--tk-copper` pinned to `#ff6b2c`).
+
+---
+
+## 2026-10-15 · Cooked: a sharper opener and three directions
+
+From the review draft (branch `draft/review-feedback`), only these were kept; everything else stayed as it was.
+
+- **Opener:** "Imagine this. A long day…" is replaced with a straight problem statement: "Ordering in is easy." → "Knowing how it's made isn't. Oil, spice, hygiene: you don't get a say." → "Convenience wins. You give up control."
+- **Three directions:** "Ideas on the wall" (14 sticky notes) becomes three wide cards, each saying what it was and why it was cut or kept. Two are cut and struck through; the kept one is outlined and tagged "→ Built". Caption: "3 directions · 1 made it to the plate". The cards stack on phones.
+  - Teach them to cook.
+  - Guide the household cook.
+  - Book a chef, made your way.
+
+---
+
 ## 2026-10-15 · Block highlights on the major headings
 
 - **What it is:** one word of each major heading sits on a solid orange block with slate lettering, like a highlighter: hero **Srinath’s**, Selected **work**, **Skills**, and the footer's **talk**.

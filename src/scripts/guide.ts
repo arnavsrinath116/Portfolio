@@ -4,7 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 /**
  * One guiding line, drawn by scroll from the work section, through the
  * skills, down to the contact slab. It weaves through the margins and passes
- * behind the slate panels; an orange pen tip rides its leading end.
+ * behind the slate panels; an accent pen tip rides its leading end.
  */
 const NS = 'http://www.w3.org/2000/svg';
 

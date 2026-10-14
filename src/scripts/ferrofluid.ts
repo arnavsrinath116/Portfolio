@@ -139,7 +139,7 @@ vec3 env(vec3 r, float pool) {
   vec3 col = mix(sky, flo, smoothstep(-edge, edge, hz));
   col += vec3(0.28) * smoothstep(0.975, 0.997, dot(r, normalize(vec3(-0.55, -0.62, 0.55))));
   col += vec3(0.16) * smoothstep(0.985, 0.998, dot(r, normalize(vec3(0.5, -0.72, 0.48))));
-  col += vec3(1.0, 0.42, 0.17) * smoothstep(0.8, 0.98, dot(r, normalize(vec3(0.95, 0.18, 0.25)))) * 0.4 * (1.0 - pool);
+  col += vec3(0.58, 0.77, 0.85) * smoothstep(0.8, 0.98, dot(r, normalize(vec3(0.95, 0.18, 0.25)))) * 0.4 * (1.0 - pool);
   return min(col, vec3(0.95));
 }
 
