@@ -11,7 +11,12 @@ const [x, y, z] = model.size;
 ---
 
 <!-- a Fusion model, turned by hand: modelViewer.ts loads three.js only when this scrolls into view -->
-<figure class="mv" data-model={model.src} data-section={model.section ? '' : undefined}>
+<figure
+  class="mv"
+  data-model={model.src}
+  data-section={model.section ? '' : undefined}
+  data-fade={model.fade?.join(',')}
+>
   <div
     class="mv-stage"
     tabindex="0"
@@ -29,6 +34,13 @@ const [x, y, z] = model.size;
         model.section && (
           <button type="button" class="mv-btn" aria-pressed="true" data-mv-section>
             Section
+          </button>
+        )
+      }
+      {
+        model.fade && (
+          <button type="button" class="mv-btn" aria-pressed="false" data-mv-fade>
+            Opacity
           </button>
         )
       }

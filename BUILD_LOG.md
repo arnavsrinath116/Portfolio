@@ -16,6 +16,151 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-14 · Smoother scroll lines
+
+- **Stepping (introduced by the performance pass):** the new lookup table snapped to its nearest sample. On long stretches of a line the samples were about 35 px apart, so the line and pen tip moved in steps.
+  - Samples are now spaced every ~6 px along the curve (adaptive per segment).
+  - Positions blend between the two nearest samples (`pointAtLength()` in `guide.ts`), used by both the homepage guiding line and the Cooked line.
+- **Cooked line followed raw wheel steps:** the card scrolls natively (Lenis is off inside it), and a mouse wheel moves in ~100 px steps. The drawn length and pen tip now ease toward the scroll position each frame (exponential smoothing, ~90 ms time constant).
+- **Measured:** 18 wheel steps, tip position recorded every frame. The tip now moves on 155/157 frames on the homepage and 152/157 in Cooked, with a median of 7–10 px per frame, where before it sat still and jumped about 100 px once per wheel step.
+
+---
+
+## 2026-10-14 · Performance: opening lag removed, lighter first load
+
+**Measured** on the production build with Chrome's CPU profiler and performance metrics:
+
+| | Before | After |
+|---|---|---|
+| Script time while the Cooked card opens | 3,515 ms | ~45 ms |
+| Script time scrolling the card for 3 s | 7,711 ms | ~60 ms |
+| Layout while the card opens | 107 ms | ~52 ms |
+| Homepage first load | 642 KB | 345 KB |
+
+**Cause:** 15.5 s of the profile was SVG `getPointAtLength()`. Cooked's green line called it about 12,000 times to map its 73,000 px path on open, and again on every scroll frame for the pen tip. Each call re-walks the whole path.
+
+**Fixes**
+- **Line geometry:** `sampleSpline()` in `guide.ts` evaluates the same Catmull-Rom/Bézier curve in JS once, producing points and running length. The Cooked line and the homepage guiding line both read positions from this table now. `pathLength` is set so the dash length matches the table exactly.
+- **Card morph:** the card's content is held at its final size while the card grows or shrinks, and only clipped. Before, the 35,000 px case study re-laid out at every in-between size.
+- **Dust:** the background dust stops drawing while a case-study card covers the page.
+- **Course menu:** dropped its `backdrop-filter`, which re-blurred the scrolling card every frame; the background is now near-solid.
+- **Cooked hero images** (doodle frame and wordmark, 257 KB) no longer load with the homepage. They load lazily, and are fetched as soon as the Cooked tile is hovered, focused or touched.
+- **Grain texture:** PNG (74 KB) → lossless WebP (33 KB).
+
+**Checked:**
+- The modal flow passes: open, phase tracking, switching, ×, Esc, deep link.
+- A Cooked visual pass matches the earlier frames.
+- No console errors.
+
+**Note:** the dev server (`astro dev`) serves about 1.9 MB of unbundled modules, so it is always heavier than the real site.
+
+---
+
+## 2026-10-14 · Cooked cover on the work tile
+
+- **Cover:** `public/projects/cooked/cover.webp` (2000×1160, 125 KB), composed from the project's own assets:
+  - the deck's doodle frame on slate white;
+  - the COOKED! wordmark with "Your food, your way" in green Satoshi;
+  - three final screens (chef profile, home, customise dish) fanned in phone frames.
+- **Data:** projects take an optional `cover: { src, alt }` (`projects.ts`). The tile shows it in place of the dashed placeholder, with a slight zoom on hover.
+- **Checked:** at 1440 and 390 wide; the height dimension still spans the tile.
+
+---
+
+## 2026-10-14 · Fix: homepage dimensions and guiding line broken by the Cooked card
+
+- **Symptom:** the height dimensions beside the first work tile and the contact slab were missing, and the guiding line's layer was mis-sized.
+- **Cause:** the Cooked user-flow diagram used `data-flow`, the same attribute the homepage uses for its dimensions and guiding-line section.
+  - The project card sits earlier in the page, so `dims.ts` and `guide.ts` found the hidden diagram first and measured it as 0px wide.
+  - At a width of 0, the dimension code treated the page as a phone and skipped the height dimensions.
+- **Fix:** renamed the Cooked hook to `data-ck-flow`.
+- **Checked:** the dimension layer is full size again with all three dimensions, the guiding line is drawn, and the Cooked flow still animates.
+
+---
+
+## 2026-10-14 · Cooked: a bespoke, light, scroll-animated case study
+
+**Why:** the dean's note that every portfolio uses the same Discover/Define labels, so each project should carry its own flavour. Cooked's deck is light and illustrated, so its card should be too.
+
+**Sources** (read only, nothing changed in them):
+- the final deck PDF: 27 slides, with 45 embedded illustrations extracted at full quality;
+- the FigJam board: brief, interviews, assumptions, AEIOU, behaviour patterns, persona, ideation, flows, feedback;
+- the Figma UI kit: 25 final screens exported, plus mid-fi wireframes and paper sketches.
+- Images are WebP in `public/projects/cooked/`, about 2.7 MB in total, loaded lazily.
+- The interview call screenshot was left out (interviewees' faces), and quotes are attributed by initial only.
+
+**Built**
+- `components/project/cooked/CookedCase.astro` (+ `Phone.astro`), with motion in `scripts/cookedCase.ts`.
+- **The modal** now supports per-project themes (`data-theme`, `data-card-bg`): the dark slab blooms into a light card. It also announces `pm:shown` / `pm:hidden` so scroll-driven case studies can measure themselves.
+- **Light world:**
+  - slate-white `#F4F5F2` background with slate-black text, and no orange;
+  - the deck's palette: green `#337140` and turmeric `#F4B63F`;
+  - the deck's type, Satoshi, self-hosted from Fontshare under the ITF Free Font License, with the licence in `public/fonts/satoshi/`.
+- **Menu courses in place of the Double Diamond labels**, each with the stage named small beneath it:
+  - Starter: the problem
+  - 01 Gathering the ingredients (Discover)
+  - 02 Writing the recipe (Define)
+  - 03 Testing in the kitchen (Develop)
+  - 04 Plating up (Deliver)
+  - Dessert: the outcome
+  - A floating course menu at the foot of the card tracks the current course and jumps to any of them.
+- **The green line** draws down the margins as you scroll, swooping across between blocks, with a pen tip held at the reading point.
+- **Scenes:** sticky, scrubbed scroll timelines for each set piece:
+  - "Imagine this" and a seesaw tipping towards convenience;
+  - interview quotes popping as thought clouds;
+  - an assumption board where 20 notes drop in and 5 are ticked;
+  - a control dial;
+  - the HMW lighting up word by word;
+  - "delivered to me" struck out and becoming "made for me";
+  - an ideation wall where ideas are crossed out and 3 tagged as making it to the plate;
+  - the user flow drawing down two lanes;
+  - the chef-first → food-first toggle;
+  - a 10-screen booking journey scrolling sideways;
+  - a turmeric finale that opens out.
+- **Blocks:** stats count up and bars fill.
+- **Reduced motion:** everything shown as finished.
+
+**Tested** (real-time headless Chrome, 1440×900 and 390×844):
+- desktop 89 frames and phone 72 frames, end to end;
+- no console errors and no sideways overflow;
+- the line is drawn to the end.
+
+**Needs from the owner:** role and team (hidden until known), the "future" direction, and a check of which ideas truly fed the final features.
+
+---
+
+## 2026-10-14 · First real project: Cooked (UI/UX)
+
+- **Cooked** replaces the first placeholder: discipline UI/UX, duration 4 months, link `#project-cooked`.
+- **Tools:** set to Figma for now, so it no longer shows under Fusion 360 in the Skills card. This needs confirming.
+- **Work tiles** now show each project's name, with its discipline as a small orange label above it and a one-line `note` from `projects.ts`. Before, the tile showed only the discipline.
+- **Tiles are laid out by position, not name:**
+  - The first project is the large lead slab and carries the height dimension; the next two stack beside it.
+  - The CSS classes are `panel-a`, `panel-b` and `panel-c`.
+  - The guiding line follows `data-slot`.
+  - So real projects can take any slot.
+- **Checked:** the dimension spans the tile exactly, and `#project-cooked` opens the card with title Cooked, UI/UX and 4 months.
+
+---
+
+## 2026-10-13 · Fix: Product height dimension out of line with its box
+
+- **Symptom:** the H dimension beside the Product card sat about 18px lower than the card.
+- **Cause:** the cards move by `translateY(var(--rise) + var(--lift))`, and that move has a CSS transition. The dimensions and the guiding line subtracted the `--rise` value when measuring. But if they measured while the card was still sliding in (a re-layout during the entrance does this), the value and the drawn position disagreed.
+- **Fix:** both now subtract the element's live translate, read from its computed transform matrix, so the entrance, the hover lift and any transition in progress are all accounted for.
+- **Tested:** the dimension spans the card's top to bottom exactly (299–867px), both settled and after a resize mid-entrance.
+
+---
+
+## 2026-10-13 · BlackBox: Opacity in place of Section
+
+- The BlackBox viewer no longer has a section cut.
+- Its **Opacity** button fades only the **Shell** and **Lid** to about 18% over roughly 0.3s, so the dock, holder and mounts inside show through. Clicking it again brings them back.
+- Which parts fade is set per model by part name (`fade` in `skills.ts`).
+- See-through parts stop hiding what's behind them while faded.
+
+---
+
 ## 2026-10-13 · BlackBox model updated from Fusion
 
 - **Re-exported BlackBox** from the live Fusion session, including edits not yet saved in Fusion (the Fusion file itself was not saved or changed).

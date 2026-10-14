@@ -44,7 +44,7 @@ body::after {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  background: url('/textures/grain.png') repeat;
+  background: url('/textures/grain.webp') repeat;
   background-size: 256px 256px;
   opacity: 0.045;
 }

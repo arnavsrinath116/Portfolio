@@ -1,0 +1,2178 @@
+---
+import Phone from './Phone.astro';
+import type { Project } from '../../../data/projects';
+import { projects } from '../../../data/projects';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const others = projects.filter((p) => p.slug !== project.slug);
+const img = (n: string) => `/projects/cooked/${n}.webp`;
+
+// facts shown in the hero; placeholders stay hidden until they're real
+const facts = [
+  ['Discipline', project.discipline],
+  ['Duration', project.duration],
+  ['Role', project.role],
+  ['Team', project.team],
+  ['Tools', project.tools.join(' · ')],
+].filter(([, v]) => v && !/TBD/i.test(v));
+
+// the menu: each course is a stage of the double diamond, named for the kitchen
+const courses = [
+  { key: 'starter', label: 'Starter', stage: 'The problem' },
+  { key: 'discover', label: 'Ingredients', stage: 'Discover' },
+  { key: 'define', label: 'Recipe', stage: 'Define' },
+  { key: 'develop', label: 'Kitchen', stage: 'Develop' },
+  { key: 'deliver', label: 'Plating', stage: 'Deliver' },
+  { key: 'outcome', label: 'Dessert', stage: 'Outcome' },
+];
+
+const quotes = [
+  { q: 'Since I’m the one eating it, I should have a say in how it’s made.', by: 'D.' },
+  { q: 'Most apps aren’t accommodating of specific requests.', by: 'N.' },
+  { q: 'I order online because I have no choice.', by: 'Interview' },
+  { q: 'I want someone to cook closer to how it’s made at home.', by: 'N.' },
+  { q: 'These apps restrict me.', by: 'Interview' },
+  { q: 'When people give out that control, it’s very difficult to come back.', by: 'R.' },
+];
+
+const assumptions = [
+  { t: 'People feel they lose control when they order food', keep: true },
+  { t: 'Trust isn’t a barrier to outsourcing cooking' },
+  { t: 'Users would want visibility into the cooking process', risky: true },
+  { t: 'Convenience matters, but not at the cost of trust or health', keep: true },
+  { t: 'Hiring full-time help is feasible for urban homes' },
+  { t: 'People care deeply about ingredients, oil and hygiene', keep: true },
+  { t: 'Traditional families will let someone new cook for them', risky: true },
+  { t: 'Home-style food beats restaurant-style', keep: true },
+  { t: 'People get lost in choices while ordering' },
+  { t: 'Existing apps don’t balance convenience with culture', keep: true },
+];
+
+const ideas = [
+  { t: 'Cooking companion app' },
+  { t: 'Projection', cut: true },
+  { t: 'Family cook guide on the cook’s phone' },
+  { t: 'Reel-style recipe tutorials' },
+  { t: 'Tinder for chefs' },
+  { t: 'Onboarding for new chefs: set it up once', keep: 'Chef onboarding' },
+  { t: '“Cook With Me” hybrid' },
+  { t: 'AI voice, maybe CCTV? Mistrust, so no.', cut: true },
+  { t: 'Refrigerator app', cut: true },
+  { t: 'Exact-instructions cooking app' },
+  { t: 'Ratatouille-style AI chef' },
+  { t: 'Cuisine memory: spice, fasting, Jain, no onion-garlic', keep: 'Preferences, set once' },
+  { t: 'Ingredient approval system', keep: 'Customise your dish' },
+  { t: 'Shopping for chefs' },
+];
+
+const hmw = 'How might we give people the same confidence they feel eating home‑cooked food, even when someone else is cooking it?';
+const hmwKey = new Set(['same', 'confidence', 'home‑cooked', 'food,', 'someone', 'else']);
+
+const journey = [
+  { src: 'ui-home', cap: 'Home', alt: 'Home screen with quick actions to find chefs or search dishes, and a repeat-last-meal list' },
+  { src: 'ui-search', cap: 'Pick a dish', alt: 'Search dishes screen with a grid of dishes' },
+  { src: 'ui-filter', cap: 'Filter by mood', alt: 'Dish filters: quick picks, cuisine, mood, gourmet' },
+  { src: 'ui-customise', cap: 'Make it yours', alt: 'Customise dish: spice level and cooking oil choices' },
+  { src: 'ui-chefs', cap: 'Choose a chef', alt: 'Select chefs list with ratings, distance and experience' },
+  { src: 'ui-profile', cap: 'Meet the chef', alt: 'Chef profile for Maria, Italian and Mediterranean' },
+  { src: 'ui-sent', cap: 'Request sent', alt: 'Request sent, waiting for the chef to confirm' },
+  { src: 'ui-confirmed', cap: 'Chef confirmed', alt: 'Chef confirmed with date, time and location' },
+  { src: 'ui-summary', cap: 'Review', alt: 'Order summary with customisations and price breakdown' },
+  { src: 'ui-success', cap: 'Booked', alt: 'Payment successful with booking details' },
+];
+
+const flowConsumer = [
+  'Sign up',
+  'Set your taste once',
+  ['Browse dishes', 'Find chefs', 'Upload a recipe', 'Surprise me!'],
+  'Customise: spice · oil · ingredients',
+  'Match a cook',
+  'Confirm & pay',
+  'Track: accepted → cooking → ready',
+  'Rate · tip · reorder',
+];
+const flowChef = [
+  'Verify ID',
+  'Hygiene declaration',
+  'Signature dishes & cuisines',
+  'Hourly pricing',
+  'Availability',
+  'Dashboard',
+  ['Accept', 'Decline', 'Ask to modify'],
+  'Earnings',
+];
+---
+
+<article class="ck" data-project="cooked" data-theme="light" data-card-bg="#f4f5f2" aria-labelledby="cooked-title" hidden data-ck>
+  <svg class="ck-line" aria-hidden="true" data-ck-line><path class="ck-line-path"></path><circle class="ck-line-halo" r="11"></circle><circle class="ck-line-tip" r="5"></circle></svg>
+
+  <!-- ===================== hero ===================== -->
+  <header class="ck-hero" data-pc-rise data-ck-pt="0.5">
+    <img class="ck-hero-frame" src={img('doodle-frame')} alt="" width="1652" height="952" loading="lazy" data-ck-preload />
+    <div class="ck-hero-inner">
+      <p class="ck-kicker">A UI/UX case study</p>
+      <h2 class="ck-wordmark" id="cooked-title"><img src={img('wordmark')} alt="Cooked!" width="1600" height="347" loading="lazy" data-ck-preload /></h2>
+      <p class="ck-tag">Your food, your way</p>
+      <p class="ck-lede">An app that lets people outsource cooking, without giving up control of their food.</p>
+      <dl class="ck-facts">
+        {facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+      </dl>
+    </div>
+    <p class="ck-cue" aria-hidden="true"><span class="ck-cue-dot"></span>Scroll to start cooking</p>
+  </header>
+
+  <!-- the menu: floats at the foot of the card, marks the course you're in -->
+  <div class="ck-dock-wrap" data-ck-dock>
+    <nav class="ck-dock" aria-label="Case study courses">
+      <ol>
+        {
+          courses.map((c) => (
+            <li>
+              <a href={`#cooked-${c.key}`} data-phase-link={c.key}>
+                <span class="ck-dock-label">{c.label}</span>
+                <span class="ck-dock-stage">{c.stage}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  </div>
+
+  <!-- ===================== starter: the problem ===================== -->
+  <section class="ck-ch" id="cooked-starter" data-phase="starter" aria-label="Starter: the problem">
+    <div class="ck-scene" style="--len: 3.4" data-scene="imagine" data-ck-rail>
+      <div class="ck-stage">
+        <p class="ck-beat ck-beat-1" data-b1>Imagine this.</p>
+        <p class="ck-beat ck-beat-2" data-b2>A long day. You’re tired.<br /><span>So you order in.</span></p>
+        <div class="ck-beat ck-beat-3" data-b3>
+          <p>…and you have no real&nbsp;<em data-control>control.</em></p>
+        </div>
+        <div class="ck-seesaw" data-seesaw>
+          <svg viewBox="0 0 800 420" role="img" aria-label="A seesaw: convenience outweighs control">
+            <g data-beam>
+              <rect x="90" y="252" width="620" height="16" rx="8" class="ss-beam"></rect>
+              <rect x="128" y="226" width="18" height="30" rx="4" class="ss-post"></rect>
+              <rect x="654" y="226" width="18" height="30" rx="4" class="ss-post"></rect>
+            </g>
+            <path d="M400 268 L478 380 L322 380 Z" class="ss-pivot"></path>
+            <rect x="290" y="380" width="220" height="14" rx="4" class="ss-base"></rect>
+            <g data-ss-left>
+              <text x="137" y="196" class="ss-big">Convenience</text>
+              <text x="137" y="222" class="ss-small">quick · easy · no thinking</text>
+            </g>
+            <g data-ss-right>
+              <text x="663" y="196" class="ss-big ss-green">Control</text>
+              <text x="663" y="222" class="ss-small">what home cooking gives you</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="ck-block ck-who" data-ck-pt="0.86">
+      <h3 class="ck-h" data-a="up">Who’s at the table</h3>
+      <div class="ck-who-row">
+        <figure data-a="pop"><img src={img("pro")} alt="" width="400" height="420" loading="lazy" /><figcaption>Working professionals</figcaption></figure>
+        <figure data-a="pop"><img src={img("parent")} alt="" width="400" height="417" loading="lazy" /><figcaption>Parents</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 01 discover ===================== -->
+  <section class="ck-ch" id="cooked-discover" data-phase="discover" aria-labelledby="cooked-discover-t">
+    <header class="ck-chead" data-ck-pt="0.14">
+      <p class="ck-course" data-a="up"><span>01</span>Discover</p>
+      <h3 class="ck-ctitle" id="cooked-discover-t" data-a="up">Gathering the<br />ingredients</h3>
+      <img class="ck-chead-art" src={img('doodles-turmeric')} alt="" width="900" height="900" loading="lazy" data-a="spin" />
+    </header>
+
+    <ul class="ck-pantry" data-ck-pt="0.9">
+      <li data-a="up"><b data-count="4">4</b>interviews</li>
+      <li data-a="up"><b data-count="11">11</b>questions</li>
+      <li data-a="up"><b data-count="20">20</b>assumptions</li>
+      <li data-a="up"><b data-count="6">6</b>market reports</li>
+    </ul>
+
+    <div class="ck-block ck-stats" data-ck-pt="0.1">
+      <h3 class="ck-h" data-a="up">The numbers</h3>
+      <ul class="ck-stat-list">
+        <li data-a="up"><b><span data-count="90" data-prefix="80–">80–90</span>%</b><span class="ck-bar"><i style="--to: 0.9" data-a="fill"></i></span>default to convenience-first</li>
+        <li data-a="up"><b><span data-count="70">70</span>%</b><span class="ck-bar"><i style="--to: 0.7" data-a="fill"></i></span>want more control</li>
+        <li data-a="up"><b><span data-count="60">60</span>%+</b><span class="ck-bar"><i style="--to: 0.6" data-a="fill"></i></span>compromise on food quality when ordering</li>
+      </ul>
+      <div class="ck-market" data-a="up">
+        <svg viewBox="0 0 420 200" aria-hidden="true" data-a="draw">
+          <path d="M10 186 C 120 180, 200 168, 270 140 S 370 70, 410 12" class="ck-curve"></path>
+          <circle cx="410" cy="12" r="6" class="ck-curve-dot"></circle>
+        </svg>
+        <p><b>$55.58B</b>India’s food delivery market, still climbing<br /><small>2024 → 2034 · IMARC, Nexdigm</small></p>
+      </div>
+      <img class="ck-stats-icons" src={img('food-icons')} alt="" width="700" height="700" loading="lazy" data-a="par" data-speed="60" />
+      <p class="ck-source">NielsenIQ · IMARC · Kadence · Market Xcel · Expert Market Research · IBEF</p>
+    </div>
+
+    <div class="ck-scene" style="--len: 2.8" data-scene="bubbles" data-ck-rail>
+      <div class="ck-stage ck-heard">
+        <h3 class="ck-h ck-heard-h">What we heard</h3>
+        <img class="ck-heard-fig" src={img('seeker')} alt="" width="400" height="400" loading="lazy" data-heard-fig />
+        <ul class="ck-bubbles">
+          {
+            quotes.map((x, i) => (
+              <li class={`ck-bubble ck-bubble-${i + 1}`} data-bubble>
+                <q>{x.q}</q>
+                <span>{x.by}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="ck-scene" style="--len: 2.4" data-scene="assumptions" data-ck-rail>
+      <div class="ck-stage ck-assume">
+        <h3 class="ck-h">What we assumed</h3>
+        <ul class="ck-notes">
+          {
+            assumptions.map((a) => (
+              <li class:list={['ck-note', { 'is-risky': a.risky, 'is-keep': a.keep }]} data-note data-keep={a.keep ? '' : undefined}>
+                {a.t}
+                {a.risky && <span class="ck-note-tag">risky</span>}
+                {a.keep && <span class="ck-tick" aria-label="carried forward" data-tick>✓</span>}
+              </li>
+            ))
+          }
+        </ul>
+        <p class="ck-caption" data-assume-cap><b>20</b> on the board → <b>5</b> worth testing</p>
+      </div>
+    </div>
+
+    <div class="ck-block" data-ck-pt="0.88">
+      <h3 class="ck-h" data-a="up">What we noticed</h3>
+      <ul class="ck-obs">
+        <li data-a="pop"><img src={img('head-mood')} alt="" width="306" height="306" loading="lazy" />Food follows mood and company</li>
+        <li data-a="pop">
+          <svg viewBox="0 0 120 120" aria-hidden="true" class="ck-ico"><circle cx="66" cy="62" r="40"></circle><path d="M66 36 V62 L84 74"></path><path d="M8 48 H24 M4 64 H22 M10 80 H26"></path></svg>
+          People want control, but give it up for time
+        </li>
+        <li data-a="pop">
+          <svg viewBox="0 0 120 120" aria-hidden="true" class="ck-ico"><path d="M30 46 a30 30 0 0 1 56 -10 M90 74 a30 30 0 0 1 -56 10"></path><path d="M78 24 L88 36 L74 40 M42 96 L32 84 L46 80"></path></svg>
+          Trust comes from repeat, familiar meals
+        </li>
+        <li data-a="pop"><img src={img('wok')} alt="" width="359" height="359" loading="lazy" />Home recipes are loved most</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== 02 define ===================== -->
+  <section class="ck-ch" id="cooked-define" data-phase="define" aria-labelledby="cooked-define-t">
+    <header class="ck-chead" data-ck-pt="0.86">
+      <p class="ck-course" data-a="up"><span>02</span>Define</p>
+      <h3 class="ck-ctitle" id="cooked-define-t" data-a="up">Writing the<br />recipe</h3>
+      <img class="ck-chead-art" src={img('doodles-green')} alt="" width="900" height="900" loading="lazy" data-a="spin" />
+    </header>
+
+    <div class="ck-block ck-persona" data-ck-pt="0.12">
+      <div class="ck-persona-card" data-a="up">
+        <img class="ck-persona-fig" src={img('seeker')} alt="" width="400" height="400" loading="lazy" />
+        <div>
+          <p class="ck-kicker">Persona</p>
+          <h4 class="ck-persona-name">The Control Seeker</h4>
+          <p class="ck-persona-quote">“I want my food to be made my way.”</p>
+          <ul class="ck-chips" data-a="stagger">
+            <li>Customises before choosing</li>
+            <li>Wants a taste they know</li>
+            <li>Checks ingredients &amp; prep</li>
+            <li>Wants a look into the kitchen</li>
+          </ul>
+          <p class="ck-persona-meta">Archetype: Ananya, 32 · Mumbai · long workdays · husband + 1 child · orders in 3–5× a week</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ck-scene" style="--len: 1.9" data-scene="spectrum" data-ck-rail>
+      <div class="ck-stage ck-spec">
+        <h3 class="ck-h">Not everyone wants the same amount of control</h3>
+        <div class="ck-spec-track" data-spec-track>
+          <span class="ck-spec-fill" data-spec-fill></span>
+          <span class="ck-spec-knob" data-spec-knob></span>
+        </div>
+        <div class="ck-spec-ends">
+          <p><b>Control-seeker</b>ingredients, oil, hygiene</p>
+          <p><b>Hands-off</b>just bring me food</p>
+        </div>
+        <p class="ck-spec-verdict" data-spec-verdict>So control is <em>optional</em>, with levels.</p>
+      </div>
+    </div>
+
+    <div class="ck-block" data-ck-pt="0.88">
+      <h3 class="ck-h" data-a="up">What they’re hungry for</h3>
+      <ol class="ck-needs">
+        <li data-a="pop"><span>1</span>Home-like comfort</li>
+        <li data-a="pop"><span>2</span>To know, without being too involved</li>
+        <li data-a="pop"><span>3</span>Trust &amp; safety</li>
+        <li data-a="pop"><span>4</span>Guilt-free eating</li>
+      </ol>
+    </div>
+
+    <div class="ck-scene" style="--len: 2.2" data-scene="hmw" data-ck-rail>
+      <div class="ck-stage ck-hmw">
+        <p class="ck-kicker">How might we</p>
+        <p class="ck-hmw-q" aria-label={hmw}>
+          {hmw.split(' ').map((w) => <span class:list={['w', { k: hmwKey.has(w) }]} aria-hidden="true">{w} </span>)}
+        </p>
+        <p class="ck-insight" data-insight>People don’t lack the desire for control. They lack a <em>system</em> that makes control <em>effortless</em>.</p>
+      </div>
+    </div>
+
+    <div class="ck-scene" style="--len: 1.8" data-scene="shift" data-ck-rail>
+      <div class="ck-stage ck-shift">
+        <p class="ck-shift-a" data-shift-a>Food being delivered to me<span class="ck-strike" data-strike></span></p>
+        <svg class="ck-shift-arrow" viewBox="0 0 300 160" aria-hidden="true">
+          <path d="M20 20 C 30 120, 160 150, 270 110" data-arrow></path>
+          <path d="M240 92 L272 110 L246 136" data-arrow-head></path>
+        </svg>
+        <p class="ck-shift-b" data-shift-b>My food being <em>made for me</em>.</p>
+      </div>
+    </div>
+
+    <div class="ck-block ck-recipe-wrap" data-ck-pt="0.12">
+      <div class="ck-recipe" data-a="up">
+        <p class="ck-kicker">The recipe</p>
+        <p class="ck-recipe-goal">Outsource cooking, without giving up control.</p>
+        <ol class="ck-steps" data-a="stagger">
+          <li><span class="ck-box"></span>Shift control to the chef</li>
+          <li><span class="ck-box"></span>Make control feel natural, not effortful</li>
+          <li><span class="ck-box"></span>Build trust through human connection</li>
+          <li><span class="ck-box"></span>Give control without complexity</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 03 develop ===================== -->
+  <section class="ck-ch" id="cooked-develop" data-phase="develop" aria-labelledby="cooked-develop-t">
+    <header class="ck-chead" data-ck-pt="0.14">
+      <p class="ck-course" data-a="up"><span>03</span>Develop</p>
+      <h3 class="ck-ctitle" id="cooked-develop-t" data-a="up">Testing in<br />the kitchen</h3>
+      <img class="ck-chead-art ck-chead-wok" src={img('chef')} alt="" width="700" height="700" loading="lazy" data-a="spin" />
+    </header>
+
+    <div class="ck-scene" style="--len: 2.6" data-scene="ideas" data-ck-rail>
+      <div class="ck-stage ck-ideas">
+        <h3 class="ck-h">Ideas on the wall</h3>
+        <ul class="ck-wall">
+          {
+            ideas.map((x, i) => (
+              <li class:list={['ck-idea', { 'is-cut': x.cut, 'is-keep': x.keep }]} data-idea style={`--r: ${((i * 37) % 9) - 4}deg`}>
+                {x.t}
+                {x.cut && <span class="ck-idea-x" data-cut />}
+                {x.keep && <span class="ck-idea-tag" data-keep-tag>→ {x.keep}</span>}
+              </li>
+            ))
+          }
+        </ul>
+        <p class="ck-caption" data-ideas-cap><b>14</b> ideas · <b>3</b> made it to the plate</p>
+      </div>
+    </div>
+
+    <div class="ck-block" data-ck-pt="0.86">
+      <h3 class="ck-h" data-a="up">Paper first</h3>
+      <div class="ck-sketches">
+        <img src={img('sketch-1')} alt="Paper sketches of the onboarding and home screens" width="1000" height="1375" loading="lazy" data-a="left" />
+        <img src={img('sketch-2')} alt="Paper sketches of browsing, customising and booking screens" width="934" height="1400" loading="lazy" data-a="up" />
+        <img src={img('sketch-3')} alt="Paper sketches of the chef-side screens" width="1000" height="1243" loading="lazy" data-a="right" />
+      </div>
+    </div>
+
+    <div class="ck-block ck-flow-wrap" data-ck-pt="0.1">
+      <h3 class="ck-h" data-a="up">One app, two kitchens</h3>
+      <div class="ck-flow" data-ck-flow>
+        <p class="ck-flow-start" data-flow-node>Welcome → <b>What’s your role?</b></p>
+        <div class="ck-flow-cols">
+          {
+            [
+              ['I’m hungry', flowConsumer],
+              ['I’m a chef', flowChef],
+            ].map(([title, steps]) => (
+              <ol class="ck-flow-col">
+                <li class="ck-flow-title" data-flow-node>{title as string}</li>
+                {(steps as (string | string[])[]).map((s) =>
+                  Array.isArray(s) ? (
+                    <li class="ck-flow-fork" data-flow-node>
+                      {s.map((x) => (
+                        <span>{x}</span>
+                      ))}
+                    </li>
+                  ) : (
+                    <li data-flow-node>{s}</li>
+                  ),
+                )}
+                <span class="ck-flow-rail" data-flow-rail aria-hidden="true" />
+              </ol>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="ck-block" data-ck-pt="0.9">
+      <h3 class="ck-h" data-a="up">Wireframes, round one</h3>
+      <div class="ck-wires" data-a="par" data-speed="-50">
+        <Phone src="ui-wf-onboarding" alt="Mid-fi wireframe: dietary preference step" framed />
+        <Phone src="ui-wf-a" alt="Mid-fi wireframe: home with quick actions and previous orders" framed />
+        <Phone src="ui-wf-avoid" alt="Mid-fi wireframe: what to avoid step" framed class="ck-wire-cut" />
+        <Phone src="ui-wf-b" alt="Mid-fi wireframe: select cuisine" framed />
+      </div>
+    </div>
+
+    <div class="ck-scene" style="--len: 2.4" data-scene="pivot" data-ck-rail>
+      <div class="ck-stage ck-pivot">
+        <p class="ck-kicker">The taste test</p>
+        <h3 class="ck-h">Feedback flipped the menu</h3>
+        <div class="ck-pivot-row">
+          <div class="ck-pivot-card" data-pivot-a>
+            <p class="ck-pivot-label">Chef-first</p>
+            <p class="ck-pivot-q">“Which chef?”</p>
+            <p>Pick a chef → then a dish</p>
+            <span class="ck-strike" data-pivot-strike></span>
+          </div>
+          <div class="ck-toggle" aria-hidden="true"><span data-toggle-knob></span></div>
+          <div class="ck-pivot-card" data-pivot-b>
+            <p class="ck-pivot-label">Food-first</p>
+            <p class="ck-pivot-q">“What do I want to eat?”</p>
+            <p>Pick a dish → see chefs who specialise in it</p>
+          </div>
+        </div>
+        <ul class="ck-chips ck-pivot-chips">
+          <li data-pivot-chip>Hourly pricing, 1–1.5 h minimum</li>
+          <li data-pivot-chip>Basic · Expert · Gourmet cooks</li>
+          <li data-pivot-chip>Pure-veg cook filter</li>
+          <li data-pivot-chip>Fewer onboarding steps</li>
+          <li data-pivot-chip>Visible ID &amp; hygiene checks</li>
+          <li data-pivot-chip>“What to avoid” cut as redundant</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== 04 deliver ===================== -->
+  <section class="ck-ch" id="cooked-deliver" data-phase="deliver" aria-labelledby="cooked-deliver-t">
+    <header class="ck-chead" data-ck-pt="0.86">
+      <p class="ck-course" data-a="up"><span>04</span>Deliver</p>
+      <h3 class="ck-ctitle" id="cooked-deliver-t" data-a="up">Plating up</h3>
+      <img class="ck-chead-art" src={img('logo-c')} alt="" width="377" height="342" loading="lazy" data-a="spin" />
+    </header>
+
+    <div class="ck-block ck-brand" data-ck-pt="0.12">
+      <ul class="ck-swatches">
+        <li class="sw-green" data-a="fill-x"><b>Green</b>grounding, trustworthy, healthy</li>
+        <li class="sw-white" data-a="fill-x"><b>White</b>just a plain colour</li>
+        <li class="sw-turmeric" data-a="fill-x"><b>Turmeric</b>appetising by nature</li>
+      </ul>
+      <div class="ck-type" data-a="up">
+        <p class="ck-type-aa">Aa</p>
+        <p><b>Satoshi</b>clean, modern, but warm</p>
+      </div>
+      <img class="ck-mood" src={img('moodboard')} alt="Moodboard: green urban-food posters, food app screens and warm food photography" width="1606" height="766" loading="lazy" data-a="up" />
+    </div>
+
+    <div class="ck-scene ck-journey-scene" style="--len: 4.2" data-scene="journey" data-ck-rail>
+      <div class="ck-stage ck-journey">
+        <div class="ck-journey-head">
+          <h3 class="ck-h">Book a chef, food first</h3>
+          <p class="ck-journey-count" aria-hidden="true"><b data-journey-i>01</b> / {String(journey.length).padStart(2, '0')}</p>
+        </div>
+        <div class="ck-journey-track" data-journey-track>
+          <span class="ck-journey-line" data-journey-line aria-hidden="true"></span>
+          {
+            journey.map((s, i) => (
+              <div class="ck-journey-step">
+                <Phone src={s.src} alt={s.alt} />
+                <p>
+                  <span>{String(i + 1).padStart(2, '0')}</span>
+                  {s.cap}
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="ck-block ck-setup" data-ck-pt="0.88">
+      <h3 class="ck-h" data-a="up">Set up once. Skip anytime.</h3>
+      <div class="ck-phones">
+        <Phone src="ui-role" alt="Role choice: consumer or chef" class="ck-p1" />
+        <Phone src="ui-diet" alt="Dietary preference, step 1 of 4" class="ck-p2" />
+        <Phone src="ui-budget" alt="Budget range slider, the last onboarding step" class="ck-p3" />
+      </div>
+    </div>
+
+    <div class="ck-block ck-chefside" data-ck-pt="0.12">
+      <h3 class="ck-h" data-a="up">For the chefs: trust is earned up front</h3>
+      <div class="ck-phones ck-phones-4">
+        <Phone src="ui-chef-id" alt="Chef ID verification" class="ck-p1" />
+        <Phone src="ui-chef-hygiene" alt="Chef hygiene declaration checklist" class="ck-p2" />
+        <Phone src="ui-chef-pricing" alt="Chef hourly pricing and minimum booking hours" class="ck-p3" />
+        <Phone src="ui-chef-dash" alt="Chef dashboard with requests, rating and earnings" class="ck-p4" />
+      </div>
+    </div>
+
+    <div class="ck-block ck-merch" data-ck-pt="0.86">
+      <h3 class="ck-h" data-a="up">Beyond the screen</h3>
+      <div class="ck-merch-grid">
+        <img src={img('merch-apron')} alt="Cooked apron for chefs" width="757" height="605" loading="lazy" data-a="par" data-speed="40" />
+        <img src={img('merch-pack')} alt="Cooked packaging" width="900" height="529" loading="lazy" data-a="par" data-speed="-30" />
+        <img src={img('merch-card')} alt="Chef’s order card" width="739" height="452" loading="lazy" data-a="par" data-speed="50" />
+        <img src={img('merch-badge')} alt="Chef name badge" width="776" height="470" loading="lazy" data-a="par" data-speed="-40" />
+        <img src={img('merch-tee')} alt="Cooked T-shirt" width="688" height="674" loading="lazy" data-a="par" data-speed="30" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== dessert ===================== -->
+  <section class="ck-ch ck-dessert" id="cooked-outcome" data-phase="outcome" aria-label="Dessert: outcome">
+    <p class="ck-again" data-a="up" data-ck-pt="0.5">Imagine this <em>again</em>.</p>
+    <div class="ck-finale" data-finale>
+      <img class="ck-finale-frame" src={img('doodle-frame-2')} alt="" width="1536" height="1024" loading="lazy" />
+      <img class="ck-finale-mark" src={img('wordmark')} alt="Cooked!" width="1600" height="347" loading="lazy" />
+      <p>Your food, your way</p>
+    </div>
+    <div class="ck-block" data-ck-pt="0.88">
+      <h3 class="ck-h" data-a="up">What testers said</h3>
+      <ul class="ck-said">
+        <li data-a="pop">Loved <b>customise your dish</b></li>
+        <li data-a="pop"><b>“What’s your mood today?”</b> felt unique</li>
+        <li data-a="pop">Liked the <b>personalisation</b></li>
+        <li data-a="pop">Wants <b>proof</b> of hygiene, not just a checklist</li>
+      </ul>
+    </div>
+
+    <nav class="pc-others ck-others" aria-label="Other case studies" data-ck-pt="0.5">
+      <p class="ck-kicker">Next on the menu</p>
+      <div class="ck-others-grid">
+        {
+          others.map((o) => (
+            <button type="button" class="ck-other" data-switch-project={o.slug} data-magnet>
+              <span>{o.discipline}</span>
+              <b>{o.title}</b>
+            </button>
+          ))
+        }
+      </div>
+    </nav>
+  </section>
+</article>
+
+<style is:global>
+  @font-face {
+    font-family: 'Satoshi';
+    src: url('/fonts/satoshi/Satoshi-Variable.woff2') format('woff2');
+    font-weight: 300 900;
+    font-display: swap;
+  }
+</style>
+
+<style>
+  /* ---------- the Cooked world: light, warm, illustrated ---------- */
+  .ck {
+    --ck-bg: #f4f5f2;
+    --ck-ink: #14171a;
+    --ck-ink-2: rgb(20 23 26 / 0.72);
+    --ck-ink-3: rgb(20 23 26 / 0.62);
+    --ck-rule: rgb(20 23 26 / 0.12);
+    --ck-green: #337140;
+    --ck-green-soft: rgb(51 113 64 / 0.12);
+    --ck-turmeric: #f4b63f;
+    --ck-turmeric-deep: #ca892f;
+    --ck-turmeric-tint: #fbe6b3;
+    --ck-pad: clamp(22px, 6vw, 96px);
+    --stage-h: calc(100svh - var(--pm-inset, 20px) * 2);
+    position: relative;
+    color: var(--ck-ink);
+    font-family: 'Satoshi', system-ui, sans-serif;
+    font-size: 1rem;
+    line-height: 1.45;
+    overflow-x: clip;
+  }
+  .ck[hidden] {
+    display: none;
+  }
+  .ck :is(h2, h3, h4, p, ul, ol, dl, dd, figure) {
+    margin: 0;
+  }
+  .ck :is(ul, ol) {
+    padding: 0;
+    list-style: none;
+  }
+  .ck em {
+    font-style: normal;
+    color: var(--ck-green);
+  }
+
+  /* ---------- green line ---------- */
+  .ck-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .ck-line-path {
+    fill: none;
+    stroke: var(--ck-green);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+  .ck-line-tip {
+    fill: var(--ck-green);
+  }
+  .ck-line-halo {
+    fill: var(--ck-green-soft);
+  }
+  /* content sits above the line, so it weaves behind cards and phones */
+  .ck-hero,
+  .ck-ch {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- shared type ---------- */
+  .ck-kicker {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ck-green);
+  }
+  .ck-h {
+    font-size: clamp(1.6rem, 3.2vw, 2.75rem);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .ck-caption {
+    font-size: 1.0625rem;
+    color: var(--ck-ink-2);
+  }
+  .ck-caption b {
+    color: var(--ck-green);
+    font-weight: 800;
+  }
+  .ck-block {
+    padding: clamp(72px, 12vh, 140px) var(--ck-pad);
+  }
+  .ck-block > .ck-h {
+    margin-bottom: clamp(28px, 5vh, 56px);
+  }
+
+  /* ---------- sticky scenes ---------- */
+  .ck-scene {
+    height: calc(var(--stage-h) * var(--len, 2));
+  }
+  .ck-stage {
+    position: sticky;
+    top: 0;
+    height: var(--stage-h);
+    overflow: hidden;
+    padding: clamp(28px, 6vh, 64px) var(--ck-pad);
+  }
+
+  /* ---------- hero ---------- */
+  .ck-hero {
+    position: relative;
+    display: grid;
+    place-items: center;
+    min-height: var(--stage-h);
+    padding: 64px var(--ck-pad) 96px;
+    text-align: center;
+  }
+  .ck-hero-frame {
+    position: absolute;
+    inset: 4% 3%;
+    width: 94%;
+    height: 92%;
+    object-fit: contain;
+    opacity: 0.85;
+    pointer-events: none;
+  }
+  .ck-hero-inner {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+    max-width: 760px;
+  }
+  .ck-wordmark img {
+    display: block;
+    width: min(640px, 72vw);
+    height: auto;
+    margin-top: 10px;
+  }
+  .ck-tag {
+    font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+    font-weight: 700;
+    color: var(--ck-green);
+    letter-spacing: -0.01em;
+  }
+  .ck-lede {
+    max-width: 30ch;
+    font-size: clamp(1rem, 1.4vw, 1.1875rem);
+    color: var(--ck-ink-2);
+  }
+  .ck-facts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .ck-facts div {
+    display: flex;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-size: 0.875rem;
+  }
+  .ck-facts dt {
+    color: var(--ck-ink-3);
+  }
+  .ck-facts dd {
+    font-weight: 700;
+  }
+  .ck-cue {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    translate: -50% 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ck-ink-2);
+    white-space: nowrap;
+  }
+  .ck-cue-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--ck-green);
+    box-shadow: 0 0 0 6px var(--ck-green-soft);
+  }
+
+  /* ---------- dock (course menu) ---------- */
+  .ck-dock-wrap {
+    position: sticky;
+    top: calc(var(--stage-h) - 70px);
+    z-index: 30 !important;
+    height: 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease-out;
+  }
+  .ck-dock-wrap:global(.is-on) {
+    opacity: 1;
+  }
+  .ck-dock-wrap:global(.is-on) .ck-dock {
+    pointer-events: auto;
+  }
+  .ck-dock {
+    max-width: calc(100% - 24px);
+    padding: 5px;
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.96); /* solid, no backdrop blur: that re-blurs the scrolling card every frame */
+    box-shadow:
+      0 0 0 1px var(--ck-rule),
+      0 14px 30px -16px rgb(20 23 26 / 0.4);
+  }
+  .ck-dock ol {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .ck-dock a {
+    display: grid;
+    padding: 6px 14px;
+    border-radius: 999px;
+    text-align: center;
+    color: var(--ck-ink-2);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      background-color 0.25s ease-out,
+      color 0.25s ease-out;
+  }
+  .ck-dock-label {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .ck-dock-stage {
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    opacity: 0.8;
+  }
+  .ck-dock a:global(.is-active) {
+    background: var(--ck-green);
+    color: #fff;
+  }
+  @media (hover: hover) {
+    .ck-dock a:hover:not(:global(.is-active)) {
+      color: var(--ck-ink);
+      background: var(--ck-green-soft);
+    }
+  }
+
+  /* ---------- starter: imagine + seesaw ---------- */
+  .ck-beat {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    padding: 0 var(--ck-pad);
+    text-align: center;
+    font-size: clamp(2.4rem, 7vw, 6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+  .ck-beat-2 {
+    font-size: clamp(2rem, 5.4vw, 4.6rem);
+  }
+  .ck-beat-2 span {
+    color: var(--ck-ink-3);
+  }
+  .ck-beat-3 {
+    font-size: clamp(1.9rem, 4.6vw, 3.9rem);
+    align-content: start;
+    padding-top: clamp(40px, 12vh, 120px);
+  }
+  .ck-beat-3 em {
+    display: inline-block;
+    text-transform: uppercase;
+    transform-origin: 0% 70%; /* grows away from "real", never into it */
+  }
+  .ck-seesaw {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(16px, 6vh, 60px);
+    width: min(860px, 92%);
+    translate: -50% 0;
+  }
+  .ck-seesaw svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .ss-beam,
+  .ss-post {
+    fill: var(--ck-turmeric);
+  }
+  .ss-pivot,
+  .ss-base {
+    fill: var(--ck-turmeric-deep);
+  }
+  .ss-big {
+    font-family: 'Satoshi', sans-serif;
+    font-size: 30px;
+    font-weight: 800;
+    text-anchor: middle;
+    fill: var(--ck-ink);
+  }
+  .ss-green {
+    fill: var(--ck-green);
+  }
+  .ss-small {
+    font-family: 'Satoshi', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    text-anchor: middle;
+    fill: var(--ck-ink-2);
+  }
+
+  .ck-who {
+    text-align: center;
+  }
+  .ck-who-row {
+    display: flex;
+    justify-content: center;
+    gap: clamp(32px, 10vw, 160px);
+  }
+  .ck-who figure {
+    display: grid;
+    justify-items: center;
+    gap: 14px;
+  }
+  .ck-who img {
+    width: clamp(140px, 18vw, 220px);
+    height: auto;
+  }
+  .ck-who figcaption {
+    font-size: clamp(1.05rem, 1.6vw, 1.375rem);
+    font-weight: 800;
+    color: var(--ck-green);
+  }
+
+  /* ---------- chapter heads ---------- */
+  .ck-chead {
+    position: relative;
+    display: grid;
+    align-content: center;
+    gap: 18px;
+    min-height: min(var(--stage-h), 760px);
+    padding: clamp(80px, 14vh, 160px) var(--ck-pad);
+  }
+  .ck-course {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ck-ink-2);
+  }
+  .ck-course span {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--ck-turmeric);
+    color: var(--ck-ink);
+    letter-spacing: 0;
+    font-size: 1rem;
+    font-weight: 800;
+  }
+  .ck-ctitle {
+    font-size: clamp(2.8rem, 8.4vw, 7.4rem);
+    font-weight: 900;
+    line-height: 0.92;
+    letter-spacing: -0.045em;
+    max-width: 11ch;
+  }
+  .ck-chead-art {
+    position: absolute;
+    right: var(--ck-pad);
+    top: 50%;
+    width: clamp(160px, 30vw, 440px);
+    height: auto;
+    translate: 0 -50%;
+    pointer-events: none;
+  }
+  .ck-chead-wok {
+    width: clamp(150px, 24vw, 340px);
+  }
+
+  /* ---------- discover ---------- */
+  .ck-pantry {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0 var(--ck-pad);
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--ck-rule);
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .ck-pantry li {
+    display: grid;
+    gap: 2px;
+    padding: clamp(18px, 3vw, 34px);
+    background: var(--ck-bg);
+    font-weight: 600;
+    color: var(--ck-ink-2);
+  }
+  .ck-pantry b {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--ck-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ck-stats {
+    position: relative;
+  }
+  .ck-stat-list {
+    display: grid;
+    gap: clamp(22px, 4vh, 40px);
+    max-width: 760px;
+  }
+  .ck-stat-list li {
+    display: grid;
+    grid-template-columns: minmax(150px, 220px) 1fr;
+    align-items: center;
+    gap: 6px 28px;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--ck-ink-2);
+  }
+  .ck-stat-list b {
+    grid-row: span 2;
+    font-size: clamp(2.6rem, 6vw, 5rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    color: var(--ck-green);
+    font-variant-numeric: tabular-nums;
+  }
+  .ck-bar {
+    display: block;
+    height: 12px;
+    border-radius: 99px;
+    background: rgb(20 23 26 / 0.07);
+    overflow: hidden;
+  }
+  .ck-bar i {
+    display: block;
+    width: calc(var(--to) * 100%);
+    height: 100%;
+    border-radius: 99px;
+    background: var(--ck-turmeric);
+    transform-origin: left;
+  }
+  .ck-market {
+    display: flex;
+    align-items: end;
+    gap: 22px;
+    margin-top: clamp(40px, 7vh, 72px);
+    max-width: 760px;
+  }
+  .ck-market svg {
+    width: min(320px, 45%);
+    height: auto;
+    flex: none;
+    overflow: visible;
+  }
+  .ck-curve {
+    fill: none;
+    stroke: var(--ck-green);
+    stroke-width: 4;
+    stroke-linecap: round;
+  }
+  .ck-curve-dot {
+    fill: var(--ck-green);
+  }
+  .ck-market p {
+    display: grid;
+    gap: 4px;
+    font-weight: 600;
+    color: var(--ck-ink-2);
+  }
+  .ck-market b {
+    font-size: clamp(2rem, 4.6vw, 3.6rem);
+    font-weight: 900;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--ck-ink);
+  }
+  .ck-market small {
+    font-size: 0.8125rem;
+    color: var(--ck-ink-3);
+  }
+  .ck-stats-icons {
+    position: absolute;
+    right: var(--ck-pad);
+    top: 18%;
+    width: clamp(160px, 26vw, 360px);
+    height: auto;
+    opacity: 0.9;
+  }
+  .ck-source {
+    margin-top: 40px;
+    font-size: 0.8125rem;
+    color: var(--ck-ink-3);
+  }
+
+  /* heard: quotes as thought clouds around a worried diner */
+  .ck-heard {
+    display: grid;
+    place-items: center;
+  }
+  .ck-heard-h {
+    position: absolute;
+    top: clamp(28px, 6vh, 64px);
+    left: var(--ck-pad);
+  }
+  .ck-heard-fig {
+    width: clamp(170px, 22vw, 280px);
+    height: auto;
+  }
+  .ck-bubble {
+    position: absolute;
+    max-width: 280px;
+    padding: 18px 22px;
+    border-radius: 999px / 70%;
+    background: #fff;
+    box-shadow:
+      0 0 0 2px var(--ck-ink),
+      0 16px 30px -18px rgb(20 23 26 / 0.4);
+    font-size: clamp(0.9375rem, 1.25vw, 1.0625rem);
+    font-weight: 700;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .ck-bubble:nth-child(odd) {
+    box-shadow:
+      0 0 0 2px var(--ck-green),
+      0 16px 30px -18px rgb(20 23 26 / 0.4);
+  }
+  .ck-bubble:nth-child(3n) {
+    background: var(--ck-turmeric-tint);
+    box-shadow: 0 0 0 2px var(--ck-turmeric-deep);
+  }
+  .ck-bubble q {
+    quotes: '“' '”';
+  }
+  .ck-bubble span {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ck-ink-3);
+  }
+  .ck-bubble-1 { left: 7%; top: 20%; }
+  .ck-bubble-2 { right: 7%; top: 16%; }
+  .ck-bubble-3 { left: 4%; top: 48%; }
+  .ck-bubble-4 { right: 4%; top: 46%; }
+  .ck-bubble-5 { left: 14%; bottom: 10%; }
+  .ck-bubble-6 { right: 12%; bottom: 8%; }
+
+  /* assumptions board */
+  .ck-assume {
+    display: grid;
+    align-content: center;
+    gap: clamp(22px, 4vh, 40px);
+  }
+  .ck-notes {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: clamp(10px, 1.4vw, 18px);
+  }
+  .ck-note {
+    position: relative;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 14px;
+    background: var(--ck-turmeric-tint);
+    font-size: clamp(0.8125rem, 1.05vw, 0.9375rem);
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    box-shadow: 0 10px 18px -12px rgb(20 23 26 / 0.45);
+  }
+  .ck-note.is-risky {
+    background: #fff;
+    box-shadow:
+      inset 0 0 0 2px var(--ck-turmeric-deep),
+      0 10px 18px -12px rgb(20 23 26 / 0.45);
+  }
+  .ck-note-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--ck-turmeric-deep);
+    color: #fff;
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ck-tick {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--ck-green);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 900;
+  }
+
+  /* observations */
+  .ck-obs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(14px, 2vw, 28px);
+  }
+  .ck-obs li {
+    display: grid;
+    justify-items: center;
+    align-content: start;
+    gap: 16px;
+    padding: 26px 18px;
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-weight: 700;
+    font-size: 1.0625rem;
+    line-height: 1.3;
+    text-align: center;
+  }
+  .ck-obs img,
+  .ck-ico {
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+  }
+  .ck-ico {
+    fill: none;
+    stroke: var(--ck-ink);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---------- define ---------- */
+  .ck-persona-card {
+    display: grid;
+    grid-template-columns: minmax(160px, 300px) 1fr;
+    align-items: center;
+    gap: clamp(24px, 5vw, 72px);
+    padding: clamp(26px, 4vw, 56px);
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule), 0 30px 60px -40px rgb(20 23 26 / 0.4);
+  }
+  .ck-persona-fig {
+    width: 100%;
+    height: auto;
+  }
+  .ck-persona-name {
+    margin-top: 8px;
+    font-size: clamp(2rem, 4.4vw, 3.6rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+  .ck-persona-quote {
+    margin-top: 12px;
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 700;
+    color: var(--ck-green);
+  }
+  .ck-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .ck-chips li {
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: var(--ck-turmeric-tint);
+    font-weight: 700;
+    font-size: 0.9375rem;
+  }
+  .ck-persona-meta {
+    margin-top: 22px;
+    font-size: 0.875rem;
+    color: var(--ck-ink-3);
+  }
+
+  .ck-spec {
+    display: grid;
+    align-content: center;
+    gap: 28px;
+  }
+  .ck-spec-track {
+    position: relative;
+    height: 18px;
+    border-radius: 99px;
+    background: rgb(20 23 26 / 0.08);
+  }
+  .ck-spec-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--p, 4%);
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--ck-green), var(--ck-turmeric));
+  }
+  .ck-spec-knob {
+    position: absolute;
+    top: 50%;
+    left: var(--p, 4%);
+    width: 46px;
+    height: 46px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+      0 0 0 3px var(--ck-ink),
+      0 10px 22px -10px rgb(20 23 26 / 0.5);
+  }
+  .ck-spec-ends {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .ck-spec-ends p {
+    display: grid;
+    gap: 2px;
+    color: var(--ck-ink-2);
+    font-weight: 600;
+  }
+  .ck-spec-ends p:last-child {
+    text-align: right;
+  }
+  .ck-spec-ends b {
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    font-weight: 800;
+    color: var(--ck-ink);
+  }
+  .ck-spec-verdict {
+    justify-self: center;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-align: center;
+  }
+
+  .ck-needs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(14px, 2vw, 24px);
+  }
+  .ck-needs li {
+    display: grid;
+    gap: 16px;
+    align-content: start;
+    padding: 26px 22px 30px;
+    border-radius: 22px;
+    background: var(--ck-green);
+    color: #fff;
+    font-size: clamp(1.1rem, 1.6vw, 1.375rem);
+    font-weight: 800;
+    line-height: 1.15;
+  }
+  .ck-needs span {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--ck-turmeric);
+    color: var(--ck-ink);
+    font-size: 1rem;
+  }
+
+  .ck-hmw {
+    display: grid;
+    align-content: center;
+    gap: clamp(26px, 5vh, 48px);
+  }
+  .ck-hmw-q {
+    max-width: 22ch;
+    font-size: clamp(2rem, 5vw, 4.4rem);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+  .ck-hmw-q .w {
+    opacity: 0.16;
+  }
+  .ck-insight {
+    max-width: 36ch;
+    padding-left: 22px;
+    border-left: 4px solid var(--ck-turmeric);
+    font-size: clamp(1.2rem, 2.1vw, 1.75rem);
+    font-weight: 700;
+    line-height: 1.25;
+  }
+
+  .ck-shift {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    text-align: center;
+  }
+  .ck-shift-a {
+    position: relative;
+    font-size: clamp(1.8rem, 4.4vw, 3.8rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .ck-strike {
+    position: absolute;
+    left: -2%;
+    top: 54%;
+    width: 104%;
+    height: 6px;
+    border-radius: 99px;
+    background: var(--ck-ink);
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+  .ck-shift-arrow {
+    width: clamp(160px, 22vw, 300px);
+    height: auto;
+    overflow: visible;
+    fill: none;
+    stroke: var(--ck-turmeric);
+    stroke-width: 9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ck-shift-b {
+    font-size: clamp(2.2rem, 6vw, 5.4rem);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+
+  .ck-recipe {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: clamp(28px, 4vw, 56px);
+    border-radius: 6px;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px var(--ck-rule),
+      0 30px 60px -40px rgb(20 23 26 / 0.45);
+    background-image: repeating-linear-gradient(transparent 0 46px, rgb(51 113 64 / 0.1) 46px 47px);
+  }
+  .ck-recipe-goal {
+    margin-top: 10px;
+    font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .ck-steps {
+    display: grid;
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .ck-steps li {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
+    font-weight: 700;
+  }
+  .ck-box {
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: var(--ck-green);
+    box-shadow: inset 0 0 0 2px var(--ck-green);
+    position: relative;
+  }
+  .ck-box::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 4px;
+    width: 7px;
+    height: 13px;
+    border: solid #fff;
+    border-width: 0 3px 3px 0;
+    rotate: 45deg;
+  }
+
+  /* ---------- develop ---------- */
+  .ck-ideas {
+    display: grid;
+    align-content: center;
+    gap: clamp(18px, 3vh, 32px);
+  }
+  .ck-wall {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: clamp(8px, 1.2vw, 16px);
+  }
+  .ck-idea {
+    position: relative;
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 10px;
+    rotate: var(--r);
+    background: #fff;
+    font-size: clamp(0.75rem, 0.98vw, 0.9375rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    box-shadow:
+      0 0 0 1px var(--ck-rule),
+      0 10px 18px -12px rgb(20 23 26 / 0.4);
+  }
+  .ck-idea:nth-child(even) {
+    background: var(--ck-turmeric-tint);
+  }
+  .ck-idea.is-keep {
+    box-shadow:
+      0 0 0 3px var(--ck-green),
+      0 10px 18px -12px rgb(20 23 26 / 0.4);
+  }
+  .ck-idea-x {
+    position: absolute;
+    left: 8%;
+    top: 50%;
+    width: 84%;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--ck-ink);
+    rotate: -18deg;
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+  .ck-idea-tag {
+    position: absolute;
+    left: 50%;
+    bottom: -14px;
+    translate: -50% 0;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: var(--ck-green);
+    color: #fff;
+    font-size: 0.6875rem;
+    white-space: nowrap;
+  }
+
+  .ck-sketches {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 2vw, 28px);
+    align-items: center;
+  }
+  .ck-sketches img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: 0 24px 40px -26px rgb(20 23 26 / 0.55);
+  }
+  .ck-sketches img:nth-child(1) {
+    rotate: -3deg;
+  }
+  .ck-sketches img:nth-child(3) {
+    rotate: 2.5deg;
+  }
+
+  .ck-flow {
+    display: grid;
+    justify-items: center;
+    gap: 26px;
+  }
+  .ck-flow-start {
+    padding: 14px 22px;
+    border-radius: 999px;
+    background: var(--ck-ink);
+    color: #fff;
+    font-weight: 600;
+  }
+  .ck-flow-start b {
+    color: var(--ck-turmeric);
+  }
+  .ck-flow-cols {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 6vw, 96px);
+    width: 100%;
+    max-width: 980px;
+  }
+  .ck-flow-col {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    padding-top: 6px;
+  }
+  .ck-flow-rail {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    z-index: -1;
+    width: 3px;
+    margin-left: -1.5px;
+    background: var(--ck-green);
+    transform-origin: top;
+  }
+  .ck-flow-col li {
+    padding: 12px 18px;
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 0 0 1.5px var(--ck-ink);
+    font-weight: 700;
+    font-size: clamp(0.8125rem, 1.1vw, 1rem);
+    text-align: center;
+    max-width: 100%;
+  }
+  .ck-flow-col .ck-flow-title {
+    background: var(--ck-green);
+    box-shadow: none;
+    color: #fff;
+    font-size: clamp(0.9375rem, 1.3vw, 1.125rem);
+  }
+  .ck-flow-col li.ck-flow-fork {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .ck-flow-fork span {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--ck-turmeric-tint);
+    box-shadow: 0 0 0 1.5px var(--ck-turmeric-deep);
+    font-size: clamp(0.75rem, 1vw, 0.875rem);
+  }
+
+  .ck-wires {
+    --ph-w: clamp(130px, 17vw, 236px);
+    display: flex;
+    justify-content: center;
+    gap: clamp(10px, 2.4vw, 36px);
+  }
+  .ck-wires :global(.ck-wire-cut) {
+    position: relative;
+  }
+  .ck-wires :global(.ck-wire-cut)::after {
+    content: 'Cut';
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    translate: -50% -50%;
+    rotate: -12deg;
+    padding: 6px 18px;
+    border: 3px solid var(--ck-ink);
+    border-radius: 8px;
+    background: var(--ck-turmeric);
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .ck-pivot {
+    display: grid;
+    align-content: center;
+    gap: clamp(16px, 3vh, 28px);
+  }
+  .ck-pivot-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: clamp(14px, 3vw, 40px);
+    margin-top: 10px;
+  }
+  .ck-pivot-card {
+    position: relative;
+    display: grid;
+    gap: 8px;
+    padding: clamp(20px, 3vw, 40px);
+    border-radius: 24px;
+    background: #fff;
+    box-shadow: 0 0 0 1.5px var(--ck-rule);
+    font-weight: 600;
+    color: var(--ck-ink-2);
+  }
+  .ck-pivot-label {
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ck-ink-3);
+  }
+  .ck-pivot-q {
+    font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--ck-ink);
+  }
+  .ck-pivot-card .ck-strike {
+    top: 50%;
+    left: 6%;
+    width: 88%;
+  }
+  .ck-toggle {
+    width: 88px;
+    height: 48px;
+    padding: 5px;
+    border-radius: 99px;
+    background: var(--ck-green);
+  }
+  .ck-toggle span {
+    display: block;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #fff;
+  }
+  .ck-pivot-chips {
+    margin-top: 6px;
+  }
+
+  /* ---------- deliver ---------- */
+  .ck-brand {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(18px, 3vw, 40px);
+  }
+  .ck-swatches {
+    display: grid;
+    gap: 12px;
+  }
+  .ck-swatches li {
+    display: grid;
+    align-content: end;
+    gap: 2px;
+    min-height: 120px;
+    padding: 18px 22px;
+    border-radius: 20px;
+    font-weight: 600;
+    transform-origin: left;
+  }
+  .ck-swatches b {
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
+  .sw-green {
+    background: var(--ck-green);
+    color: #fff;
+  }
+  .sw-white {
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .sw-turmeric {
+    background: var(--ck-turmeric);
+  }
+  .ck-type {
+    display: grid;
+    align-content: center;
+    justify-items: start;
+    gap: 6px;
+    padding: 28px 32px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-weight: 600;
+    color: var(--ck-ink-2);
+  }
+  .ck-type p {
+    display: grid;
+  }
+  .ck-type b {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: var(--ck-ink);
+  }
+  .ck-type-aa {
+    font-size: clamp(5rem, 11vw, 9rem);
+    font-weight: 900;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    color: var(--ck-ink) !important;
+  }
+  .ck-mood {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+  }
+
+  .ck-journey {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 20px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .ck-journey-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 20px;
+    padding: 0 var(--ck-pad);
+  }
+  .ck-journey-count {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ck-ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .ck-journey-count b {
+    font-size: 1.75rem;
+    color: var(--ck-green);
+  }
+  .ck-journey-track {
+    --ph-w: clamp(170px, min(20vw, 30svh), 260px);
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: clamp(28px, 4vw, 64px);
+    width: max-content;
+    padding: 0 var(--ck-pad);
+  }
+  .ck-journey-line {
+    position: absolute;
+    left: var(--ck-pad);
+    right: var(--ck-pad);
+    top: 50%;
+    height: 3px;
+    z-index: -1;
+    background: var(--ck-green);
+    transform-origin: left;
+  }
+  .ck-journey-step {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+  }
+  .ck-journey-step p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 6px;
+    border-radius: 99px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .ck-journey-step p span {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--ck-turmeric);
+    font-size: 0.75rem;
+    font-weight: 900;
+  }
+
+  .ck-phones {
+    --ph-w: clamp(150px, 19vw, 250px);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: clamp(14px, 3vw, 44px);
+  }
+  .ck-phones-4 {
+    --ph-w: clamp(130px, 16vw, 220px);
+  }
+  .ck-phones :global(.ck-p2) {
+    margin-top: 48px;
+  }
+  .ck-phones :global(.ck-p4) {
+    margin-top: 48px;
+  }
+
+  .ck-merch-grid {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: clamp(12px, 2vw, 24px);
+    align-items: center;
+  }
+  .ck-merch-grid img {
+    width: 100%;
+    height: auto;
+    border-radius: 18px;
+    box-shadow: 0 24px 46px -30px rgb(20 23 26 / 0.5);
+  }
+  .ck-merch-grid img:nth-child(1) { grid-column: 1 / 4; }
+  .ck-merch-grid img:nth-child(2) { grid-column: 4 / 7; }
+  .ck-merch-grid img:nth-child(3) { grid-column: 1 / 3; }
+  .ck-merch-grid img:nth-child(4) { grid-column: 3 / 5; }
+  .ck-merch-grid img:nth-child(5) { grid-column: 5 / 7; }
+
+  /* ---------- dessert ---------- */
+  .ck-again {
+    padding: clamp(100px, 18vh, 200px) var(--ck-pad) clamp(40px, 7vh, 80px);
+    text-align: center;
+    font-size: clamp(2.4rem, 7vw, 6rem);
+    font-weight: 900;
+    letter-spacing: -0.045em;
+    line-height: 1;
+  }
+  .ck-finale {
+    position: relative;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 18px;
+    min-height: min(var(--stage-h), 680px);
+    margin: 0 var(--ck-pad);
+    border-radius: 28px;
+    overflow: hidden;
+    background: var(--ck-turmeric);
+    text-align: center;
+  }
+  .ck-finale-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.55;
+  }
+  .ck-finale-mark {
+    position: relative;
+    width: min(620px, 74%);
+    height: auto;
+    filter: brightness(0) invert(1);
+  }
+  .ck-finale p {
+    position: relative;
+    font-size: clamp(1.3rem, 2.6vw, 2.1rem);
+    font-weight: 800;
+    color: var(--ck-ink);
+  }
+  .ck-said {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .ck-said li {
+    padding: 22px;
+    border-radius: 22px 22px 22px 6px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .ck-said b {
+    color: var(--ck-green);
+  }
+  .ck-others {
+    padding: 40px var(--ck-pad) clamp(110px, 16vh, 150px);
+    border-top: 1px solid var(--ck-rule);
+    margin: 0 var(--ck-pad);
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .ck-others-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .ck-other {
+    display: grid;
+    gap: 4px;
+    padding: 22px 24px;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    color: var(--ck-ink);
+    font-family: inherit;
+    text-align: left;
+    transition:
+      transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.25s ease-out;
+  }
+  .ck-other span {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--ck-green);
+  }
+  .ck-other b {
+    font-size: 1.25rem;
+    font-weight: 900;
+  }
+  @media (hover: hover) {
+    .ck-other:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 0 2px var(--ck-green);
+    }
+  }
+
+  /* ---------- tablet / phone ---------- */
+  @media (max-width: 900px) {
+    .ck-notes {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .ck-note:nth-child(n + 10) {
+      display: none;
+    }
+    .ck-wall {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .ck-idea:nth-child(n + 13) {
+      display: none;
+    }
+    .ck-obs,
+    .ck-needs,
+    .ck-said {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .ck-brand {
+      grid-template-columns: 1fr;
+    }
+    .ck-persona-card {
+      grid-template-columns: 1fr;
+      justify-items: start;
+    }
+    .ck-persona-fig {
+      width: 150px;
+    }
+    .ck-stats-icons {
+      display: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .ck-pantry {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .ck-stat-list li {
+      grid-template-columns: 1fr;
+    }
+    .ck-stat-list b {
+      grid-row: auto;
+    }
+    .ck-market {
+      flex-direction: column;
+      align-items: start;
+    }
+    .ck-market svg {
+      width: 100%;
+    }
+    .ck-chead-art {
+      top: auto;
+      bottom: 34px;
+      translate: 0 0;
+      width: 130px;
+      opacity: 0.9;
+    }
+    /* quotes: a column of clouds below the figure */
+    .ck-heard {
+      align-content: start;
+      justify-items: center;
+      padding-top: 24px;
+    }
+    .ck-heard-h {
+      position: static;
+      justify-self: start;
+    }
+    .ck-heard-fig {
+      width: 110px;
+      margin: 10px 0;
+    }
+    .ck-bubbles {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+    }
+    .ck-bubble {
+      position: static;
+      max-width: none;
+      padding: 12px 16px;
+      border-radius: 22px;
+      font-size: 0.875rem;
+    }
+    .ck-bubble:nth-child(even) {
+      margin-left: 18%;
+    }
+    .ck-bubble:nth-child(odd) {
+      margin-right: 18%;
+    }
+    .ck-note {
+      font-size: 0.6875rem;
+      padding: 8px;
+    }
+    .ck-note-tag {
+      display: none;
+    }
+    .ck-tick {
+      width: 24px;
+      height: 24px;
+      top: -8px;
+      right: -8px;
+      font-size: 0.75rem;
+    }
+    .ck-wall {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .ck-idea {
+      font-size: 0.6875rem;
+    }
+    .ck-idea-tag {
+      font-size: 0.5625rem;
+      padding: 3px 6px;
+    }
+    .ck-pivot-row {
+      grid-template-columns: 1fr;
+      justify-items: stretch;
+    }
+    .ck-toggle {
+      justify-self: center;
+    }
+    .ck-pivot-chips li:nth-child(n + 4) {
+      display: none;
+    }
+    .ck-sketches,
+    .ck-merch-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .ck-sketches img:nth-child(3) {
+      display: none;
+    }
+    .ck-merch-grid img {
+      grid-column: auto !important;
+    }
+    .ck-merch-grid img:nth-child(5) {
+      display: none;
+    }
+    .ck-phones-4 :global(.ck-p4) {
+      display: none;
+    }
+    .ck-wires :global(.ph:nth-child(4)) {
+      display: none;
+    }
+    .ck-flow-col li {
+      padding: 10px 10px;
+    }
+    .ck-others-grid {
+      grid-template-columns: 1fr;
+    }
+    .ck-dock-stage {
+      display: none;
+    }
+    .ck-dock a {
+      padding: 8px 11px;
+    }
+    .ck-journey-track {
+      --ph-w: min(56vw, 30svh);
+    }
+    /* clusters of phones shrink to share the width */
+    .ck-wires,
+    .ck-phones,
+    .ck-phones-4 {
+      --ph-w: 25vw;
+      gap: 3.5vw;
+    }
+    .ck-phones :global(.ck-p2),
+    .ck-phones :global(.ck-p4) {
+      margin-top: 24px;
+    }
+  }
+</style>

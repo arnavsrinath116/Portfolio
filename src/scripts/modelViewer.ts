@@ -154,12 +154,22 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
   gltf.scene.traverse((o) => {
     if ((o as import('three').Mesh).isMesh) meshes.push(o as import('three').Mesh);
   });
+  // parts the Opacity button turns see-through (e.g. a casing's shell and lid), so what's inside shows
+  const fadeNames = (fig.dataset.fade ?? '').split(',').filter(Boolean);
+  const fadeSolid = solid.clone();
+  fadeSolid.transparent = true;
+  const fadeEdge = edgeMat.clone();
+  let fade = 1;
+  let fadeTarget = 1;
   for (const m of meshes) {
     m.updateWorldMatrix(true, false);
     const geom = m.geometry.clone().applyMatrix4(m.matrixWorld);
-    model.add(new THREE.Mesh(geom, solid), new THREE.Mesh(geom, cut));
+    const name = `${m.name} ${m.parent?.name ?? ''}`;
+    const faded = fadeNames.some((n) => name.includes(n));
+    model.add(new THREE.Mesh(geom, faded ? fadeSolid : solid));
+    if (!faded) model.add(new THREE.Mesh(geom, cut));
     // creases only: smooth curves stay clean. Yield between parts so a big assembly never blocks a frame.
-    model.add(new THREE.LineSegments(new THREE.EdgesGeometry(geom, EDGE_ANGLE), edgeMat));
+    model.add(new THREE.LineSegments(new THREE.EdgesGeometry(geom, EDGE_ANGLE), faded ? fadeEdge : edgeMat));
     await new Promise((r) => setTimeout(r, 0));
   }
   scene.add(model);
@@ -278,6 +288,13 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
   // the hint names the right key for this keyboard
   if (!/Mac|iPhone|iPad/.test(navigator.platform)) fig.querySelectorAll('[data-mv-key]').forEach((k) => (k.textContent = 'Ctrl'));
 
+  const fadeBtn = fig.querySelector<HTMLButtonElement>('[data-mv-fade]');
+  fadeBtn?.addEventListener('click', () => {
+    const on = fadeBtn.getAttribute('aria-pressed') !== 'true';
+    fadeBtn.setAttribute('aria-pressed', String(on));
+    fadeTarget = on ? 0.18 : 1;
+  });
+
   // reveal: the canvas fades up as the camera settles in, and the section sweeps through
   stage.classList.add('is-ready');
   if (reduce) {
@@ -308,6 +325,12 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
         }
       }
       plane.constant += (planeTarget - plane.constant) * (1 - Math.exp(-dt * (reduce ? 60 : 2.6)));
+      if (Math.abs(fadeTarget - fade) > 0.001) {
+        fade += (fadeTarget - fade) * (1 - Math.exp(-dt * (reduce ? 60 : 6)));
+        fadeSolid.opacity = fade;
+        fadeSolid.depthWrite = fade > 0.98; // see-through parts mustn't hide what's behind them
+        fadeEdge.opacity = 0.55 * Math.max(fade, 0.45);
+      }
       controls.update(dt);
       renderer.render(scene, camera);
     },

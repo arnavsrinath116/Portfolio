@@ -11,7 +11,7 @@ const NS = 'http://www.w3.org/2000/svg';
 type P = { x: number; y: number };
 
 /** Smooth path through points (Catmull–Rom → cubic Bézier). */
-function spline(pts: P[]) {
+export function spline(pts: P[]) {
   let d = `M${pts[0].x},${pts[0].y}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[i - 1] ?? pts[i];
@@ -25,13 +25,63 @@ function spline(pts: P[]) {
   return d;
 }
 
+/**
+ * The same curve as spline(), evaluated in JS: the path string plus a lookup
+ * table of points and running length. Reading positions from the table is
+ * constant-time; SVG getPointAtLength() re-walks the whole path on every call,
+ * which on a long line costs milliseconds per call.
+ */
+export function sampleSpline(pts: P[], spacing = 6) {
+  const xs: number[] = [pts[0].x];
+  const ys: number[] = [pts[0].y];
+  const ls: number[] = [0];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] ?? pts[i];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[i + 2] ?? p2;
+    const c1 = { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 };
+    const c2 = { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 };
+    // a sample every few pixels along the segment, so steps are never visible
+    const steps = Math.min(600, Math.max(12, Math.ceil(Math.hypot(p2.x - p1.x, p2.y - p1.y) / spacing)));
+    for (let k = 1; k <= steps; k++) {
+      const t = k / steps;
+      const u = 1 - t;
+      const x = u * u * u * p1.x + 3 * u * u * t * c1.x + 3 * u * t * t * c2.x + t * t * t * p2.x;
+      const y = u * u * u * p1.y + 3 * u * u * t * c1.y + 3 * u * t * t * c2.y + t * t * t * p2.y;
+      const n = xs.length - 1;
+      ls.push(ls[n] + Math.hypot(x - xs[n], y - ys[n]));
+      xs.push(x);
+      ys.push(y);
+    }
+  }
+  return { d: spline(pts), xs, ys, ls, total: ls[ls.length - 1] };
+}
+
+/** A point at a given length along a sampled spline, blended between the two nearest samples. */
+export function pointAtLength(s: { xs: number[]; ys: number[]; ls: number[] }, len: number) {
+  const { xs, ys, ls } = s;
+  if (len <= 0) return { x: xs[0], y: ys[0] };
+  let lo = 0;
+  let hi = ls.length - 1;
+  if (len >= ls[hi]) return { x: xs[hi], y: ys[hi] };
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (ls[mid] < len) lo = mid;
+    else hi = mid;
+  }
+  const f = (len - ls[lo]) / (ls[hi] - ls[lo] || 1);
+  return { x: xs[lo] + (xs[hi] - xs[lo]) * f, y: ys[lo] + (ys[hi] - ys[lo]) * f };
+}
+
 export function initGuide({ reduce }: { reduce: boolean }) {
   const flow = document.querySelector<HTMLElement>('[data-flow]');
   const svg = document.querySelector<SVGSVGElement>('[data-guide]');
   const head = document.querySelector<HTMLElement>('.work-head');
-  const product = document.querySelector<HTMLElement>('[data-panel="product"]');
-  const ux = document.querySelector<HTMLElement>('[data-panel="ux"]');
-  const hmi = document.querySelector<HTMLElement>('[data-panel="hmi"]');
+  // the three work tiles by position: the lead slab, then the two stacked beside it
+  const product = document.querySelector<HTMLElement>('[data-slot="a"]');
+  const ux = document.querySelector<HTMLElement>('[data-slot="b"]');
+  const hmi = document.querySelector<HTMLElement>('[data-slot="c"]');
   const skills = document.querySelector<HTMLElement>('[data-skills]');
   const contact = document.querySelector<HTMLElement>('[data-contact]');
   if (!flow || !svg || !head || !product || !ux || !hmi || !contact) return;
@@ -54,7 +104,8 @@ export function initGuide({ reduce }: { reduce: boolean }) {
     // layout box, ignoring any scroll-driven y offset GSAP has applied
     const rel = (el: HTMLElement) => {
       const r = el.getBoundingClientRect();
-      const dy = parseFloat(getComputedStyle(el).getPropertyValue('--rise')) || 0;
+      const t = getComputedStyle(el).transform; // live translate, transitions included
+      const dy = t && t !== 'none' ? new DOMMatrixReadOnly(t).m42 : 0;
       return { l: r.left - f.left, r: r.right - f.left, t: r.top - f.top - dy, b: r.bottom - f.top - dy, w: r.width, h: r.height };
     };
     const W = f.width;
@@ -85,13 +136,16 @@ export function initGuide({ reduce }: { reduce: boolean }) {
         : [{ x: margin, y: (Math.max(pr.b, hm.b) + c.t) / 2 }]),
       { x: c.l + c.w * 0.6, y: c.t }, // plugs into the contact slab
     ];
-    path.setAttribute('d', spline(pts));
-    const total = path.getTotalLength();
+    const table = sampleSpline(pts);
+    const { d, total } = table;
+    path.setAttribute('d', d);
+    path.setAttribute('pathLength', String(total)); // dash units match the table's length
     path.style.strokeDasharray = `${total}`;
+
 
     const set = (p: number) => {
       path.style.strokeDashoffset = `${total * (1 - p)}`;
-      const pt = path.getPointAtLength(total * p);
+      const pt = pointAtLength(table, total * p);
       for (const el of [tip, halo]) {
         el.setAttribute('cx', String(pt.x));
         el.setAttribute('cy', String(pt.y));

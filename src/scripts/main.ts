@@ -11,6 +11,7 @@ import { initDims } from './dims';
 import { initProjectModal } from './projectModal';
 import { initWire } from './wire';
 import { initModelViewers } from './modelViewer';
+import { initCookedCase } from './cookedCase';
 import { initFooter } from './footer';
 import { initMenu } from './menu';
 import { initHeader } from './header';
@@ -44,6 +45,7 @@ document.fonts.ready.then(() => {
   initDims({ reduce });
   initWire({ reduce });
   initModelViewers({ reduce });
+  initCookedCase({ reduce });
   initProjectModal({ lenis, reduce });
   initFooter({ reduce });
   playIntro();

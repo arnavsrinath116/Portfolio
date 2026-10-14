@@ -2,11 +2,8 @@
 import Icon from './Icon.astro';
 import { projects } from '../data/projects';
 
-const notes: Record<string, string> = {
-  product: 'Object, CAD and prototype',
-  ux: 'Research, flows and screens',
-  hmi: 'Controls and the interface between',
-};
+// tiles are laid out by position: the first is the large lead slab, the next two stack beside it
+const slots = ['a', 'b', 'c'];
 ---
 
 <section class="work" id="work" aria-labelledby="work-title" data-work>
@@ -20,20 +17,26 @@ const notes: Record<string, string> = {
 
   <div class="work-grid" data-rise-group>
     {
-      projects.map((p) => (
+      projects.map((p, i) => (
         <a
           href={`#project-${p.slug}`}
           data-open-project={p.slug}
-          class={`panel panel-${p.slug}`}
+          class={`panel panel-${slots[i]}`}
           data-panel={p.slug}
-          data-dim={p.slug === 'product' ? 'h-left' : undefined}
+          data-slot={slots[i]}
+          data-dim={i === 0 ? 'h-left' : undefined}
         >
-          <div class="panel-frame" aria-hidden="true" />
+          {p.cover ? (
+            <div class="panel-frame panel-cover">
+              <img src={p.cover.src} alt={p.cover.alt} width="2000" height="1160" loading="lazy" decoding="async" />
+            </div>
+          ) : (
+            <div class="panel-frame" aria-hidden="true" />
+          )}
           <div class="panel-meta">
-            <h3 class="panel-title">
-              {p.discipline}
-            </h3>
-            <p class="panel-note">{notes[p.slug]}</p>
+            <p class="panel-disc">{p.discipline}</p>
+            <h3 class="panel-title">{p.title}</h3>
+            <p class="panel-note">{p.note}</p>
             <p class="panel-status">
               <span class="status-dot" aria-hidden="true" />
               Open case study
@@ -92,16 +95,16 @@ const notes: Record<string, string> = {
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
   }
-  .panel-product {
+  .panel-a {
     grid-row: 1 / span 2;
     background: var(--slate-3);
     min-height: clamp(420px, 62vh, 640px);
   }
-  .panel-ux {
+  .panel-b {
     background: var(--slate-2);
     min-height: clamp(220px, 30vh, 300px);
   }
-  .panel-hmi {
+  .panel-c {
     background: var(--slate-4);
     min-height: clamp(220px, 30vh, 300px);
   }
@@ -110,6 +113,27 @@ const notes: Record<string, string> = {
     border: 1px dashed rgb(230 220 200 / 0.16);
     border-radius: 8px;
     min-height: 90px;
+  }
+  /* a real cover replaces the dashed placeholder; it eases in a touch on hover */
+  .panel-cover {
+    position: relative;
+    overflow: hidden;
+    border: 0;
+    background: #f4f5f2;
+  }
+  .panel-cover img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 30% 50%;
+    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (hover: hover) {
+    a.panel:hover .panel-cover img {
+      transform: scale(1.03);
+    }
   }
   .panel-meta {
     display: grid;
@@ -121,6 +145,10 @@ const notes: Record<string, string> = {
     font-size: clamp(1.25rem, 1.9vw, 1.75rem);
     letter-spacing: -0.02em;
     text-transform: uppercase;
+  }
+  .panel-disc {
+    font-size: 0.8125rem;
+    color: var(--orange);
   }
   .panel-note {
     color: var(--sand-2);
@@ -178,7 +206,7 @@ const notes: Record<string, string> = {
     .work-grid {
       grid-template-columns: 1fr;
     }
-    .panel-product {
+    .panel-a {
       grid-row: auto;
       min-height: 360px;
     }

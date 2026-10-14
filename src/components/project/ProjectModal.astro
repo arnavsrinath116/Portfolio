@@ -1,5 +1,6 @@
 ---
 import ProjectContent from './ProjectContent.astro';
+import CookedCase from './cooked/CookedCase.astro';
 import SkillContent from './SkillContent.astro';
 import { projects } from '../../data/projects';
 import { skills } from '../../data/skills';
@@ -15,7 +16,7 @@ import { skills } from '../../data/skills';
       </svg>
     </button>
     <div class="pm-scroll" data-pm-scroll data-lenis-prevent>
-      {projects.map((p) => <ProjectContent project={p} />)}
+      {projects.map((p) => (p.slug === 'cooked' ? <CookedCase project={p} /> : <ProjectContent project={p} />))}
       {skills.map((s) => <SkillContent skill={s} />)}
     </div>
   </div>
@@ -92,6 +93,33 @@ import { skills } from '../../data/skills';
   }
   .pm-close:focus-visible {
     outline-offset: 3px;
+  }
+  .pm-card {
+    transition: background-color 0.45s ease-out; /* switching between a dark and a light case study */
+  }
+  .pm-card.is-moving {
+    transition: none;
+  }
+
+  /* light case studies (data-theme="light" on the article): the card flips to slate white */
+  .pm-card[data-theme='light'] {
+    background: #f4f5f2;
+    border-top-color: rgb(20 23 26 / 0.06);
+  }
+  .pm-card[data-theme='light'] .pm-close {
+    background: #ffffff;
+    border-color: rgb(20 23 26 / 0.14);
+    color: #14171a;
+    box-shadow: 0 6px 18px -8px rgb(20 23 26 / 0.35);
+  }
+  @media (hover: hover) {
+    .pm-card[data-theme='light'] .pm-close:hover {
+      color: #337140;
+      border-color: #337140;
+    }
+  }
+  .pm-card[data-theme='light'] .pm-scroll {
+    scrollbar-color: rgb(20 23 26 / 0.25) transparent;
   }
 
   /* while a card is open the page header steps back */

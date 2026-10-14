@@ -20,6 +20,8 @@ export interface SkillModel {
   parts: number;
   /** open with a section cut through the long axis, so the inside shows */
   section?: boolean;
+  /** parts (by name, as exported from Fusion) that an Opacity button turns see-through */
+  fade?: string[];
 }
 
 export interface Skill {
@@ -76,7 +78,7 @@ export const skills: Skill[] = [
         kind: 'Enclosure',
         year: 'Year TBD',
         caption: 'A printed enclosure with a lid, a dot-matrix display holder and mounts for the electronics inside.',
-        model: { src: '/models/blackbox.glb', size: [64, 64, 72], parts: 6, section: true },
+        model: { src: '/models/blackbox.glb', size: [64, 64, 72], parts: 6, fade: ['Shell', 'Lid'] },
       },
     ],
     // the product tile: square face, folded strip on its left, bold "F" top-left

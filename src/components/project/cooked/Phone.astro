@@ -1,0 +1,41 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  /** the image already includes a device frame (the wireframes) */
+  framed?: boolean;
+  class?: string;
+}
+const { src, alt, framed = false, class: cls } = Astro.props;
+const w = framed ? 466 : 402;
+const h = framed ? 920 : 874;
+---
+
+<figure class:list={['ph', { 'ph-framed': framed }, cls]}>
+  <img src={`/projects/cooked/${src}.webp`} alt={alt} width={w} height={h} loading="lazy" decoding="async" />
+</figure>
+
+<style>
+  .ph {
+    margin: 0;
+    width: var(--ph-w, 236px);
+    flex: none;
+  }
+  .ph img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: calc(var(--ph-w, 236px) * 0.12);
+    background: #fff;
+    box-shadow:
+      0 0 0 5px #14171a,
+      0 0 0 6px rgb(20 23 26 / 0.4),
+      0 28px 50px -22px rgb(20 23 26 / 0.45);
+  }
+  .ph-framed img {
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    filter: drop-shadow(0 22px 30px rgb(20 23 26 / 0.22));
+  }
+</style>

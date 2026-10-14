@@ -27,8 +27,11 @@ export function initDims({ reduce }: { reduce: boolean }) {
     const narrow = f.width < 700; // phone margins are too tight for vertical dimensions
 
     for (const el of targets) {
-      // layout box (minus any scroll-driven y offset), or the lettering's extent
-      const dy = parseFloat(getComputedStyle(el).getPropertyValue('--rise')) || 0;
+      // layout box, or the lettering's extent. Subtract the element's live translate (entrance
+      // rise, hover lift, and any CSS transition still running between them), not the variables:
+      // mid-transition the variable and the drawn position disagree
+      const t = getComputedStyle(el).transform;
+      const dy = t && t !== 'none' ? new DOMMatrixReadOnly(t).m42 : 0;
       let r = el.getBoundingClientRect();
       if (el.hasAttribute('data-dim-text')) {
         const range = document.createRange();

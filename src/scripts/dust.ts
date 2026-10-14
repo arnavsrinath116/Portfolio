@@ -145,13 +145,17 @@ export function initDust({ reduce }: { reduce: boolean }) {
     }
   }
 
+  const html = document.documentElement;
   const loop = (now: number) => {
     // never negative (rAF timestamps can precede the kick), never huge
     const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
     last = now;
     const t = (now - t0) / 1000;
-    step(dt, t);
-    draw(t);
+    // a case-study card covers the page: the dust holds still underneath and costs nothing
+    if (!html.classList.contains('pm-open')) {
+      step(dt, t);
+      draw(t);
+    }
     raf = requestAnimationFrame(loop);
   };
 

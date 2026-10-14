@@ -17,8 +17,12 @@ export interface Phase {
 
 export interface Project {
   slug: string;
-  discipline: 'Product' | 'UX' | 'HMI';
+  discipline: 'Product' | 'UX' | 'UI/UX' | 'HMI';
   title: string;
+  /** one line under the title on the work tile */
+  note: string;
+  /** cover image on the work tile (path under /public); without one the tile shows a dashed placeholder */
+  cover?: { src: string; alt: string };
   summary: string;
   role: string;
   team: string;
@@ -62,14 +66,16 @@ const phases = (): Phase[] => [
 
 export const projects: Project[] = [
   {
-    slug: 'product',
-    discipline: 'Product',
-    title: 'Product project',
-    summary: 'One-line summary of the product project: what it is and who it is for.',
+    slug: 'cooked',
+    discipline: 'UI/UX',
+    title: 'Cooked',
+    note: 'Home chefs, your way',
+    cover: { src: '/projects/cooked/cover.webp', alt: 'Cooked: the wordmark beside three app screens' },
+    summary: 'An app that lets people outsource cooking without giving up control of their food.',
     role: 'Role TBD',
     team: 'Team TBD',
-    duration: 'Duration TBD',
-    tools: ['Fusion 360'],
+    duration: '4 months',
+    tools: ['Figma', 'FigJam'],
     phases: phases(),
     outcome: 'What happened in the end: results you can honestly state.',
     learnings: 'What you would do differently next time.',
@@ -78,6 +84,7 @@ export const projects: Project[] = [
     slug: 'ux',
     discipline: 'UX',
     title: 'UX project',
+    note: 'Research, flows and screens',
     summary: 'One-line summary of the UX project: what it is and who it is for.',
     role: 'Role TBD',
     team: 'Team TBD',
@@ -91,6 +98,7 @@ export const projects: Project[] = [
     slug: 'hmi',
     discipline: 'HMI',
     title: 'HMI project',
+    note: 'Controls and the interface between',
     summary: 'One-line summary of the HMI project: what it is and who it is for.',
     role: 'Role TBD',
     team: 'Team TBD',

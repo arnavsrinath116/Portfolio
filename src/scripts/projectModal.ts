@@ -49,6 +49,17 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     card.style.cssText = prevT;
     return r;
   };
+  // while the card morphs, its content keeps one fixed size and is only clipped: re-laying out
+  // a long case study at every in-between size is what made opening stutter
+  const pinContent = (w: number, h: number) => {
+    scroller.style.right = scroller.style.bottom = 'auto';
+    scroller.style.width = `${w}px`;
+    scroller.style.height = `${h}px`;
+  };
+  const unpinContent = () => {
+    scroller.style.right = scroller.style.bottom = scroller.style.width = scroller.style.height = '';
+  };
+
   const place = (r: DOMRect, radius: number) => {
     card.style.top = `${r.top}px`;
     card.style.left = `${r.left}px`;
@@ -98,11 +109,19 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     return el.getBoundingClientRect().top - scroller.getBoundingClientRect().top + scroller.scrollTop - pinned;
   };
 
+  // a case study can bring its own world: data-theme on the article (e.g. "light") restyles the card
+  const cardBg = (article: HTMLElement) =>
+    article.dataset.cardBg || getComputedStyle(document.documentElement).getPropertyValue('--slate-3').trim();
+  // the article is laid out and on screen: scroll-driven case studies (re)measure on this
+  const announce = (type: 'pm:shown' | 'pm:hidden', slug: string) =>
+    document.dispatchEvent(new CustomEvent(type, { detail: { slug, scroller } }));
+
   const show = (slug: string) => {
     articles.forEach((a, s) => (a.hidden = s !== slug));
     currentSlug = slug;
     scroller.scrollTop = 0;
     const article = articles.get(slug)!;
+    card.dataset.theme = article.dataset.theme ?? '';
     track(article);
     return article;
   };
@@ -134,6 +153,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     const start = slabOf(from)?.getBoundingClientRect();
     if (start && !reduce) {
       place(start, 14);
+      pinContent(end.width, end.height);
       card.classList.add('is-moving');
       card.style.backgroundColor = slabColor(from);
       from!.style.visibility = 'hidden';
@@ -146,7 +166,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
         width: end.width,
         height: end.height,
         borderRadius: 18,
-        backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--slate-3').trim(),
+        backgroundColor: cardBg(article),
         duration: 0.8,
         ease: 'expo.inOut',
       });
@@ -156,10 +176,12 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     }
     card.style.cssText = '';
     card.classList.remove('is-moving');
+    unpinContent();
     gsap.to(closeBtn, { opacity: 1, duration: 0.3 });
     // the card is in place: from here it can be closed even while the text still rises
     busy = false;
     closeBtn.focus({ preventScroll: true });
+    announce('pm:shown', slug);
   }
 
   async function closeProject() {
@@ -169,6 +191,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     const rising = article.querySelectorAll('[data-pc-rise], .pc-body');
     gsap.killTweensOf(rising);
     document.dispatchEvent(new Event('fluid:release'));
+    announce('pm:hidden', currentSlug);
     closeBtn.style.pointerEvents = 'none';
     const target = source && document.contains(source) ? slabOf(source)!.getBoundingClientRect() : null;
     if (!reduce) {
@@ -179,7 +202,9 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
       });
     }
     if (target && !reduce) {
-      place(card.getBoundingClientRect(), 18);
+      const now = card.getBoundingClientRect();
+      place(now, 18);
+      pinContent(now.width, now.height);
       card.classList.add('is-moving');
       gsap.to(backdrop, { opacity: 0, duration: 0.6, ease: 'power2.inOut' });
       await gsap.to(card, {
@@ -195,9 +220,11 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     }
     if (source) source.style.visibility = '';
     closeBtn.style.pointerEvents = '';
+    card.dataset.theme = '';
     modal.hidden = true;
     card.style.cssText = '';
     card.classList.remove('is-moving');
+    unpinContent();
     gsap.set([backdrop], { opacity: 0 });
     gsap.set([closeBtn, ...article.querySelectorAll('[data-pc-rise], .pc-body, .pc-others')], { clearProps: 'opacity,transform' });
     observer?.disconnect();
@@ -218,11 +245,13 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     // the slab this card returns to on close follows the project now shown
     source = document.querySelector<HTMLElement>(`[data-open-project="${slug}"]`) ?? source;
     triggers().forEach((t) => (t.style.visibility = t === source ? 'hidden' : ''));
+    announce('pm:hidden', currentSlug);
     const article = show(slug);
     history.replaceState(null, '', hashOf(slug));
     busy = false;
     closeBtn.focus({ preventScroll: true });
     riseIn(article);
+    announce('pm:shown', slug);
   }
 
   // ---- wiring ----
