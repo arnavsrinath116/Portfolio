@@ -17,7 +17,7 @@ export interface Phase {
 
 export interface Project {
   slug: string;
-  discipline: 'Product' | 'UX' | 'UI/UX' | 'HMI';
+  discipline: 'Product' | 'UX' | 'UX/UI' | 'HMI';
   title: string;
   /** one line under the title on the work tile */
   note: string;
@@ -68,7 +68,7 @@ const phases = (): Phase[] => [
 export const projects: Project[] = [
   {
     slug: 'cooked',
-    discipline: 'UI/UX',
+    discipline: 'UX/UI',
     title: 'Cooked',
     note: 'Home chefs, your way',
     cover: { src: '/projects/cooked/cover.webp', alt: 'Cooked: the wordmark beside three app screens' },
@@ -89,7 +89,7 @@ export const projects: Project[] = [
     cover: { src: '/projects/tracker/final-1.webp', alt: 'The productivity tracker: a black box with a wood front and two ultrasonic sensor eyes', focus: '50% 42%' },
     summary: 'A desk device that gives students a small physical push to finish their assignments.',
     role: 'Role TBD',
-    team: 'Team of 4',
+    team: 'Solo',
     duration: '4 months',
     tools: ['ESP32', 'Arduino IDE', 'Fusion 360', 'Laser cutting', '3D printing'],
     phases: phases(),

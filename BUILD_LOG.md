@@ -26,6 +26,11 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
   - The pings run only while the demo is on screen.
 - **Scene sketches:** kept as the original pencil-on-paper photos, rotated upright and renamed by their handwritten labels (`scene-1-dorm`, `scene-2-library`, `scene-3-cafe`; the old file names had the café and dorm swapped).
 - **Whiteboard maths:** kept as the original photos.
+- **Solo project:** removed the Team field from the hero; the project data now says `team: 'Solo'`, and "The problem we picked up" reads "I".
+- **Exposure fix:** the side view through the clear panel (`final-3`) was washed out. Its black point is reset, the midtones are pulled down and colour is restored a little.
+- **Enclosure images cleaned up:**
+  - The block-out lost its black box and stray pink selection edges, and now sits on the card's panel colour with a matching border.
+  - The Fusion frame and laser-cut layout are cropped to the model and the sketch, with no Fusion panels or toolbars.
 - **Scans as linework:** the form sketches and the circuit diagram are processed into light linework on transparency (`*-ink.webp`), so they sit on the dark board instead of as white paper. The schematic is revealed by a copper scan line as you scroll.
 - **Hero:** removed the eyebrow line. Callouts are now vias on the part with 45° leader traces that draw out when the card opens.
 - **Ship it:** the stats grid is replaced by a "Done uploading." progress bar that fills with the scroll, followed by the summary line.
@@ -42,7 +47,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ## 2026-10-14 · Productivity tracker case study
 
-The UX placeholder tile is now **Productivity tracker** (Product, Makers Studio "Tinkering with Tech", 4 months, team of 4). It has its own case study, built from the A3/A4 boards, the code document and the Fusion model.
+The UX placeholder tile is now **Productivity tracker** (Product, Makers Studio "Tinkering with Tech", 4 months, solo project). It has its own case study, built from the A3/A4 boards, the code document and the Fusion model.
 
 - **Look:** a near-black circuit board (`data-theme="pcb"`, card `#101316`, faint 24 px grid). A copper trace routes down the left edge with 45° jogs and draws itself with the card's scroll, a spark at its tip. At each chapter a branch runs into the chapter's numbered pad, and its via lights up when the current arrives. An LED rail on the right tracks the chapter.
 - **Headings read as a build log**, with the Double Diamond stage in small print: Power on (Discover) → Read the signal (Define) → Breadboard it → Write the firmware (Develop) → Solder it down → Build the enclosure (Deliver) → Ship it (Outcome).

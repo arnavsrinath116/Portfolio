@@ -58,7 +58,6 @@ const commits = [
 
 const facts = [
   ['Duration', project.duration],
-  ['Team', project.team],
   ['Course', 'Makers Studio · Tinkering with Tech'],
   ['Built with', 'ESP32 · Arduino · Fusion 360 · laser cutter'],
 ].filter(([, v]) => v && !/TBD/i.test(v));
@@ -128,7 +127,7 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     <header class="tk-chead" data-tk-via>
       <p class="tk-pin"><span>01</span>Discover</p>
       <h3 class="tk-h" id="tk-power-t">Power on</h3>
-      <p class="tk-sub" data-a="up">The problem we picked up</p>
+      <p class="tk-sub" data-a="up">The problem I picked up</p>
     </header>
 
     <div class="tk-block">
@@ -432,9 +431,9 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     <div class="tk-block">
       <div class="tk-forms" data-a="stagger">
         <figure><img class="tk-ink" src={img('form-sketch-ink')} alt="Line sketches of the box form" width="1400" height="973" loading="lazy" decoding="async" /><figcaption>Form sketches</figcaption></figure>
-        <figure><img src={img('form-block')} alt="Simple block model with two sensor holes" width="790" height="616" loading="lazy" decoding="async" /><figcaption>Block-out</figcaption></figure>
-        <figure><img src={img('cad-3')} alt="Fusion 360 model of the frame" width="1280" height="705" loading="lazy" decoding="async" /><figcaption>Fusion 360 frame</figcaption></figure>
-        <figure><img src={img('laser')} alt="Laser-cut panel layout" width="1600" height="833" loading="lazy" decoding="async" /><figcaption>Laser-cut panels</figcaption></figure>
+        <figure><img class="tk-ink" src={img('form-block')} alt="Simple block model with two sensor holes" width="700" height="525" loading="lazy" decoding="async" /><figcaption>Block-out</figcaption></figure>
+        <figure><img src={img('cad-3')} alt="Fusion 360 model of the frame" width="680" height="510" loading="lazy" decoding="async" /><figcaption>Fusion 360 frame</figcaption></figure>
+        <figure><img src={img('laser')} alt="Laser-cut panel layout, dimensioned in Fusion 360" width="1100" height="775" loading="lazy" decoding="async" /><figcaption>Laser-cut panels</figcaption></figure>
       </div>
     </div>
 
