@@ -167,7 +167,7 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     const sc = scroller!;
     sc.addEventListener('scroll', onScroll, { passive: true });
     const ST = (trigger: Element, extra: ScrollTrigger.Vars = {}): ScrollTrigger.Vars => ({ trigger, scroller: sc, ...extra });
-    const enter = (el: Element) => ST(el, { start: 'top 92%', end: 'top 58%', scrub: 0.6 });
+    const enter = (el: Element) => ST(el, { start: 'top 94%', end: 'top 74%', scrub: 0.35 });
 
     // the course menu appears once the hero has scrolled away
     const dock = article.querySelector<HTMLElement>('[data-ck-dock]');
@@ -203,7 +203,7 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         const s = parseFloat(el.dataset.speed || '40');
         gsap.fromTo(el, { y: s }, { y: -s, ease: 'none', scrollTrigger: ST(el, { start: 'top bottom', end: 'bottom top', scrub: true }) });
       } else if (kind === 'fill')
-        gsap.from(el, { scaleX: 0, ease: 'power2.out', scrollTrigger: ST(el, { start: 'top 92%', end: 'top 55%', scrub: 0.6 }) });
+        gsap.from(el, { scaleX: 0, ease: 'power2.out', scrollTrigger: ST(el, { start: 'top 94%', end: 'top 72%', scrub: 0.35 }) });
       else if (kind === 'fill-x') gsap.from(el, { scaleX: 0.15, autoAlpha: 0, ease: 'power3.out', scrollTrigger: enter(el) });
       else if (kind === 'stagger')
         gsap.from(el.children, {
@@ -212,10 +212,10 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
           scale: 0.92,
           stagger: 0.18,
           ease: 'back.out(1.6)',
-          scrollTrigger: ST(el, { start: 'top 90%', end: 'top 55%', scrub: 0.6 }),
+          scrollTrigger: ST(el, { start: 'top 92%', end: 'top 70%', scrub: 0.35 }),
         });
       else if (kind === 'draw') {
-        const tl = gsap.timeline({ scrollTrigger: ST(el, { start: 'top 88%', end: 'top 45%', scrub: 0.6 }) });
+        const tl = gsap.timeline({ scrollTrigger: ST(el, { start: 'top 90%', end: 'top 62%', scrub: 0.35 }) });
         el.querySelectorAll<SVGGeometryElement>('path').forEach((p) => {
           const L = p.getTotalLength();
           tl.fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
@@ -233,7 +233,7 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       gsap.to(o, {
         v: 1,
         ease: 'power2.out',
-        scrollTrigger: ST(el, { start: 'top 92%', end: 'top 60%', scrub: 0.6 }),
+        scrollTrigger: ST(el, { start: 'top 94%', end: 'top 72%', scrub: 0.35 }),
         onUpdate: () => {
           el.textContent = prefix ? `${Math.round(low * o.v)}–${Math.round(to * o.v)}` : String(Math.round(to * o.v));
         },
@@ -243,18 +243,19 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     // ---- sticky scenes ----
     const scene = (name: string) => article.querySelector<HTMLElement>(`[data-scene="${name}"]`);
     const tlFor = (el: HTMLElement, extra: ScrollTrigger.Vars = {}) =>
-      gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: ST(el, { start: 'top top', end: 'bottom bottom', scrub: 0.7, ...extra }) });
+      gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: ST(el, { start: 'top top', end: 'bottom bottom', scrub: 0.4, ...extra }) });
     const q = <T extends Element = HTMLElement>(root: Element, sel: string) => Array.from(root.querySelectorAll<T>(sel));
-    const hold = (tl: gsap.core.Timeline, d = 0.6) => tl.to({}, { duration: d });
+    const hold = (tl: gsap.core.Timeline, d = 0.25) => tl.to({}, { duration: d });
 
     // starter: imagine → tired → no control → the seesaw tips to convenience
     const im = scene('imagine');
     if (im) {
       const [b1, b2, b3] = ['[data-b1]', '[data-b2]', '[data-b3]'].map((s) => im.querySelector(s)!);
-      const tl = tlFor(im);
-      tl.to(b1, { autoAlpha: 0, y: -70, duration: 1 }, 0.5)
+      // the opener reads at a calmer pace than the rest: each beat holds before the next
+      const tl = tlFor(im, { scrub: 0.8 });
+      tl.to(b1, { autoAlpha: 0, y: -70, duration: 1 }, 0.7)
         .fromTo(b2, { autoAlpha: 0, y: 70 }, { autoAlpha: 1, y: 0, duration: 1 })
-        .to(b2, { autoAlpha: 0, y: -70, duration: 1 }, '+=0.7')
+        .to(b2, { autoAlpha: 0, y: -70, duration: 1 }, '+=0.8')
         .fromTo(b3, { autoAlpha: 0, y: 70 }, { autoAlpha: 1, y: 0, duration: 1 })
         .fromTo(im.querySelector('[data-control]'), { scale: 1 }, { scale: 1.18, duration: 0.6, ease: 'back.out(3)' })
         .fromTo(im.querySelector('[data-seesaw]'), { autoAlpha: 0, y: 90 }, { autoAlpha: 1, y: 0, duration: 1 }, '<')
@@ -264,16 +265,14 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       hold(tl, 0.8);
     }
 
-    // discover: quotes pop out as thought clouds around the worried diner
-    const heard = scene('bubbles');
-    if (heard) {
-      const tl = tlFor(heard);
-      tl.from(heard.querySelector('[data-heard-fig]'), { scale: 0.8, autoAlpha: 0, duration: 0.6 });
-      q(heard, '[data-bubble]').forEach((b, i) => {
-        tl.from(b, { scale: 0.25, autoAlpha: 0, duration: 0.7, ease: 'back.out(1.8)', transformOrigin: i % 2 ? '0% 100%' : '100% 100%' }, '+=0.2');
-      });
-      hold(tl);
-    }
+    // discover: what we heard arrives as one slide: heading, figure and notes together
+    const heard = article.querySelector<HTMLElement>('[data-heard]');
+    if (heard)
+      gsap
+        .timeline({ scrollTrigger: ST(heard, { start: 'top 88%', end: 'top 50%', scrub: 0.35 }) })
+        .from(heard.querySelector('.ck-h'), { autoAlpha: 0, y: 30, duration: 0.4 })
+        .from(heard.querySelector('.ck-heard-fig'), { autoAlpha: 0, scale: 0.85, duration: 0.4 }, 0)
+        .from(q(heard, '.ck-quote'), { autoAlpha: 0, y: 40, rotation: 0, scale: 0.9, stagger: 0.06, duration: 0.45, ease: 'back.out(1.6)' }, 0.1);
 
     // discover: twenty notes on the board, five carried forward
     const as = scene('assumptions');
@@ -284,8 +283,8 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         y: -160,
         rotation: () => gsap.utils.random(-28, 28),
         autoAlpha: 0,
-        duration: 0.8,
-        stagger: 0.12,
+        duration: 0.6,
+        stagger: 0.05,
         ease: 'back.out(1.4)',
       })
         .to(
@@ -302,12 +301,12 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     const sp = scene('spectrum');
     if (sp) {
       const track = sp.querySelector('[data-spec-track]')!;
-      const tl = tlFor(sp);
-      tl.fromTo(track, { '--p': '4%' }, { '--p': '96%', duration: 1.2, ease: 'power1.inOut' })
-        .to(track, { '--p': '10%', duration: 1, ease: 'power1.inOut' })
-        .to(track, { '--p': '50%', duration: 0.8, ease: 'power2.out' })
-        .from(sp.querySelector('[data-spec-verdict]'), { autoAlpha: 0, y: 26, duration: 0.6 });
-      hold(tl, 0.5);
+      const tl = tlFor(sp, { scrub: 0.8 });
+      tl.fromTo(track, { '--p': '4%' }, { '--p': '96%', duration: 1.6, ease: 'power1.inOut' })
+        .to(track, { '--p': '10%', duration: 1.4, ease: 'power1.inOut' })
+        .to(track, { '--p': '50%', duration: 1.1, ease: 'power2.out' })
+        .from(sp.querySelector('[data-spec-verdict]'), { autoAlpha: 0, y: 26, duration: 0.8 });
+      hold(tl, 1);
     }
 
     // define: the HMW lights up word by word, then the insight lands
@@ -323,16 +322,16 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     // define: "delivered to me" is struck out, "made for me" arrives
     const sh = scene('shift');
     if (sh) {
-      const tl = tlFor(sh);
-      tl.from(sh.querySelector('[data-shift-a]'), { autoAlpha: 0, y: 30, duration: 0.6 })
-        .to(sh.querySelector('[data-strike]'), { scaleX: 1, duration: 0.6 })
-        .to(sh.querySelector('[data-shift-a]'), { opacity: 0.35, duration: 0.4 });
+      const tl = tlFor(sh, { scrub: 0.8 });
+      tl.from(sh.querySelector('[data-shift-a]'), { autoAlpha: 0, y: 30, duration: 0.8 })
+        .to(sh.querySelector('[data-strike]'), { scaleX: 1, duration: 1 }, '+=0.3')
+        .to(sh.querySelector('[data-shift-a]'), { opacity: 0.35, duration: 0.6 });
       q<SVGPathElement>(sh, '[data-arrow], [data-arrow-head]').forEach((p) => {
         const L = p.getTotalLength();
-        tl.fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, duration: 0.7 });
+        tl.fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1 });
       });
-      tl.from(sh.querySelector('[data-shift-b]'), { autoAlpha: 0, y: 34, scale: 0.9, duration: 0.8, ease: 'back.out(1.6)' });
-      hold(tl);
+      tl.from(sh.querySelector('[data-shift-b]'), { autoAlpha: 0, y: 34, scale: 0.9, duration: 1.1, ease: 'back.out(1.6)' });
+      hold(tl, 0.9);
     }
 
     // develop: ideas fly onto the wall, some get crossed out, three make it to the plate
@@ -346,8 +345,8 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         rotation: () => gsap.utils.random(-45, 45),
         scale: 0.5,
         autoAlpha: 0,
-        stagger: 0.07,
-        duration: 0.8,
+        stagger: 0.035,
+        duration: 0.6,
         ease: 'power3.out',
       })
         .to(q(id, '[data-cut]'), { scaleX: 1, stagger: 0.2, duration: 0.4 }, '+=0.3')

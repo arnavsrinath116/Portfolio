@@ -16,6 +16,77 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-14 · Cooked: course menu moved to a side rail
+
+- **Problem:** the course menu, a pill bar floating at the bottom of the card, sat over the booking journey's captions and read as clutter.
+- **Fix:** it is now a slim vertical rail on the card's right edge, at mid-height, sticky within the card's scroll:
+  - six small dots on a faint white capsule (so they read over photos and screens);
+  - the current course stretches into a green bar;
+  - names (course + Double Diamond stage) appear only on hover or keyboard focus, so nothing labels over the content;
+  - on phones it is dots only.
+- **Unchanged:** the links still jump to each course, and phase tracking still marks the current one (`is-active`, `aria-current`). It still appears once the hero has scrolled away.
+
+---
+
+## 2026-10-14 · Cooked: clean wireframes
+
+- **Problem:** the "Wireframes, round one" images were exports of the outer Figma frames, which carry a grainy, dithered device border, so they read as screenshots.
+- **Re-exported** only the inner 390×844 screens from the UI kit (`DietaryPreference`, `Dashboard`, `AvoidanceList`, `CuisineList`) as `ui-wf2-*.webp`, and deleted the old `ui-wf-*` files.
+- **Shown in the same CSS phone frame as the final screens**, with a caption under each (Diet / Home / What to avoid / Cuisine), like the booking journey.
+- **The dropped page** ("What to avoid") is dimmed and greyed with a small "Cut in testing" tag, in place of a big stamp covering the screen.
+- **Phones:** the wireframes sit two by two at a readable size, where before they were three tiny screens.
+- `Phone.astro` now takes an optional `w`/`h` for screens of other sizes.
+
+---
+
+## 2026-10-14 · Cooked: three story beats slowed back down
+
+The owner wanted the narrative moments to breathe while the rest stays fast.
+
+| Scene | Scroll length (screens) | Other changes |
+|---|---|---|
+| Imagine → tired → no CONTROL → seesaw | 2 → 3.2 | each beat holds ~0.7–0.8 before the next; end hold 0.8 |
+| Control dial | 1.25 → 2 | slower swing (1.6 / 1.4 / 1.1); the verdict holds 1.0 |
+| Delivered → made for me | 1.15 → 1.9 | slower strike, arrow and arrival; hold 0.9 |
+
+- All three scenes use scrub 0.8 for a softer follow. Every other scene and reveal keeps the faster settings.
+- The case study is now 27,400 px long (was 24,900). No errors.
+
+---
+
+## 2026-10-14 · Cooked: text spacing restored
+
+- **Cause:** the case study's reset `.ck :is(h2, h3, p, ul, ol, …) { margin: 0 }` out-ranked every component rule once Astro's scoping attribute was added. Every `margin-top`/`margin-bottom` on headings, quotes, chip rows, lists and captions was silently zeroed, so text sat tight against the line above throughout.
+- **Fix:** the resets use `:where(.ck) :where(…)` (no class weight), so component spacing applies as designed.
+- **Persona card:** more space between the name, quote, chips and archetype line; the archetype line sits under a hairline.
+- **Recipe card:** the ruled-paper background that ran through the text is replaced by one hairline between each step (18px above and below), with more space under the title.
+- **Checked:** a full desktop pass with nothing too loose; close-ups of both cards.
+
+---
+
+## 2026-10-14 · Cooked: faster, leaner motion for a 20-second review
+
+- **"What we heard"** is no longer a pinned scene. The quotes are sticky notes (turmeric, white and green tints, slight tilts, a tape strip), and the heading, figure and all six notes arrive together in one quick reveal. On phones the notes sit two to a row.
+- **Pinned scenes** keep only what explains something, each with ~40–50% less scroll and shorter holds:
+
+  | Scene | Scroll length (screens) |
+  |---|---|
+  | Imagine | 3.4 → 2 |
+  | Assumptions | 2.4 → 1.4 |
+  | Control dial | 1.9 → 1.25 |
+  | HMW | 2.2 → 1.35 |
+  | Shift | 1.8 → 1.15 |
+  | Ideas | 2.6 → 1.5 |
+  | Pivot | 2.4 → 1.4 |
+  | Journey | 4.2 → 2.6 |
+
+  Scene scrub is now 0.4 (was 0.7), and holds were cut from 0.6 to 0.25.
+- **Reveals** finish within the first ~20% of the screen (`top 94%` → `top 74%`), with scrub 0.35. Note and idea staggers are roughly twice as fast.
+- **Tighter rhythm:** block padding is `clamp(52px, 8vh, 100px)`, and chapter openers are ~62% of the card height.
+- **Result:** the case study's scroll length went from 35,400 to 24,900 px, about 30% shorter, with all content kept. No errors, no overflow.
+
+---
+
 ## 2026-10-14 · Smoother scroll lines
 
 - **Stepping (introduced by the performance pass):** the new lookup table snapped to its nearest sample. On long stretches of a line the samples were about 35 px apart, so the line and pen tip moved in steps.

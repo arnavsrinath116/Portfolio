@@ -2,13 +2,16 @@
 interface Props {
   src: string;
   alt: string;
-  /** the image already includes a device frame (the wireframes) */
+  /** the image already includes a device frame */
   framed?: boolean;
+  /** intrinsic size of the screen image (defaults to the final screens' 402×874) */
+  w?: number;
+  h?: number;
   class?: string;
 }
-const { src, alt, framed = false, class: cls } = Astro.props;
-const w = framed ? 466 : 402;
-const h = framed ? 920 : 874;
+const { src, alt, framed = false, w: iw, h: ih, class: cls } = Astro.props;
+const w = iw ?? (framed ? 466 : 402);
+const h = ih ?? (framed ? 920 : 874);
 ---
 
 <figure class:list={['ph', { 'ph-framed': framed }, cls]}>
