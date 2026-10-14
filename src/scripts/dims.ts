@@ -1,12 +1,12 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { hDim, vDim, PX_TO_MM } from './dimension';
+import { hDim, vDim } from './dimension';
 
 /**
  * Scroll-measured dimensions outside the hero. Tag an element:
  *   data-dim="w-top" | "w-bottom" | "h-left" | "h-right"   (space-separated)
  *   data-dim-text   measure the lettering, not the box
- * Each is drawn and counted up (true mm) as the element scrolls into view.
+ * Each is drawn and counted up (in px, as measured) as the element scrolls into view.
  */
 const OFFSET = 26; // distance from the object to its dimension line
 
@@ -47,13 +47,13 @@ export function initDims({ reduce }: { reduce: boolean }) {
       const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
       let at = 0;
       for (const s of (el.dataset.dim || '').split(/\s+/).filter(Boolean)) {
-        if (s === 'w-top') hDim(svg, tl, at, box.l, box.r, box.t, box.t - OFFSET, 'W ', (box.r - box.l) * PX_TO_MM);
+        if (s === 'w-top') hDim(svg, tl, at, box.l, box.r, box.t, box.t - OFFSET, 'W ', (box.r - box.l));
         else if (s === 'w-bottom')
-          hDim(svg, tl, at, box.l, box.r, box.b, box.b + OFFSET, 'W ', (box.r - box.l) * PX_TO_MM, true);
+          hDim(svg, tl, at, box.l, box.r, box.b, box.b + OFFSET, 'W ', (box.r - box.l), true);
         else if (s === 'h-left' && !narrow)
-          vDim(svg, tl, at, box.l - OFFSET, box.l, box.t, box.b, 'H ', (box.b - box.t) * PX_TO_MM);
+          vDim(svg, tl, at, box.l - OFFSET, box.l, box.t, box.b, 'H ', (box.b - box.t));
         else if (s === 'h-right' && !narrow)
-          vDim(svg, tl, at, box.r + OFFSET, box.r, box.t, box.b, 'H ', (box.b - box.t) * PX_TO_MM);
+          vDim(svg, tl, at, box.r + OFFSET, box.r, box.t, box.b, 'H ', (box.b - box.t));
         else continue;
         at += 0.14;
       }

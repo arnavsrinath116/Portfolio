@@ -1,6 +1,5 @@
 import { gsap } from 'gsap';
 
-const PX_TO_MM = 25.4 / 96;
 
 /**
  * Plotter sweep: an orange carriage crosses the sheet and everything behind it
@@ -39,7 +38,7 @@ export function playIntro(): Promise<void> {
       onUpdate() {
         const x = state.p * vw;
         plotter.style.transform = `translateX(${x}px)`;
-        readout.textContent = `X ${(x * PX_TO_MM).toFixed(1).padStart(6, '0')}`;
+        readout.textContent = `X ${String(Math.round(x)).padStart(4, '0')} px`;
         els.forEach((el, i) => {
           const r = boxes[i];
           const cut = Math.max(0, Math.min(r.width, r.right - x));

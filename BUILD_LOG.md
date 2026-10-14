@@ -16,6 +16,77 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-15 · Block highlights on the major headings
+
+- **What it is:** one word of each major heading sits on a solid orange block with slate lettering, like a highlighter: hero **Srinath’s**, Selected **work**, **Skills**, and the footer's **talk**.
+- **Motion:** the block wipes in left to right (0.7 s) the first time the heading comes into view, and the lettering turns dark as it's covered. The hero's waits 1.4 s, for the intro plotter.
+- **Fallbacks:** without the script, or with reduced motion, the blocks are simply there.
+- **Code:** `.hl-block` in `global.css` and `src/scripts/highlights.ts`. The script arms the blocks at start-up, so they never flash full and then empty.
+
+---
+
+## 2026-10-15 · Key words in the accent
+
+A word or two per block is now set in orange with a global `.hl` class. Highlighted phrases don't break across lines.
+
+- **Hero:** "I design **objects** and the **interfaces** that control them."
+- **Selected work:** "…each told through the **Double Diamond**…"
+- **Skills:** "What I **can do**, as a set of sheets."
+- **Footer:** "…we should probably **talk**."
+- **Skill summaries:** wrap words in `*asterisks*` in `skills.ts` to highlight them.
+  - 3D modeling: **print and fit**
+  - UI design: **clickable prototypes**
+  - Graphic design: **explain**
+  - Photography: **Light**
+
+The case studies already had their own accents: orange in the tracker, green in Cooked.
+
+---
+
+## 2026-10-15 · Dimensions in px; skill sheets get dimensioned
+
+- **Every drafting dimension now reads in px, with the unit written:**
+  - the hero (`W 1081 px`, `CAP 66 px`, `OFFSET 278 px`);
+  - the flow dimensions on the homepage;
+  - the plotter readout (`X 0412 px`).
+- **Values:** whole pixels, measured from the rendered page; `dimension.ts` exports `px()` for the format. The 3D viewer's part sizes stay in mm, because they're real object sizes, not page dimensions.
+- **Skill sheets (`skillDims.ts`):** every sheet has its own fixed one or two dimensions, in different places on each sheet but the same every time it opens. They're measured in px and drawn in as they come into view (the second follows the first).
+
+  | Sheet | Desktop | Phone |
+  |---|---|---|
+  | 3D modeling | title width + works list height | stage width |
+  | UI design | drawing height + stage width | summary width |
+  | Graphic design | summary width | summary width + stage width |
+  | Photography | drawing width + title block height | stage width |
+
+- **Phones** have their own set: there's no margin for vertical dimensions, and the drawing box sits right above the title. Labels knock out on the card's slate.
+
+---
+
+## 2026-10-15 · Skills redrawn as a sheet set
+
+Feedback: the skill cards looked templated, with too much text and no blueprint feel.
+
+- **Homepage: a drawing index, not four icon cards.**
+  - One slab: a drafting-grid viewport with registration crosses on the left, and the sheet list on the right.
+  - Rows S-01 to S-04 show the sheet number, a small turning wireframe, the name, the tools, and the works count or a dashed "In drafting".
+  - Hovering or focusing a row puts its wireframe in the viewport and turns the row orange.
+  - On phones the viewport drops and each row keeps its small drawing.
+- **Skill card: one drawing sheet.**
+  - **Head:** the title and a one-line summary, with the wireframe in a gridded viewport.
+  - **Title block:** Sheet, Tools, Works (built count, with "+N in drafting"), and Used in (links to the case studies).
+  - **Work:** one stage with a numbered works list beside it; picking a row puts that piece on the stage.
+  - **Next sheets:** a row of links to the other sheets.
+- **Less text:**
+  - Summaries cut to one line, and captions shortened.
+  - "Year TBD", "Since TBD" and the placeholder captions are gone.
+  - Unbuilt slots are `pending` works, drawn as dashed "In drafting" sheets with no copy.
+- **Fixes:**
+  - The card viewport's wireframe collapsed to zero width on phones (its percentage padding was measured against the whole header); it's now sized directly.
+  - Long titles fit on phones.
+
+---
+
 ## 2026-10-15 · Photography: the kit, in line art
 
 - **The kit:** a block on the Photography card with the two cameras as small line drawings in the site's sand linework, each captioned with its name and nothing else (no panels, callouts or specs, by request).

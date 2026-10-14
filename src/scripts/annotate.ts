@@ -1,11 +1,11 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { hDim, vDim, PX_TO_MM } from './dimension';
+import { hDim, vDim } from './dimension';
 
 /**
  * Scroll measures the heading like a technical drawing: extension lines,
  * dimension lines with architectural ticks and counting values.
- * Every number is measured from the rendered type (CSS px → mm at 96 dpi).
+ * Every number is measured from the rendered type, in CSS px.
  */
 interface Metrics {
   left: number;
@@ -69,15 +69,15 @@ export function initHeroAnnotations({ reduce }: { reduce: boolean }) {
 
     if (!mobile) {
       // 1. overall width of line one
-      hDim(svg, tl, 0.02, m1.left, m1.right, m1.capTop, m1.capTop - 34, 'W ', (m1.right - m1.left) * PX_TO_MM);
+      hDim(svg, tl, 0.02, m1.left, m1.right, m1.capTop, m1.capTop - 34, 'W ', (m1.right - m1.left));
       // 2. cap height of the lettering
-      vDim(svg, tl, 0.18, m1.left - 30, m1.left, m1.capTop, m1.baseline, 'CAP ', (m1.baseline - m1.capTop) * PX_TO_MM);
+      vDim(svg, tl, 0.18, m1.left - 30, m1.left, m1.capTop, m1.baseline, 'CAP ', (m1.baseline - m1.capTop));
       // 3. the indent of line two
       const oy = m2.capTop + (m2.baseline - m2.capTop) * 0.5;
-      hDim(svg, tl, 0.32, m1.left, m2.left, oy, oy, 'OFFSET ', (m2.left - m1.left) * PX_TO_MM);
+      hDim(svg, tl, 0.32, m1.left, m2.left, oy, oy, 'OFFSET ', (m2.left - m1.left));
     } else {
       // below the word, so it never crosses the line above on narrow screens
-      hDim(svg, tl, 0.04, m2.left, m2.right, m2.baseline, m2.baseline + 14, 'W ', (m2.right - m2.left) * PX_TO_MM, true);
+      hDim(svg, tl, 0.04, m2.left, m2.right, m2.baseline, m2.baseline + 14, 'W ', (m2.right - m2.left), true);
     }
 
     tl.to({}, { duration: 0.12 }); // hold the finished drawing before the sheet moves on

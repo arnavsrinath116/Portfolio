@@ -12,6 +12,8 @@ import { initWire } from './wire';
 import { initModelViewers } from './modelViewer';
 import { initCookedCase } from './cookedCase';
 import { initTrackerCase } from './trackerCase';
+import { initSkillDims } from './skillDims';
+import { initHighlights } from './highlights';
 import { initFooter } from './footer';
 import { initMenu } from './menu';
 import { initHeader } from './header';
@@ -37,6 +39,8 @@ initFrame();
 initHeader();
 initClock();
 initMenu({ fluid, lenis, reduce });
+// armed before first paint settles, so the blocks never flash full and then empty
+initHighlights({ reduce });
 
 document.fonts.ready.then(() => {
   initHeroAnnotations({ reduce });
@@ -46,6 +50,7 @@ document.fonts.ready.then(() => {
   initModelViewers({ reduce });
   initCookedCase({ reduce });
   initTrackerCase({ reduce });
+  initSkillDims({ reduce });
   initProjectModal({ lenis, reduce });
   initFooter({ reduce });
   playIntro();

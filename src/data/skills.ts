@@ -11,6 +11,8 @@ export interface SkillWork {
   caption: string;
   /** a 3D model shown in an interactive viewer in place of an image */
   model?: SkillModel;
+  /** not made yet: shown as a dashed "In drafting" sheet, without year or caption */
+  pending?: boolean;
 }
 
 export interface SkillModel {
@@ -40,6 +42,7 @@ export interface Skill {
   tools: string[];
   /** one line for the tile */
   use: string;
+  /** one line; wrap a key word or two in *asterisks* to set them in the accent colour */
   summary: string;
   since: string;
   works: SkillWork[];
@@ -52,12 +55,8 @@ export interface Skill {
   logo: string[];
 }
 
-const work = (kind: string, n: number): SkillWork => ({
-  title: `${kind} ${n}`,
-  kind,
-  year: 'Year TBD',
-  caption: 'One line on what this is and how it was made.',
-});
+// a slot for a piece still to come
+const work = (kind: string): SkillWork => ({ title: kind, kind, year: '', caption: '', pending: true });
 
 export const skills: Skill[] = [
   {
@@ -65,7 +64,7 @@ export const skills: Skill[] = [
     name: '3D modeling',
     tools: ['Fusion 360', 'Blender'],
     use: 'CAD parts, assemblies and renders',
-    summary: 'Parametric modelling for products, from first sketches to parts that can be printed and assembled, then rendering them to show the product in use.',
+    summary: 'Parametric CAD, from a first sketch to parts that *print and fit*.',
     since: 'Since TBD',
     // the first three are exported from the Fusion designs (visible bodies only), reduced and compressed for the web
     works: [
@@ -73,26 +72,26 @@ export const skills: Skill[] = [
         title: 'Turbojet engine',
         kind: 'Assembly',
         year: 'Year TBD',
-        caption: 'A turbojet modelled part by part, from intake to exhaust. Shown with a section cut so the inside reads.',
+        caption: 'Modelled part by part, intake to exhaust; shown in section.',
         model: { src: '/models/jet.glb', size: [1330.8, 667.9, 667.7], parts: 38, section: true },
       },
       {
         title: 'Piston and connecting rod',
         kind: 'Assembly',
         year: 'Year TBD',
-        caption: 'Piston, connecting rod and gudgeon pin, modelled to fit together.',
+        caption: 'Piston, rod and gudgeon pin, modelled to fit together.',
         model: { src: '/models/piston.glb', size: [50, 105, 81.4], parts: 3 },
       },
       {
         title: 'BlackBox casing',
         kind: 'Enclosure',
         year: 'Year TBD',
-        caption: 'A printed enclosure with a lid, a dot-matrix display holder and mounts for the electronics inside.',
+        caption: 'A printed enclosure with a display holder and mounts inside.',
         model: { src: '/models/blackbox.glb', size: [64, 64, 72], parts: 6, fade: ['Shell', 'Lid'] },
       },
-      work('Render', 4),
-      work('Animation', 5),
-      work('Material study', 6),
+      work('Render'),
+      work('Animation'),
+      work('Material study'),
     ],
     // an isometric cube: top, left and right faces
     logo: ['M50 12 L84 31 L50 50 L16 31 Z', 'M16 31 L50 50 V88 L16 69 Z', 'M84 31 V69 L50 88 V50 Z'],
@@ -102,9 +101,9 @@ export const skills: Skill[] = [
     name: 'UI design',
     tools: ['Figma', 'FigJam'],
     use: 'Interfaces, flows and prototypes',
-    summary: 'Interface design: user flows, screens, components and clickable prototypes for testing with people.',
+    summary: 'Flows, screens and *clickable prototypes*.',
     since: 'Since TBD',
-    works: [work('Prototype', 1), work('Screens', 2), work('User flow', 3), work('Components', 4)],
+    works: [work('Prototype'), work('Screens'), work('User flow'), work('Components')],
     // a phone screen laid out: header, card, button
     logo: [
       'M32 8 H68 A9 9 0 0 1 77 17 V83 A9 9 0 0 1 68 92 H32 A9 9 0 0 1 23 83 V17 A9 9 0 0 1 32 8 Z',
@@ -118,9 +117,9 @@ export const skills: Skill[] = [
     name: 'Graphic design',
     tools: ['Illustrator'],
     use: 'Posters, icons, diagrams and layouts',
-    summary: 'Vector work: icons, diagrams, posters and the line drawings that explain how a product works.',
+    summary: 'Posters, icons and diagrams that *explain* how things work.',
     since: 'Since TBD',
-    works: [work('Poster', 1), work('Icon set', 2), work('Diagram', 3), work('Layout', 4)],
+    works: [work('Poster'), work('Icon set'), work('Diagram'), work('Layout')],
     // a pen nib with its breather hole, on its holder
     logo: ['M50 8 L75 44 L63 76 H37 L25 44 Z', 'M54.5 46 A4.5 4.5 0 1 1 45.5 46 A4.5 4.5 0 1 1 54.5 46 Z', 'M35 80 H65 V92 H35 Z'],
   },
@@ -129,9 +128,9 @@ export const skills: Skill[] = [
     name: 'Photography',
     tools: ['iPhone 15', 'Canon EOS 500D'],
     use: 'Products, places and people',
-    summary: 'Photography: framing, light and the shots that document how a product is made and used.',
+    summary: '*Light* and framing, for products, places and people.',
     since: 'Since TBD',
-    works: [work('Photo', 1), work('Photo', 2), work('Photo', 3), work('Photo', 4)],
+    works: [work('Products'), work('Places'), work('People')],
     kit: [
       { name: 'Canon EOS 500D', art: 'eos-500d' },
       { name: 'iPhone 15', art: 'iphone-15' },

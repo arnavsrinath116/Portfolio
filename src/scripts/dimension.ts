@@ -3,10 +3,11 @@ import type { gsap } from 'gsap';
 /**
  * Drafting dimensions drawn into an SVG and added to a (scroll-scrubbed)
  * timeline: extension lines, a dimension line that draws out from its centre,
- * architectural ticks, and a value that counts up in millimetres.
+ * architectural ticks, and a value that counts up in CSS pixels, written "px".
  */
 export const NS = 'http://www.w3.org/2000/svg';
-export const PX_TO_MM = 25.4 / 96;
+/** a measured length as it reads on the drawing: whole pixels, with the unit */
+export const px = (v: number) => `${Math.round(v)} px`;
 const TICK = 5;
 
 type Attrs = Record<string, string | number>;
@@ -27,7 +28,7 @@ const counterTween = (tl: gsap.core.Timeline, txt: SVGTextElement, label: string
       duration: d,
       ease: 'none',
       onUpdate: () => {
-        txt.textContent = `${label}${counter.v.toFixed(1)}`;
+        txt.textContent = `${label}${px(counter.v)}`;
       },
     },
     at,
@@ -58,7 +59,7 @@ export function hDim(
   const t2 = make('line', { x1: x2 - TICK, y1: y + TICK, x2: x2 + TICK, y2: y - TICK, class: 'tick' }, g);
   const bg = make('rect', { class: 'label-bg' }, g);
   const txt = make('text', { x: mid, y: labelBelow ? y + 15 : y - 9, 'text-anchor': 'middle', class: 'dim-label' }, g);
-  txt.textContent = `${label}${value.toFixed(1)}`;
+  txt.textContent = `${label}${px(value)}`;
   const bb = txt.getBBox();
   bg.setAttribute('x', String(bb.x - 6));
   bg.setAttribute('y', String(bb.y - 2));
@@ -99,7 +100,7 @@ export function vDim(
     { x: lx, y: mid, 'text-anchor': 'middle', transform: `rotate(-90 ${lx} ${mid})`, class: 'dim-label' },
     g,
   );
-  txt.textContent = `${label}${value.toFixed(1)}`;
+  txt.textContent = `${label}${px(value)}`;
   tl.fromTo([e1, e2], { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.07, ease: 'none' }, at)
     .fromTo([a, b], { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.1, ease: 'none' }, at + 0.05)
     .fromTo([t1, t2], { scale: 0, transformOrigin: '50% 50%' }, { scale: 1, duration: 0.04, ease: 'none' }, at + 0.13)

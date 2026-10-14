@@ -2,39 +2,80 @@
 import Icon from './Icon.astro';
 import WireLogo from './WireLogo.astro';
 import { skills } from '../data/skills';
+
+// sheet numbers, as on a drawing set: S-01, S-02…
+const sheet = (i: number) => `S-${String(i + 1).padStart(2, '0')}`;
+// only finished pieces count as works; the rest are still in drafting
+const built = (s: (typeof skills)[number]) => s.works.filter((w) => !w.pending).length;
 ---
 
 <section class="skills" id="skills" aria-labelledby="skills-title">
   <div class="skills-head">
-    <h2 id="skills-title" class="skills-title">Skills</h2>
-    <p class="skills-note">What I can do, and the tools I do it with. Open one to see the work.</p>
+    <h2 id="skills-title" class="skills-title"><span class="hl-block">Skills</span></h2>
+    <p class="skills-note">What I <span class="hl">can do</span>, as a set of sheets. Open one to see the work.</p>
   </div>
 
-  <div class="skills-grid" data-rise-group data-skills>
-    {
-      skills.map((s) => (
-        <a href={`#skill-${s.slug}`} class="tile" data-open-project={`skill-${s.slug}`} data-panel={`skill-${s.slug}`} data-wire-host>
-          <div class="tile-body" data-slab>
-            <div class="tile-logo">
-              <WireLogo paths={s.logo} label={`${s.name} icon, drawn as a wireframe`} />
-            </div>
-            <div class="tile-meta">
-              <h3 class="tile-name">{s.name}</h3>
-              <p class="tile-use">{s.use}</p>
-              {/* an empty line still holds its height, so every tile's name sits on the same line */}
-              {s.tools.length > 0 ? <p class="tile-tools">{s.tools.join(' · ')}</p> : <p class="tile-tools" aria-hidden="true">&nbsp;</p>}
-              <p class="tile-status">
-                <span class="status-dot" aria-hidden="true" />
-                {s.works.length} works
-                <Icon name="arrow-up-right" />
-              </p>
-            </div>
+  <!-- a drawing index: the sheet list, with the hovered sheet's drawing in the viewport beside it -->
+  <div class="set" data-rise-group data-skills data-skill-set>
+    <div class="view" aria-hidden="true" data-panel data-wire-host>
+      <span class="view-cross view-tl"></span><span class="view-cross view-tr"></span>
+      <span class="view-cross view-bl"></span><span class="view-cross view-br"></span>
+      {
+        skills.map((s, i) => (
+          <div class:list={['view-item', { 'is-on': i === 0 }]} data-view={s.slug}>
+            <WireLogo paths={s.logo} label="" />
           </div>
-        </a>
-      ))
-    }
+        ))
+      }
+      <p class="view-label">
+        {
+          skills.map((s, i) => (
+            <span class:list={{ 'is-on': i === 0 }} data-view-label={s.slug}>
+              {sheet(i)} · {s.name}
+            </span>
+          ))
+        }
+      </p>
+    </div>
+
+    <ol class="index" data-panel>
+      {
+        skills.map((s, i) => (
+          <li>
+            <a href={`#skill-${s.slug}`} class="row" data-open-project={`skill-${s.slug}`} data-pick={s.slug} data-wire-host>
+              <span class="row-no">{sheet(i)}</span>
+              <span class="row-ico">
+                <WireLogo paths={s.logo} label="" />
+              </span>
+              <span class="row-text">
+                <span class="row-name">{s.name}</span>
+                <span class="row-tools">{s.tools.join(' · ')}</span>
+              </span>
+              <span class:list={['row-state', { 'is-pending': !built(s) }]}>{built(s) ? `${String(built(s)).padStart(2, '0')} works` : 'In drafting'}</span>
+              <Icon name="arrow-up-right" />
+            </a>
+          </li>
+        ))
+      }
+    </ol>
   </div>
 </section>
+
+<script>
+  // hovering or focusing a sheet in the index puts its drawing in the viewport
+  document.querySelectorAll<HTMLElement>('[data-skill-set]').forEach((set) => {
+    const pick = (slug: string) => {
+      set.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => v.classList.toggle('is-on', v.dataset.view === slug));
+      set.querySelectorAll<HTMLElement>('[data-view-label]').forEach((v) => v.classList.toggle('is-on', v.dataset.viewLabel === slug));
+      set.querySelectorAll<HTMLElement>('[data-pick]').forEach((r) => r.classList.toggle('is-on', r.dataset.pick === slug));
+    };
+    set.querySelectorAll<HTMLElement>('[data-pick]').forEach((row) => {
+      const go = () => pick(row.dataset.pick!);
+      row.addEventListener('pointerenter', go);
+      row.addEventListener('focus', go);
+    });
+  });
+</script>
 
 <style>
   .skills {
@@ -65,140 +106,215 @@ import { skills } from '../data/skills';
     line-height: 1.55;
   }
 
-  .skills-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: clamp(14px, 1.6vw, 24px);
-  }
-  /* the link is a still hit area (it only carries the scroll entrance); the slab
-     inside is what lifts, so hovering near an edge can't flicker on and off */
-  .tile {
-    --rise: 0px; /* scroll entrance (guide.ts) */
+  /* ---------- the set: viewport + index, one slab ---------- */
+  .set {
     position: relative;
     z-index: 1; /* the guiding line passes behind */
     display: grid;
-    border-radius: var(--radius-slab);
-    color: inherit;
-    transform: translateY(var(--rise));
-  }
-  .tile-body {
-    display: grid;
-    grid-template-rows: 1fr auto;
-    gap: 18px;
-    padding: clamp(16px, 1.6vw, 22px);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
     border-radius: var(--radius-slab);
     background: var(--slate-2);
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
-    /* a hover answers at once and settles softly: a fast-start curve, not the
-       slow-start --ease-out used for scroll-driven motion */
-    transition:
-      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-      box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 240ms ease-out,
-      border-color 240ms ease-out;
+    overflow: hidden;
   }
-  .tile-logo {
+  .set > [data-panel] {
+    --rise: 0px; /* scroll entrance (guide.ts) */
+    transform: translateY(var(--rise));
+  }
+
+  /* viewport: a patch of drafting grid with registration crosses */
+  .view {
+    position: relative;
     display: grid;
     place-items: center;
+    min-height: 100%;
     aspect-ratio: 1;
-    padding: 14%;
-    border-radius: 9px;
-    background: rgb(20 23 26 / 0.35);
+    border-right: 1px solid var(--line-faint);
+    background:
+      linear-gradient(var(--line-faint) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(90deg, var(--line-faint) 1px, transparent 1px) 0 0 / 24px 24px,
+      rgb(20 23 26 / 0.35);
+    --wire-ink: var(--sand);
   }
-  .tile-meta {
-    display: grid;
-    gap: 5px;
+  .view-item {
+    grid-area: 1 / 1;
+    width: 52%;
+    opacity: 0;
+    transform: scale(0.94);
+    transition:
+      opacity 0.35s ease-out,
+      transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .tile-name {
-    font-stretch: 125%;
-    font-weight: 640;
-    font-size: clamp(1.05rem, 1.5vw, 1.375rem);
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
+  .view-item:not(.is-on) {
+    visibility: hidden;
+    transition:
+      opacity 0.2s ease-out,
+      transform 0.2s ease-out,
+      visibility 0s 0.2s;
   }
-  .tile-use {
-    color: var(--sand-2);
-    font-size: 0.875rem;
-    line-height: 1.45;
+  .view-item.is-on {
+    opacity: 1;
+    transform: none;
   }
-  /* the software behind the skill, set as small sheet data */
-  .tile-tools {
-    margin-top: -4px;
+  .view-cross {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    background:
+      linear-gradient(var(--sand-3), var(--sand-3)) 50% 0 / 1px 100% no-repeat,
+      linear-gradient(var(--sand-3), var(--sand-3)) 0 50% / 100% 1px no-repeat;
+  }
+  .view-tl {
+    top: 16px;
+    left: 16px;
+  }
+  .view-tr {
+    top: 16px;
+    right: 16px;
+  }
+  .view-bl {
+    bottom: 16px;
+    left: 16px;
+  }
+  .view-br {
+    bottom: 16px;
+    right: 16px;
+  }
+  .view-label {
+    position: absolute;
+    left: 36px;
+    bottom: 13px;
+    margin: 0;
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--sand-3);
   }
-  .tile-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 6px;
-    font-size: 0.8125rem;
-    color: var(--sand-3);
-  }
-  .status-dot {
-    width: 6px;
-    height: 6px;
-    border: 1px solid var(--orange);
-  }
-  .tile-status :global(.icon) {
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-  @media (hover: hover) {
-    .tile:hover {
-      --wire-ink: var(--orange);
-    }
-    .tile:hover .tile-body {
-      transform: translateY(-4px);
-      background: var(--slate-3);
-      border-top-color: rgb(230 220 200 / 0.2);
-      box-shadow:
-        0 1px 0 rgb(255 255 255 / 0.04) inset,
-        0 36px 64px -18px rgb(0 0 0 / 0.65),
-        0 10px 20px -8px rgb(0 0 0 / 0.45);
-    }
-    .tile:hover .tile-status {
-      color: var(--orange);
-    }
-    .tile:hover .tile-status :global(.icon) {
-      transform: translate(2px, -2px);
-    }
-  }
-  .tile:focus-visible {
-    --wire-ink: var(--orange);
-    outline-offset: 4px;
+  .view-label span:not(.is-on) {
+    display: none;
   }
 
-  @media (max-width: 1100px) {
-    .skills-grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+  /* index: one row per sheet */
+  .index {
+    display: grid;
+    align-content: center;
+    margin: 0;
+    padding: clamp(8px, 1.5vw, 20px) clamp(16px, 2.4vw, 36px);
+    list-style: none;
   }
-  /* one skill a row on phones: icon on the left, words beside it */
-  @media (max-width: 760px) {
-    .skills-grid {
-      grid-template-columns: 1fr;
-    }
-    .tile-body {
-      grid-template-columns: 96px minmax(0, 1fr);
-      grid-template-rows: auto;
-      align-items: center;
-    }
-    .tile-logo {
-      padding: 16%;
-    }
+  .index li + li {
+    border-top: 1px solid var(--line-faint);
   }
+  .row {
+    display: grid;
+    grid-template-columns: 52px 44px minmax(0, 1fr) auto 14px;
+    align-items: center;
+    gap: clamp(12px, 1.6vw, 22px);
+    padding: clamp(16px, 2.6vh, 26px) 4px;
+    color: inherit;
+    text-decoration: none;
+    background: var(--slate-2); /* the card grows out of this colour */
+    --wire-ink: var(--sand-2);
+  }
+  .row-no {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--sand-3);
+    transition: color var(--dur-base) var(--ease-out);
+  }
+  .row-ico {
+    display: block;
+    width: 40px;
+  }
+  .row-text {
+    display: grid;
+    gap: 5px;
+    min-width: 0;
+  }
+  .row-name {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(1.05rem, 1.7vw, 1.5rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .row-tools {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .row-state {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-2);
+    white-space: nowrap;
+  }
+  /* dashed means not yet drawn */
+  .row-state.is-pending {
+    padding-bottom: 2px;
+    border-bottom: 1px dashed var(--sand-3);
+    color: var(--sand-3);
+  }
+  .row :global(.icon) {
+    color: var(--sand-3);
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+  .row.is-on .row-no,
+  .row:focus-visible .row-no {
+    color: var(--orange);
+  }
+  .row.is-on .row-name {
+    transform: translateX(6px);
+  }
+  .row.is-on {
+    --wire-ink: var(--orange);
+  }
+  .row.is-on :global(.icon) {
+    color: var(--orange);
+    transform: translate(2px, -2px);
+  }
+  .row:focus-visible {
+    outline-offset: -2px;
+  }
+
   @media (max-width: 860px) {
     .skills-head {
       grid-template-columns: 1fr;
     }
   }
-  @media (max-width: 480px) {
-    .tile-body {
-      gap: 12px;
+  /* phones: the index alone; each row keeps its own small drawing */
+  @media (max-width: 760px) {
+    .set {
+      grid-template-columns: 1fr;
+    }
+    .view {
+      display: none;
+    }
+    .row {
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 4px 14px;
+    }
+    .row-no,
+    .row :global(.icon) {
+      display: none;
+    }
+    .row-ico {
+      grid-row: span 2;
+    }
+    .row-state {
+      grid-column: 2;
+      justify-self: start;
     }
   }
 </style>

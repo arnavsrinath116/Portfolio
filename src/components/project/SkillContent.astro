@@ -1,6 +1,7 @@
 ---
 import WireLogo from '../WireLogo.astro';
 import ModelViewer from '../ModelViewer.astro';
+import Icon from '../Icon.astro';
 import CameraKit from './CameraKit.astro';
 import type { Skill } from '../../data/skills';
 import { skills } from '../../data/skills';
@@ -11,112 +12,167 @@ interface Props {
 }
 const { skill } = Astro.props;
 const key = `skill-${skill.slug}`;
+const sheet = (s: Skill) => `S-${String(skills.indexOf(s) + 1).padStart(2, '0')}`;
+const pad = (n: number) => String(n).padStart(2, '0');
 const others = skills.filter((s) => s.slug !== skill.slug);
 const studies = projects.filter((p) => p.tools.some((t) => skill.tools.includes(t)));
+const built = skill.works.filter((w) => !w.pending).length;
+const drafting = skill.works.length - built;
+// *word* in the summary is set in the accent colour
+const summary = skill.summary.split(/\*([^*]+)\*/);
 ---
 
-<article class="sk" data-project={key} aria-labelledby={`${key}-title`} hidden>
-  <header class="sk-hero" data-pc-rise data-wire-host>
+<!-- a skill as one drawing sheet: title + drawing, a title block, then the work on one stage -->
+<article class="sk" data-project={key} aria-labelledby={`${key}-title`} hidden data-sk>
+  <header class="sk-head" data-pc-rise data-wire-host>
     <div class="sk-intro">
-      {skill.tools.length > 0 && <p class="sk-maker">{skill.tools.join(' · ')}</p>}
       <h2 class="sk-title" id={`${key}-title`}>{skill.name}</h2>
-      <p class="sk-summary">{skill.summary}</p>
-      <dl class="sk-meta">
-        <div><dt>Using it</dt><dd>{skill.since}</dd></div>
-        <div><dt>Works</dt><dd>{skill.works.length}</dd></div>
-        <div><dt>Case studies</dt><dd>{studies.length}</dd></div>
-      </dl>
+      <p class="sk-summary">{summary.map((part, i) => (i % 2 ? <span class="hl">{part}</span> : part))}</p>
     </div>
-    <div class="sk-logo">
-      <WireLogo paths={skill.logo} label={`${skill.name} icon, drawn as a wireframe`} />
+    <div class="sk-view" aria-hidden="true">
+      <span class="x x-tl"></span><span class="x x-tr"></span><span class="x x-bl"></span><span class="x x-br"></span>
+      <WireLogo paths={skill.logo} label="" />
+      <span class="sk-view-no">{sheet(skill)}</span>
     </div>
   </header>
 
-  {
-    studies.length > 0 && (
-      <section class="sk-block" data-pc-rise aria-labelledby={`${key}-studies`}>
-        <h3 class="sk-block-title" id={`${key}-studies`}>
-          Case studies that use it
-        </h3>
-        <div class="sk-studies">
-          {studies.map((p) => (
-            <button type="button" class="sk-study" data-switch-project={p.slug} data-magnet>
-              <span class="sk-study-disc">{p.discipline}</span>
-              <span class="sk-study-title">{p.title}</span>
-              <span class="sk-study-go">Open case study</span>
-            </button>
-          ))}
+  <!-- the title block: the facts, in cells -->
+  <dl class="sk-tb" data-pc-rise>
+    <div>
+      <dt>Sheet</dt>
+      <dd>{sheet(skill)}</dd>
+    </div>
+    <div>
+      <dt>Tools</dt>
+      <dd>{skill.tools.length ? skill.tools.join(' · ') : '—'}</dd>
+    </div>
+    <div>
+      <dt>Works</dt>
+      <dd>
+        {built ? pad(built) : <span class="sk-dash">In drafting</span>}
+        {built > 0 && drafting > 0 && <span class="sk-more">+{drafting} in drafting</span>}
+      </dd>
+    </div>
+    {
+      studies.length > 0 && (
+        <div class="sk-tb-wide">
+          <dt>Used in</dt>
+          <dd class="sk-used">
+            {studies.map((p) => (
+              <button type="button" class="sk-link" data-switch-project={p.slug} data-magnet>
+                {p.title}
+                <Icon name="arrow-up-right" />
+              </button>
+            ))}
+          </dd>
         </div>
-      </section>
-    )
-  }
+      )
+    }
+  </dl>
 
   {skill.kit && <CameraKit kit={skill.kit} id={key} />}
 
-  <section class="sk-block" data-pc-rise aria-labelledby={`${key}-works`}>
-    <h3 class="sk-block-title" id={`${key}-works`}>{skill.name} work</h3>
-    <ul class="sk-works">
+  <!-- the work: one stage, and the list that picks what's on it -->
+  <section class="sk-set" data-pc-rise aria-label={`${skill.name} work`} data-sk-set>
+    <div class="sk-stages">
       {
-        skill.works.map((w) => (
-          <li class:list={['sk-work', { 'has-model': w.model }]}>
+        skill.works.map((w, i) => (
+          <div class="sk-stage" data-stage={i} hidden={i !== 0}>
             {w.model ? (
               <ModelViewer model={w.model} title={w.title} />
             ) : (
-              <div class="sk-media" aria-label={`${w.kind} image to come`}>
-                <span>{w.kind}</span>
+              <div class="sk-draft" role="img" aria-label={`${w.kind}: not drawn yet`}>
+                <span class="sk-draft-k">{w.kind}</span>
+                <span class="sk-draft-s">In drafting</span>
               </div>
             )}
-            <div class="sk-work-meta">
-              <h4 class="sk-work-title">{w.title}</h4>
-              <span class="sk-work-year">{w.year}</span>
-            </div>
-            <p class="sk-work-caption">{w.caption}</p>
-          </li>
-        ))
-      }
-    </ul>
-  </section>
-
-  <nav class="sk-others pc-others" aria-label="Other skills">
-    <p class="sk-others-label">Other skills</p>
-    <div class="sk-others-grid">
-      {
-        others.map((o) => (
-          <button type="button" class="sk-other" data-switch-project={`skill-${o.slug}`} data-magnet>
-            <span class="sk-other-logo" aria-hidden="true">
-              <svg viewBox="-10 -10 120 120">
-                {o.logo.map((d) => (
-                  <path d={d} />
-                ))}
-              </svg>
-            </span>
-            <span class="sk-other-name">{o.name}</span>
-          </button>
+            {w.caption && <p class="sk-cap">{w.caption}</p>}
+          </div>
         ))
       }
     </div>
+    <div class="sk-list">
+      <p class="sk-list-head">
+        <span>No.</span>
+        <span>Work</span>
+      </p>
+      <ol>
+        {
+          skill.works.map((w, i) => (
+            <li>
+              <button type="button" class:list={['sk-pick', { 'is-on': i === 0, 'is-pending': w.pending }]} aria-pressed={i === 0 ? 'true' : 'false'} data-pick={i}>
+                <span class="sk-pick-no">{pad(i + 1)}</span>
+                <span class="sk-pick-t">{w.title}</span>
+                <span class="sk-pick-k">{w.pending ? 'In drafting' : w.kind}</span>
+              </button>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <nav class="sk-next pc-others" aria-label="Other skills">
+    {
+      others.map((o) => (
+        <button type="button" class="sk-next-a" data-switch-project={`skill-${o.slug}`} data-magnet>
+          <span class="sk-next-no">{sheet(o)}</span>
+          <span class="sk-next-n">{o.name}</span>
+          <Icon name="arrow-up-right" />
+        </button>
+      ))
+    }
   </nav>
 </article>
 
+<script>
+  // picking a work in the list puts it on the stage
+  document.querySelectorAll<HTMLElement>('[data-sk-set]').forEach((set) => {
+    const picks = Array.from(set.querySelectorAll<HTMLButtonElement>('[data-pick]'));
+    const stages = Array.from(set.querySelectorAll<HTMLElement>('[data-stage]'));
+    picks.forEach((b) =>
+      b.addEventListener('click', () => {
+        const i = b.dataset.pick;
+        picks.forEach((p) => {
+          const on = p === b;
+          p.classList.toggle('is-on', on);
+          p.setAttribute('aria-pressed', String(on));
+        });
+        stages.forEach((s) => (s.hidden = s.dataset.stage !== i));
+      }),
+    );
+  });
+</script>
+
 <style>
   .sk {
+    position: relative;
     padding: clamp(28px, 4vw, 64px) clamp(22px, 4vw, 64px) clamp(32px, 5vw, 64px);
+  }
+  /* the sheet's dimensions (skillDims.ts), drawn over it in px */
+  .sk :global(.sk-dims) {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .sk :global(.sk-dims .label-bg) {
+    fill: var(--slate-3);
   }
   .sk[hidden] {
     display: none;
   }
-  .sk-hero {
+
+  /* ---------- title + drawing ---------- */
+  .sk-head {
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 24px clamp(32px, 5vw, 80px);
-    align-items: center;
-  }
-  .sk-maker {
-    font-size: 0.9375rem;
-    color: var(--orange);
+    align-items: end;
   }
   .sk-title {
-    margin-top: 10px;
     font-stretch: 125%;
     font-weight: 640;
     font-size: clamp(2.2rem, 5.4vw, 4.75rem);
@@ -126,203 +182,339 @@ const studies = projects.filter((p) => p.tools.some((t) => skill.tools.includes(
     text-wrap: balance;
   }
   .sk-summary {
-    margin-top: 20px;
-    max-width: 46ch;
+    margin-top: 18px;
+    max-width: 38ch;
     font-size: clamp(1rem, 1.3vw, 1.1875rem);
-    line-height: 1.5;
+    line-height: 1.45;
     color: var(--sand-2);
   }
-  .sk-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px clamp(24px, 4vw, 48px);
-    margin-top: 28px;
-  }
-  .sk-meta dt {
-    font-size: 0.8125rem;
-    color: var(--sand-3);
-  }
-  .sk-meta dd {
-    margin-top: 2px;
-  }
-  .sk-logo {
-    justify-self: center;
-    width: min(100%, 300px);
-    margin-right: 40px; /* clear the close button's column */
-  }
-
-  /* global so blocks drawn by child components (the camera kit) share them */
-  .sk :global(.sk-block) {
-    margin-top: clamp(48px, 8vh, 88px);
-  }
-  .sk :global(.sk-block-title) {
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--line);
-    font-stretch: 125%;
-    font-weight: 640;
-    font-size: clamp(1.15rem, 1.8vw, 1.5rem);
-    letter-spacing: -0.015em;
-    text-transform: uppercase;
-    text-wrap: balance;
-  }
-
-  .sk-studies {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 14px;
-    margin-top: 20px;
-  }
-  .sk-study {
-    display: grid;
-    gap: 4px;
-    text-align: left;
-    padding: 20px 22px;
-    border-radius: 12px;
-    background: var(--slate-2);
-    border-top: 1px solid var(--slate-edge);
-    transition:
-      transform var(--dur-slow) var(--ease-out),
-      background-color var(--dur-base) var(--ease-out);
-  }
-  .sk-study-disc {
-    font-size: 0.8125rem;
-    color: var(--orange);
-  }
-  .sk-study-title {
-    font-stretch: 125%;
-    font-weight: 640;
-    font-size: 1.125rem;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-  }
-  .sk-study-go {
-    margin-top: 8px;
-    font-size: 0.8125rem;
-    color: var(--sand-3);
-  }
-
-  .sk-works {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(24px, 3vw, 40px) clamp(16px, 2vw, 28px);
-    margin-top: 24px;
-  }
-  /* a 3D model gets the full width of the card */
-  .sk-work.has-model {
-    grid-column: 1 / -1;
-  }
-  .sk-media {
+  /* a patch of drafting grid with registration crosses, holding the turning wireframe */
+  .sk-view {
+    position: relative;
     display: grid;
     place-items: center;
-    aspect-ratio: 4 / 3;
-    border: 1px dashed rgb(230 220 200 / 0.18);
-    border-radius: 10px;
-    background: rgb(20 23 26 / 0.35);
+    width: clamp(150px, 20vw, 240px);
+    aspect-ratio: 1;
+    margin-right: 52px; /* clear the close button's column */
+    border: 1px solid var(--line-faint);
+    background:
+      linear-gradient(var(--line-faint) 1px, transparent 1px) -1px -1px / 20px 20px,
+      linear-gradient(90deg, var(--line-faint) 1px, transparent 1px) -1px -1px / 20px 20px,
+      rgb(20 23 26 / 0.35);
+  }
+  .sk-view :global(.wire) {
+    width: 56%;
+  }
+  .x {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    background:
+      linear-gradient(var(--sand-3), var(--sand-3)) 50% 0 / 1px 100% no-repeat,
+      linear-gradient(var(--sand-3), var(--sand-3)) 0 50% / 100% 1px no-repeat;
+  }
+  .x-tl {
+    top: -6px;
+    left: -6px;
+  }
+  .x-tr {
+    top: -6px;
+    right: -6px;
+  }
+  .x-bl {
+    bottom: -6px;
+    left: -6px;
+  }
+  .x-br {
+    bottom: -6px;
+    right: -6px;
+  }
+  .sk-view-no {
+    position: absolute;
+    right: 10px;
+    bottom: 8px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
     color: var(--sand-3);
-    font-size: 0.8125rem;
-  }
-  .sk-work-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 12px;
-    margin-top: 14px;
-  }
-  .sk-work-title {
-    margin: 0;
-    font-size: 1.0625rem;
-    font-weight: 600;
-  }
-  .sk-work-year {
-    font-size: 0.8125rem;
-    color: var(--sand-3);
-    white-space: nowrap;
-  }
-  .sk-work-caption {
-    margin-top: 6px;
-    max-width: 52ch;
-    color: var(--sand-2);
-    font-size: 0.9375rem;
-    line-height: 1.5;
   }
 
-  .sk-others {
-    margin-top: clamp(48px, 8vh, 88px);
-    padding-top: 28px;
-    border-top: 1px solid var(--line);
+  /* ---------- title block ---------- */
+  .sk-tb {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1.4fr);
+    margin: clamp(28px, 5vh, 44px) 0 0;
+    border: 1px solid var(--line);
   }
-  .sk-others-label {
-    font-size: 0.875rem;
+  .sk-tb > div {
+    padding: 12px 16px 14px;
+    border-left: 1px solid var(--line);
+  }
+  .sk-tb > div:first-child {
+    border-left: 0;
+  }
+  .sk-tb dt,
+  :global(.sk) :global(.sk-block-title) {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 400;
+    font-stretch: 100%;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--sand-3);
   }
-  .sk-others-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 14px;
-    margin-top: 14px;
-  }
-  .sk-other {
+  .sk-tb dd {
     display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 12px;
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+  }
+  .sk-more {
+    color: var(--sand-3);
+  }
+  .sk-dash {
+    padding-bottom: 1px;
+    border-bottom: 1px dashed var(--sand-3);
+    color: var(--sand-2);
+  }
+  .sk-link {
+    display: inline-flex;
     align-items: center;
-    gap: 14px;
-    text-align: left;
-    padding: 16px 18px;
-    border-radius: 12px;
-    background: var(--slate-2);
-    border-top: 1px solid var(--slate-edge);
+    gap: 6px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--sand);
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    cursor: pointer;
+    transition: color var(--dur-base) var(--ease-out);
+  }
+  .sk-link :global(.icon) {
+    color: var(--sand-3);
     transition:
-      transform var(--dur-slow) var(--ease-out),
-      background-color var(--dur-base) var(--ease-out);
+      transform var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
   }
-  .sk-other-logo {
-    flex: none;
-    width: 34px;
+
+  /* the camera kit (photography) sits under the title block as a labelled strip */
+  .sk :global(.sk-block) {
+    margin-top: clamp(28px, 5vh, 44px);
   }
-  .sk-other-logo svg {
-    display: block;
+
+  /* ---------- the work ---------- */
+  .sk-set {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(220px, 4fr);
+    gap: clamp(20px, 3vw, 40px);
+    margin-top: clamp(36px, 6vh, 60px);
+    align-items: start;
+  }
+  .sk-stage[hidden] {
+    display: none;
+  }
+  .sk-cap {
+    margin-top: 12px;
+    max-width: 52ch;
+    font-size: 0.9375rem;
+    color: var(--sand-2);
+  }
+  /* dashed: not drawn yet */
+  .sk-draft {
+    position: relative;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 8px;
+    aspect-ratio: 16 / 9;
+    border: 1px dashed rgb(230 220 200 / 0.22);
+    background:
+      linear-gradient(var(--line-faint) 1px, transparent 1px) -1px -1px / 24px 24px,
+      linear-gradient(90deg, var(--line-faint) 1px, transparent 1px) -1px -1px / 24px 24px;
+  }
+  .sk-draft-k {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .sk-draft-s {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+
+  .sk-list-head {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+    margin: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .sk-list ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sk-list li {
+    border-bottom: 1px solid var(--line-faint);
+  }
+  .sk-pick {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr);
+    gap: 2px 12px;
     width: 100%;
-    fill: none;
-    stroke: var(--sand-2);
-    stroke-width: 4;
-    stroke-linejoin: round;
-    transition: stroke var(--dur-base) var(--ease-out);
+    padding: 13px 0;
+    border: 0;
+    background: none;
+    color: var(--sand-2);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: color var(--dur-base) var(--ease-out);
   }
-  .sk-other-name {
+  .sk-pick-no {
+    grid-row: span 2;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--sand-3);
+  }
+  .sk-pick-t {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sk-pick-k {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .sk-pick.is-pending .sk-pick-t {
+    color: var(--sand-3);
+  }
+  .sk-pick.is-on {
+    color: var(--sand);
+  }
+  .sk-pick.is-on .sk-pick-no {
+    color: var(--orange);
+  }
+  .sk-pick.is-on .sk-pick-t {
+    transform: translateX(4px);
+  }
+  .sk-pick:focus-visible {
+    outline-offset: 2px;
+  }
+
+  /* ---------- next sheets ---------- */
+  .sk-next {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px clamp(20px, 3vw, 40px);
+    margin-top: clamp(48px, 8vh, 80px);
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
+  }
+  .sk-next-a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 0;
+    border: 0;
+    background: none;
+    color: var(--sand);
+    font: inherit;
+    cursor: pointer;
+  }
+  .sk-next-no {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--sand-3);
+    transition: color var(--dur-base) var(--ease-out);
+  }
+  .sk-next-n {
     font-stretch: 125%;
     font-weight: 640;
     font-size: 1rem;
     letter-spacing: -0.01em;
     text-transform: uppercase;
   }
+  .sk-next-a :global(.icon) {
+    color: var(--sand-3);
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
   @media (hover: hover) {
-    .sk-study:hover,
-    .sk-other:hover {
-      transform: translateY(-3px);
-      background: var(--slate-4);
+    .sk-link:hover,
+    .sk-pick:hover {
+      color: var(--sand);
     }
-    .sk-study:hover .sk-study-go {
+    .sk-link:hover :global(.icon),
+    .sk-next-a:hover :global(.icon) {
       color: var(--orange);
+      transform: translate(2px, -2px);
     }
-    .sk-other:hover .sk-other-logo svg {
-      stroke: var(--orange);
+    .sk-next-a:hover .sk-next-no,
+    .sk-pick:hover .sk-pick-no {
+      color: var(--orange);
     }
   }
 
   @media (max-width: 900px) {
-    .sk-hero {
+    .sk-set {
       grid-template-columns: minmax(0, 1fr);
     }
-    .sk-logo {
-      order: -1;
-      justify-self: start;
-      width: 132px;
-      margin: 0;
+    .sk-tb {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+    .sk-tb-wide {
+      grid-column: 1 / -1;
+      border-left: 0 !important;
+      border-top: 1px solid var(--line);
     }
   }
   @media (max-width: 600px) {
-    .sk-works,
-    .sk-others-grid {
-      grid-template-columns: 1fr;
+    .sk-head {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sk-title {
+      font-size: clamp(1.6rem, 7.6vw, 2.6rem); /* "PHOTOGRAPHY" is the longest */
+    }
+    .sk-view {
+      order: -1;
+      width: 112px;
+      margin: 0 0 4px;
+    }
+    .sk-tb {
+      grid-template-columns: 1fr 1fr;
+    }
+    .sk-tb > div:nth-child(2) {
+      grid-column: 2;
+    }
+    .sk-tb > div:nth-child(3) {
+      grid-column: 1 / -1;
+      border-left: 0;
+      border-top: 1px solid var(--line);
     }
   }
 </style>

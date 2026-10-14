@@ -49,6 +49,45 @@ body::after {
   opacity: 0.045;
 }
 
+/* a key word, picked out in the accent: used sparingly, a word or two per block */
+.hl {
+  color: var(--orange);
+  white-space: nowrap; /* a highlighted phrase stays in one piece */
+}
+
+/* a major heading's key word on an orange block (highlights.ts wipes it in, left to right,
+   when the heading comes into view; without the script it's simply there) */
+.hl-block {
+  position: relative;
+  isolation: isolate;
+  white-space: nowrap;
+  color: var(--slate);
+  transition: color 0.35s var(--ease-out) calc(var(--hl-delay, 0s) + 0.25s);
+}
+.hl-block::before {
+  content: '';
+  position: absolute;
+  /* the font's text box is even above and below the capitals; the left side is trimmed
+     a touch because a letter's own left side bearing already adds space there */
+  inset: 0.05em -0.1em 0.075em -0.07em;
+  z-index: -1;
+  background: var(--orange);
+  transform-origin: 0 50%;
+  transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1) var(--hl-delay, 0s);
+}
+.hl-block.is-armed {
+  color: inherit;
+}
+.hl-block.is-armed::before {
+  transform: scaleX(0);
+}
+.hl-block.is-armed.is-in {
+  color: var(--slate);
+}
+.hl-block.is-armed.is-in::before {
+  transform: none;
+}
+
 ::selection {
   background: var(--orange);
   color: var(--slate);

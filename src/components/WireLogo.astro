@@ -8,7 +8,7 @@ const { paths, label, class: cls } = Astro.props;
 ---
 
 <!-- flat line-art outline; wire.ts extrudes it into a turning 3D wireframe -->
-<svg class:list={['wire', cls]} viewBox="-10 -10 120 120" role="img" aria-label={label} data-wire>
+<svg class:list={['wire', cls]} viewBox="-10 -10 120 120" role={label ? 'img' : undefined} aria-label={label || undefined} aria-hidden={label ? undefined : 'true'} data-wire>
   {paths.map((d) => <path class="wire-src" d={d} />)}
 </svg>
 
