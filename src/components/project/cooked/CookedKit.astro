@@ -1,0 +1,460 @@
+---
+/**
+ * The Cooked UI kit, distilled: type as real headlines, the button set, the
+ * key components (live), and the contrast checks that matter. The palette is
+ * already shown just above, so it isn't repeated here.
+ */
+const type = [
+  ['Display', '48 / 52 · Bold', 'Book a chef', 'kt-display'],
+  ['Heading', '24 / 32 · Semibold', 'Your food, your way', 'kt-heading'],
+  ['Title', '20 / 28 · Medium', 'Customise your dish', 'kt-title'],
+  ['Body', '16 / 24 · Regular', 'Choose spice, oil and ingredients, then a chef who cooks it your way.', 'kt-body'],
+  ['Caption', '12 / 16 · Regular', 'Estimated response time: 5–15 minutes', 'kt-caption'],
+] as const;
+
+// contrast, calculated with the WCAG 2.1 formula from the kit's token values
+const lum = (hex: string) => {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const ratio = (a: string, b: string) => {
+  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+};
+const checks = [
+  ['Text', '#1A1A1A', '#FFFFFF'],
+  ['Body', '#4A4A4A', '#FFFFFF'],
+  ['Buttons', '#FFFFFF', '#0D733B'],
+  ['Hints', '#888888', '#FFFFFF'],
+].map(([name, fg, bg]) => {
+  const r = ratio(fg, bg);
+  return { name, fg, bg, r: r.toFixed(1), g: r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : 'Large text only' };
+});
+
+const icon = {
+  home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
+  clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2',
+  user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
+  leaf: 'M5 19c0-8 5-13 14-14 0 9-5 14-13 14M5 19l7-7',
+  meat: 'M15 4a5 5 0 0 1 0 10l-3 0-5 5a2 2 0 1 1-3-3l5-5 0-3a5 5 0 0 1 6-4z',
+};
+---
+
+<div class="kit" data-kit>
+  <!-- type -->
+  <div class="kit-card kit-type" data-a="up">
+    <p class="kit-label">Type · Satoshi</p>
+    <ul>
+      {
+        type.map(([name, spec, sample, cls]) => (
+          <li>
+            <span class="kt-meta">
+              <b>{name}</b>
+              {spec}
+            </span>
+            <span class={`kt-sample ${cls}`}>{sample}</span>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  <div class="kit-side">
+    <!-- buttons -->
+    <div class="kit-card" data-a="up">
+      <p class="kit-label">Buttons</p>
+      <div class="kit-btns" data-a="stagger">
+        <button type="button" class="kb kb-primary" tabindex="-1">Add to basket</button>
+        <button type="button" class="kb kb-cta" tabindex="-1">Order now</button>
+        <button type="button" class="kb kb-outline" tabindex="-1">View details</button>
+        <button type="button" class="kb kb-tint" tabindex="-1">Browse</button>
+        <button type="button" class="kb kb-off" disabled tabindex="-1">Unavailable</button>
+      </div>
+    </div>
+
+    <!-- components -->
+    <div class="kit-card" data-a="up">
+      <p class="kit-label">Components <span>tap them</span></p>
+      <div class="kit-choices">
+        {
+          [
+            ['leaf', 'Vegetarian', 'Plant-based only'],
+            ['meat', 'Non-veg', 'All meals'],
+          ].map(([ic, t, d]) => (
+            <button type="button" class="kch" aria-pressed="false" data-kit-choice tabindex="-1">
+              <span class="kch-ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d={icon[ic as keyof typeof icon]} />
+                </svg>
+              </span>
+              <span>
+                <b>{t}</b>
+                <small>{d}</small>
+              </span>
+            </button>
+          ))
+        }
+      </div>
+      <button type="button" class="kc" disabled data-kit-continue tabindex="-1">Continue</button>
+      <div class="knav" data-kit-nav>
+        <span class="knav-pill" aria-hidden="true"></span>
+        {
+          [
+            ['home', 'Home'],
+            ['clock', 'Orders'],
+            ['user', 'Profile'],
+          ].map(([ic, t], i) => (
+            <button type="button" class:list={['knav-tab', { 'is-on': i === 0 }]} tabindex="-1">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={icon[ic as keyof typeof icon]} />
+              </svg>
+              <span>{t}</span>
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- contrast -->
+  <ul class="kit-checks" data-a="stagger" aria-label="Contrast checks (WCAG 2.1)">
+    {
+      checks.map((c) => (
+        <li>
+          <span class="kc-dot" style={`--fg:${c.fg};--bg:${c.bg}`}>Aa</span>
+          <span>
+            <b>{c.name}</b> {c.r}:1 · {c.g}
+          </span>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  /* the kit speaks the case study's language: Satoshi, soft white cards, pills, green + turmeric */
+  .kit {
+    --k-green: #0d733b;
+    --k-amber: #ffb300;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 16px;
+    margin-top: clamp(24px, 4vh, 40px);
+  }
+  .kit-card {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+    padding: clamp(18px, 2.4vw, 28px);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .kit-side {
+    display: grid;
+    gap: 16px;
+  }
+  .kit-label {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ck-green);
+  }
+  .kit-label span {
+    margin-left: 6px;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 600;
+    color: var(--ck-ink-3);
+  }
+
+  /* type: real Cooked lines, biggest to smallest */
+  .kit-type ul {
+    display: grid;
+  }
+  .kit-type li {
+    display: grid;
+    gap: 4px;
+    padding: 14px 0;
+    border-top: 1px solid var(--ck-rule);
+  }
+  .kit-type li:first-child {
+    border-top: 0;
+    padding-top: 0;
+  }
+  .kt-meta {
+    font-size: 0.8125rem;
+    color: var(--ck-ink-3);
+  }
+  .kt-meta b {
+    margin-right: 8px;
+    color: var(--ck-ink);
+    font-weight: 700;
+  }
+  .kt-sample {
+    color: var(--ck-ink);
+    letter-spacing: -0.01em;
+  }
+  .kt-display {
+    font-size: clamp(2rem, 3.6vw, 3rem);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .kt-heading {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .kt-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+  }
+  .kt-body {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--ck-ink-2);
+  }
+  .kt-caption {
+    font-size: 0.75rem;
+    color: var(--ck-ink-3);
+  }
+
+  /* buttons */
+  .kit-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .kb {
+    padding: 11px 20px;
+    border: 0;
+    border-radius: 99px;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition:
+      transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.2s ease-out;
+  }
+  .kb:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  .kb-primary {
+    background: var(--k-green);
+    color: #fff;
+  }
+  .kb-cta {
+    background: var(--k-amber);
+    color: #5c3b00;
+  }
+  .kb-outline {
+    background: #fff;
+    color: var(--k-green);
+    box-shadow: inset 0 0 0 2px var(--k-green);
+  }
+  .kb-tint {
+    background: #ebf7f0;
+    color: var(--k-green);
+  }
+  .kb-off {
+    background: #eeeeee;
+    color: #9a9a9a;
+    cursor: not-allowed;
+  }
+  @media (hover: hover) {
+    .kb:hover:not(:disabled) {
+      filter: brightness(0.94);
+    }
+  }
+
+  /* components */
+  .kit-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .kch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 0;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: inset 0 0 0 1.5px #dcdcdc;
+    font: inherit;
+    text-align: left;
+    color: var(--ck-ink);
+    cursor: pointer;
+    transition:
+      box-shadow 0.25s ease-out,
+      color 0.25s ease-out,
+      transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .kch:active {
+    transform: scale(0.97);
+  }
+  .kch b {
+    display: block;
+    font-size: 0.9375rem;
+  }
+  .kch small {
+    font-size: 0.75rem;
+    color: var(--ck-ink-3);
+  }
+  .kch-ico {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--ck-ink);
+    transition: background-color 0.25s ease-out;
+  }
+  .kch-ico svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #fff;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .kch:global(.is-on) {
+    box-shadow: inset 0 0 0 2px var(--ck-green);
+    color: var(--ck-green);
+  }
+  .kch:global(.is-on) .kch-ico {
+    background: var(--ck-green);
+  }
+  .kc {
+    padding: 13px;
+    border: 0;
+    border-radius: 99px;
+    font: inherit;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #5c3b00;
+    background: var(--k-amber);
+    transition:
+      background-color 0.4s ease-out,
+      color 0.4s ease-out;
+  }
+  .kc:disabled {
+    background: #e6e6e6;
+    color: #8a8a8a;
+  }
+  .knav {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1fr;
+    padding: 5px;
+    border-radius: 99px;
+    background: #fff;
+    box-shadow: 0 10px 22px -14px rgb(20 23 26 / 0.4), 0 0 0 1px #ececec;
+  }
+  .knav-pill {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    left: 5px;
+    width: var(--pw, 40%);
+    border-radius: 99px;
+    background: var(--ck-ink);
+    transform: translateX(var(--px, 0px));
+    transition:
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .knav-tab {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ck-ink);
+    cursor: pointer;
+    transition: color 0.3s ease-out;
+  }
+  .knav-tab svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .knav-tab span {
+    display: none;
+  }
+  .knav-tab:global(.is-on) {
+    color: #fff;
+  }
+  .knav-tab:global(.is-on) span {
+    display: inline;
+  }
+
+  /* contrast: one quiet line of checks */
+  .kit-checks {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .kit-checks li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 14px 6px 6px;
+    border-radius: 99px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-size: 0.8125rem;
+    color: var(--ck-ink-2);
+  }
+  .kit-checks b {
+    color: var(--ck-ink);
+  }
+  .kc-dot {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--fg);
+    box-shadow: inset 0 0 0 1px rgb(20 23 26 / 0.12);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+
+  @media (max-width: 900px) {
+    .kit {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .kit-choices {
+      grid-template-columns: 1fr;
+    }
+    .kb {
+      padding: 10px 16px;
+      font-size: 0.875rem;
+    }
+  }
+</style>

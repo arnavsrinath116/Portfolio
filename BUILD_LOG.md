@@ -16,6 +16,56 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-14 · Cooked: UI kit distilled
+
+The first version was too much, and its spec-sheet look (mono, uppercase tables) didn't match the case study. It is now about one screen on desktop:
+
+- **Removed:** the colour token table (the palette swatches just above already cover it), the 10-row type table, the 3-size button grid, the pressable buttons and step dots, and the chef nav.
+- **What remains:**
+  - **Type:** five real Cooked lines (Display "Book a chef" → Caption), each labelled with size, line height and weight.
+  - **Buttons:** one row of five (primary, CTA, outline, tint, disabled).
+  - **Components:** live choice cards → Continue → the diner nav.
+  - **Contrast:** one row of four calculated checks (Text 17.4 AAA, Body 8.9 AAA, Buttons 5.9 AA, Hints 3.5 large text only).
+- **Style:** the case study's own language: white cards with soft rules, green kickers, Satoshi headings and pill buttons. The "UI kit" header uses the shared kicker and heading styles.
+- **Motion:** cards rise, buttons and checks stagger, and a short demo plays once (a choice is picked, Continue turns on, the nav pill visits each tab).
+
+---
+
+## 2026-10-14 · Cooked: UI kit in "Plating up"
+
+- **Placement:** a new block right after the moodboard, `CookedKit.astro`, rebuilt as live HTML from the Figma UI kit screenshots, not images:
+  1. **Colour tokens:** three columns (light surfaces, green for interaction only, amber & text), 18 tokens with hex and role; ★ marks the key tokens.
+  2. **Contrast:** 8 pairs.
+  3. **Type scale:** 10 Satoshi steps, with token, size/line, weight, usage and a live sample.
+  4. **Buttons:** 5 variants at 3 sizes, plus disabled.
+  5. **Components:**
+     - pressable 3D buttons (the face sinks on press);
+     - step dots;
+     - the Continue buttons (disabled → enabled, and green with mail/phone icons);
+     - Vegetarian / Non-vegetarian choice cards;
+     - diner and chef bottom navs with a sliding pill.
+- **Contrast is calculated with the WCAG 2.1 formula, not copied from the kit.** The kit's numbers were off:
+
+  | Pair | Kit said | Actual |
+  |---|---|---|
+  | tx-primary on white | 19.1 | 17.4 |
+  | tx-secondary on white | 9.7 | 8.9 |
+  | green-500 on white | 7.2 | 5.9 (AA, not AAA) |
+  | green-700 on green-50 | 9.3 | 8.5 |
+  | tx-muted on white | 4.6 AA | 3.5, AA large only (noted under the cards) |
+
+  amber-900/700 aren't among the kit's swatches; the browns used are #5C3B00 and #8A5A00.
+- **Motion:**
+  - colour columns rise with their chips popping in;
+  - ratio numbers count up and the grade badges pop;
+  - type samples slide in;
+  - button rows pop in sequence;
+  - a one-time demo when the components arrive: the step dots advance, Continue turns on, and the nav pill visits each tab.
+- **Interaction:** the components work: choice cards select and enable Continue, nav tabs move the pill, and pressables press. This works with reduced motion too.
+- **Phones:** one-column tokens, 2×2 contrast cards, a stacked type scale with samples scaled down (and wrapping), and wrapped button rows.
+
+---
+
 ## 2026-10-14 · Cooked: layout grids on the wireframes
 
 - **Read from the UI kit:** the wireframes use one layout grid throughout: 4 columns, 24 px margins, 20 px gutters, plus a row band inset 48 px top and bottom. The same 4/24/20 column grid sits on the Home wireframe's frame and the final screens.

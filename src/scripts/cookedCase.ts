@@ -223,6 +223,35 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       });
     }
 
+    // ---- UI kit: the components respond (also with reduced motion) ----
+    const kit = article.querySelector<HTMLElement>('[data-kit]');
+    if (kit) {
+      // choice cards: one selected at a time; choosing enables Continue
+      const choices = Array.from(kit.querySelectorAll<HTMLButtonElement>('[data-kit-choice]'));
+      const cont = kit.querySelector<HTMLButtonElement>('[data-kit-continue]');
+      choices.forEach((c) =>
+        c.addEventListener('click', () => {
+          choices.forEach((o) => {
+            o.classList.toggle('is-on', o === c);
+            o.setAttribute('aria-pressed', String(o === c));
+          });
+          if (cont) cont.disabled = false;
+        }),
+      );
+      // bottom navs: the pill slides to the tapped tab
+      kit.querySelectorAll<HTMLElement>('[data-kit-nav]').forEach((nav) => {
+        const tabs = Array.from(nav.querySelectorAll<HTMLElement>('.knav-tab'));
+        const pick = (t: HTMLElement) => {
+          tabs.forEach((o) => o.classList.toggle('is-on', o === t));
+          nav.style.setProperty('--pw', `${t.offsetWidth}px`);
+          nav.style.setProperty('--px', `${t.offsetLeft - 5}px`);
+        };
+        tabs.forEach((t) => t.addEventListener('click', () => pick(t)));
+        new ResizeObserver(() => pick(tabs.find((t) => t.classList.contains('is-on')) ?? tabs[0])).observe(nav);
+        (nav as HTMLElement & { _pick?: (t: HTMLElement) => void })._pick = pick;
+      });
+    }
+
     // the wordmark lands with a little bounce each time the card opens
     const mark = article.querySelector('.ck-wordmark img');
 
@@ -450,6 +479,24 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         0,
       );
       hold(tl, 0.12);
+    }
+
+    // UI kit: a short demo plays once as it arrives: a choice is made, Continue turns on, the nav moves
+    if (kit) {
+      const nav = kit.querySelector<HTMLElement & { _pick?: (t: HTMLElement) => void }>('[data-kit-nav]');
+      const first = kit.querySelector<HTMLButtonElement>('[data-kit-choice]');
+      ScrollTrigger.create(
+        ST(kit, {
+          start: 'top 55%',
+          once: true,
+          onEnter: () => {
+            const tabs = nav ? Array.from(nav.querySelectorAll<HTMLElement>('.knav-tab')) : [];
+            setTimeout(() => first?.click(), 500);
+            tabs.slice(1).forEach((t, k) => setTimeout(() => nav?._pick?.(t), 1100 + k * 650));
+            if (tabs[0]) setTimeout(() => nav?._pick?.(tabs[0]), 1100 + 2 * 650);
+          },
+        }),
+      );
     }
 
     // dessert: the turmeric finale opens out

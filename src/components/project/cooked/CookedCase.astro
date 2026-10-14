@@ -1,6 +1,7 @@
 ---
 import Phone from './Phone.astro';
 import CookedFlow from './CookedFlow.astro';
+import CookedKit from './CookedKit.astro';
 import { withBase } from '../../../lib/url';
 import type { Project } from '../../../data/projects';
 import { projects } from '../../../data/projects';
@@ -451,6 +452,12 @@ const journey = [
         <p><b>Satoshi</b>clean, modern, but warm</p>
       </div>
       <img class="ck-mood" src={img('moodboard')} alt="Moodboard: green urban-food posters, food app screens and warm food photography" width="1606" height="766" loading="lazy" data-a="up" />
+    </div>
+
+    <div class="ck-block ck-kit-wrap" data-ck-pt="0.08">
+      <p class="ck-kicker" data-a="up">UI kit</p>
+      <h3 class="ck-h" data-a="up">The kit behind the screens</h3>
+      <CookedKit />
     </div>
 
     <div class="ck-scene ck-journey-scene" style="--len: 2.6" data-scene="journey" data-ck-rail>
@@ -1764,6 +1771,9 @@ const journey = [
     line-height: 0.9;
     letter-spacing: -0.05em;
     color: var(--ck-ink) !important;
+  }
+  .ck-kit-wrap > .ck-kicker {
+    margin-bottom: 10px;
   }
   .ck-mood {
     grid-column: 1 / -1;
