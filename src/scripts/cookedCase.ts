@@ -176,6 +176,53 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         ST(article.querySelector('.ck-hero')!, { start: 'top -35%', end: () => `+=${sc.scrollHeight}`, toggleClass: { targets: dock, className: 'is-on' } }),
       );
 
+    // the full user flow: fits the card by default; click or "Zoom in" to read it, drag to move around
+    const view = article.querySelector<HTMLElement>('[data-cf-view]');
+    const zoomBtn = article.querySelector<HTMLButtonElement>('[data-cf-zoom]');
+    if (view && zoomBtn) {
+      const setZoom = (on: boolean, at?: { x: number; y: number }) => {
+        const r = view.getBoundingClientRect();
+        const fx = at ? (at.x - r.left) / r.width : 0.5;
+        const fy = at ? (at.y - r.top) / r.height : 0.3;
+        view.classList.toggle('is-zoomed', on);
+        zoomBtn.setAttribute('aria-pressed', String(on));
+        zoomBtn.textContent = on ? 'Fit to card' : 'Zoom in';
+        if (on) {
+          // land on the spot that was clicked
+          view.scrollLeft = fx * view.scrollWidth - view.clientWidth / 2;
+          view.scrollTop = fy * view.scrollHeight - view.clientHeight / 2;
+        }
+        ScrollTrigger.refresh();
+      };
+      zoomBtn.addEventListener('click', () => setZoom(!view.classList.contains('is-zoomed')));
+      let drag: { x: number; y: number; l: number; t: number; moved: boolean } | null = null;
+      view.addEventListener('pointerdown', (e) => {
+        if (!view.classList.contains('is-zoomed')) return;
+        drag = { x: e.clientX, y: e.clientY, l: view.scrollLeft, t: view.scrollTop, moved: false };
+        view.setPointerCapture(e.pointerId);
+      });
+      view.addEventListener('pointermove', (e) => {
+        if (!drag) return;
+        const dx = e.clientX - drag.x;
+        const dy = e.clientY - drag.y;
+        if (Math.abs(dx) + Math.abs(dy) > 3) {
+          drag.moved = true;
+          view.classList.add('is-dragging');
+        }
+        view.scrollLeft = drag.l - dx;
+        view.scrollTop = drag.t - dy;
+      });
+      const end = () => {
+        drag = null;
+        view.classList.remove('is-dragging');
+      };
+      view.addEventListener('pointerup', end);
+      view.addEventListener('pointercancel', end);
+      view.addEventListener('click', (e) => {
+        if (!view.classList.contains('is-zoomed')) setZoom(true, { x: e.clientX, y: e.clientY });
+      });
+    }
+
     // the wordmark lands with a little bounce each time the card opens
     const mark = article.querySelector('.ck-wordmark img');
 
@@ -362,18 +409,6 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         .from(q(id, '[data-keep-tag]'), { autoAlpha: 0, y: 10, scale: 0.6, stagger: 0.2, duration: 0.45, ease: 'back.out(2)' })
         .from(id.querySelector('[data-ideas-cap]'), { autoAlpha: 0, y: 20, duration: 0.4 });
       hold(tl);
-    }
-
-    // develop: the user flow fills in down both lanes
-    const flow = article.querySelector<HTMLElement>('[data-ck-flow]');
-    if (flow) {
-      const tl = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: ST(flow, { start: 'top 78%', end: 'bottom 72%', scrub: 0.6 }) });
-      tl.from(flow.querySelector('.ck-flow-start'), { autoAlpha: 0, y: 20, duration: 0.4 });
-      q(flow, '.ck-flow-col').forEach((col) => {
-        const nodes = q(col, '[data-flow-node]');
-        tl.from(col.querySelector('[data-flow-rail]'), { scaleY: 0, duration: nodes.length * 0.35 }, 0.4);
-        nodes.forEach((n, i) => tl.from(n, { autoAlpha: 0, scale: 0.8, duration: 0.25, ease: 'back.out(2)' }, 0.4 + i * 0.35));
-      });
     }
 
     // develop: feedback flips chef-first to food-first

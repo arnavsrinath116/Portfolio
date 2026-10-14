@@ -1,5 +1,6 @@
 ---
 import Phone from './Phone.astro';
+import CookedFlow from './CookedFlow.astro';
 import { withBase } from '../../../lib/url';
 import type { Project } from '../../../data/projects';
 import { projects } from '../../../data/projects';
@@ -85,26 +86,6 @@ const journey = [
   { src: 'ui-success', cap: 'Booked', alt: 'Payment successful with booking details' },
 ];
 
-const flowConsumer = [
-  'Sign up',
-  'Set your taste once',
-  ['Browse dishes', 'Find chefs', 'Upload a recipe', 'Surprise me!'],
-  'Customise: spice · oil · ingredients',
-  'Match a cook',
-  'Confirm & pay',
-  'Track: accepted → cooking → ready',
-  'Rate · tip · reorder',
-];
-const flowChef = [
-  'Verify ID',
-  'Hygiene declaration',
-  'Signature dishes & cuisines',
-  'Hourly pricing',
-  'Availability',
-  'Dashboard',
-  ['Accept', 'Decline', 'Ask to modify'],
-  'Earnings',
-];
 ---
 
 <article class="ck" data-project="cooked" data-theme="light" data-card-bg="#f4f5f2" aria-labelledby="cooked-title" hidden data-ck>
@@ -392,34 +373,8 @@ const flowChef = [
     </div>
 
     <div class="ck-block ck-flow-wrap" data-ck-pt="0.1">
-      <h3 class="ck-h" data-a="up">One app, two kitchens</h3>
-      <div class="ck-flow" data-ck-flow>
-        <p class="ck-flow-start" data-flow-node>Welcome → <b>What’s your role?</b></p>
-        <div class="ck-flow-cols">
-          {
-            [
-              ['I’m hungry', flowConsumer],
-              ['I’m a chef', flowChef],
-            ].map(([title, steps]) => (
-              <ol class="ck-flow-col">
-                <li class="ck-flow-title" data-flow-node>{title as string}</li>
-                {(steps as (string | string[])[]).map((s) =>
-                  Array.isArray(s) ? (
-                    <li class="ck-flow-fork" data-flow-node>
-                      {s.map((x) => (
-                        <span>{x}</span>
-                      ))}
-                    </li>
-                  ) : (
-                    <li data-flow-node>{s}</li>
-                  ),
-                )}
-                <span class="ck-flow-rail" data-flow-rail aria-hidden="true" />
-              </ol>
-            ))
-          }
-        </div>
-      </div>
+      <h3 class="ck-h" data-a="up">The full user flow</h3>
+      <div data-a="up"><CookedFlow /></div>
     </div>
 
     <div class="ck-block" data-ck-pt="0.9">
@@ -1628,79 +1583,6 @@ const flowChef = [
     rotate: 2.5deg;
   }
 
-  .ck-flow {
-    display: grid;
-    justify-items: center;
-    gap: 26px;
-  }
-  .ck-flow-start {
-    padding: 14px 22px;
-    border-radius: 999px;
-    background: var(--ck-ink);
-    color: #fff;
-    font-weight: 600;
-  }
-  .ck-flow-start b {
-    color: var(--ck-turmeric);
-  }
-  .ck-flow-cols {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(16px, 6vw, 96px);
-    width: 100%;
-    max-width: 980px;
-  }
-  .ck-flow-col {
-    position: relative;
-    display: grid;
-    justify-items: center;
-    gap: 18px;
-    padding-top: 6px;
-  }
-  .ck-flow-rail {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    z-index: -1;
-    width: 3px;
-    margin-left: -1.5px;
-    background: var(--ck-green);
-    transform-origin: top;
-  }
-  .ck-flow-col li {
-    padding: 12px 18px;
-    border-radius: 14px;
-    background: #fff;
-    box-shadow: 0 0 0 1.5px var(--ck-ink);
-    font-weight: 700;
-    font-size: clamp(0.8125rem, 1.1vw, 1rem);
-    text-align: center;
-    max-width: 100%;
-  }
-  .ck-flow-col .ck-flow-title {
-    background: var(--ck-green);
-    box-shadow: none;
-    color: #fff;
-    font-size: clamp(0.9375rem, 1.3vw, 1.125rem);
-  }
-  .ck-flow-col li.ck-flow-fork {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px;
-    padding: 0;
-    background: none;
-    box-shadow: none;
-  }
-  .ck-flow-fork span {
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: var(--ck-turmeric-tint);
-    box-shadow: 0 0 0 1.5px var(--ck-turmeric-deep);
-    font-size: clamp(0.75rem, 1vw, 0.875rem);
-  }
-
   /* mid-fi wireframes: the same phone frame as the final screens, captioned like the journey */
   .ck-wires {
     --ph-w: clamp(140px, 17vw, 236px);
@@ -2207,9 +2089,6 @@ const flowChef = [
     }
     .ck-wire p {
       font-size: 0.8125rem;
-    }
-    .ck-flow-col li {
-      padding: 10px 10px;
     }
     .ck-others-grid {
       grid-template-columns: 1fr;

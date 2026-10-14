@@ -16,6 +16,33 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-14 · Cooked: the full user flow from FigJam
+
+- **Replaced** the simplified two-lane flow with the full "Final user flow" from the FigJam board:
+  - 95 shapes, 106 connectors (with their yes / no / "if new" labels), 6 grouped regions, 8 marker triangles and the board's notes;
+  - read through the Figma plugin API into `src/data/cookedFlow.json`, keeping the board's own positions.
+- **`CookedFlow.astro`** draws it at build time as one SVG with right-angle connectors and arrowheads, in the Cooked palette:
+
+  | Element | Style |
+  |---|---|
+  | Start | green circle |
+  | Steps | white boxes with a black outline |
+  | Decisions | turmeric-tint diamonds |
+  | Inputs / outputs | green-tint parallelograms |
+  | Control points | green triangles |
+  | Set up + verify points | turmeric triangles |
+  | Sign up & verification region | grey dashed area |
+  | Role & personalisation region | turmeric dashed area |
+  | Dashboard regions | green dashed area |
+
+- **The key** sits under the map, using the same symbols.
+- **Reading it:** the map fits the card by default. Click the map, or "Zoom in", to view it at 3000 px wide (2200 on phones), landing where you clicked; drag to move around; "Fit to card" returns.
+- **Fit fixes:** labels shrink to fit their box when they wrap, boxes the board had stacked flush are nudged apart, and arrowheads are smaller.
+- **Removed:** the old flow markup, CSS and its scroll animation.
+- **Note:** the dev server needed `astro dev --force` after the base-path change ("Outdated Optimize Dep").
+
+---
+
 ## 2026-10-14 · Publishing: GitHub Pages at /Portfolio/
 
 - **Address:** the repo keeps its name, so the site is served from a sub-folder: **https://arnavsrinath116.github.io/Portfolio/**.

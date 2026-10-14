@@ -1,0 +1,360 @@
+---
+/**
+ * The full user flow from the FigJam board, redrawn at build time as one SVG
+ * in the Cooked palette, with the board's key. Positions are the board's own;
+ * connectors are routed as right-angle elbows between shape edges.
+ */
+import flow from '../../../data/cookedFlow.json';
+
+type N = (typeof flow.nodes)[number];
+const PAD = 60;
+const all = [...flow.nodes, ...flow.groups];
+const minX = Math.min(...all.map((n) => n.x)) - PAD;
+const minY = Math.min(...all.map((n) => n.y)) - PAD;
+const W = Math.max(...all.map((n) => n.x + n.w)) - minX + PAD;
+const H = Math.max(...all.map((n) => n.y + n.h)) - minY + PAD;
+const X = (x: number) => x - minX;
+const Y = (y: number) => y - minY;
+const byId = new Map(flow.nodes.map((n) => [n.id, n]));
+
+const FS = 26;
+// wrap a label into lines that fit the shape (approximate glyph width for Satoshi)
+const wrap = (text: string, width: number, fs = FS) => {
+  const max = Math.max(6, Math.floor(width / (fs * 0.53)));
+  const lines: string[] = [];
+  let line = '';
+  for (const word of text.split(' ')) {
+    if ((line + ' ' + word).trim().length > max && line) {
+      lines.push(line);
+      line = word;
+    } else line = (line + ' ' + word).trim();
+  }
+  if (line) lines.push(line);
+  return lines;
+};
+const inner = (n: N) => (n.t === 'decision' ? n.w * 0.62 : n.t === 'io' ? n.w * 0.78 : n.w - 34);
+
+// connector: leave from the side facing the target, arrive at the side facing the source
+const route = (a: N, b: N) => {
+  const ax = X(a.x + a.w / 2), ay = Y(a.y + a.h / 2);
+  const bx = X(b.x + b.w / 2), by = Y(b.y + b.h / 2);
+  const dx = bx - ax, dy = by - ay;
+  if (Math.abs(dy) > Math.abs(dx) * 0.6) {
+    const sy = ay + Math.sign(dy) * (a.h / 2);
+    const ty = by - Math.sign(dy) * (b.h / 2);
+    const my = (sy + ty) / 2;
+    return { d: `M${ax},${sy} V${my} H${bx} V${ty}`, lx: (ax + bx) / 2, ly: my };
+  }
+  const sx = ax + Math.sign(dx) * (a.w / 2);
+  const tx = bx - Math.sign(dx) * (b.w / 2);
+  const mx = (sx + tx) / 2;
+  return { d: `M${sx},${ay} H${mx} V${by} H${tx}`, lx: mx, ly: (ay + by) / 2 };
+};
+
+const shape = (n: N) => {
+  const x = X(n.x), y = Y(n.y), { w, h } = n;
+  if (n.t === 'start') return { tag: 'ellipse', cx: x + w / 2, cy: y + h / 2, rx: w / 2, ry: h / 2 };
+  if (n.t === 'decision')
+    return { tag: 'polygon', points: `${x + w / 2},${y} ${x + w},${y + h / 2} ${x + w / 2},${y + h} ${x},${y + h / 2}` };
+  if (n.t === 'io') {
+    const k = h * 0.35;
+    return { tag: 'polygon', points: `${x + k},${y} ${x + w},${y} ${x + w - k},${y + h} ${x},${y + h}` };
+  }
+  return { tag: 'rect', x, y, width: w, height: h, rx: 22 };
+};
+const tri = (m: (typeof flow.marks)[number]) => {
+  const x = X(m.x), y = Y(m.y);
+  return `${x + 36},${y} ${x + 73},${y + 62} ${x},${y + 62}`;
+};
+---
+
+<figure class="cf">
+  <div class="cf-view" data-cf-view data-lenis-prevent>
+    <svg class="cf-svg" viewBox={`0 0 ${W} ${H}`} role="img" aria-labelledby="cf-title" data-cf-svg>
+      <title id="cf-title">Cooked's full user flow: sign up and verification, role selection, then the cook's and the consumer's journeys from setup to dashboard, ordering, matching, payment and delivery.</title>
+      <defs>
+        <marker id="cf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#337140"></path>
+        </marker>
+      </defs>
+      {flow.groups.map((g) => <rect class={`cf-group cf-group-${g.kind}`} x={X(g.x)} y={Y(g.y)} width={g.w} height={g.h} rx="36" />)}
+      {
+        flow.labels.map((l) => (
+          <text class:list={['cf-label', { 'cf-note': l.note }]} x={X(l.x) + 18} y={Y(l.y) + 44}>
+            {l.text}
+          </text>
+        ))
+      }
+      <g class="cf-edges">
+        {
+          flow.edges.map((e) => {
+            const r = route(byId.get(e.a)!, byId.get(e.b)!);
+            return (
+              <g>
+                <path d={r.d} marker-end="url(#cf-arrow)" />
+                {e.label && (
+                  <text class="cf-edge-label" x={r.lx} y={r.ly - 10}>
+                    {e.label}
+                  </text>
+                )}
+              </g>
+            );
+          })
+        }
+      </g>
+      {
+        flow.nodes.map((n) => {
+          const s = shape(n);
+          // shrink the type when a label needs more lines than the box can hold
+          let fs = FS;
+          let lines = wrap(n.label, inner(n), fs);
+          while (lines.length * fs * 1.1 > n.h * (n.t === 'decision' ? 0.6 : 0.82) && fs > 17) {
+            fs -= 2;
+            lines = wrap(n.label, inner(n), fs);
+          }
+          const cx = X(n.x + n.w / 2);
+          const cy = Y(n.y + n.h / 2) - ((lines.length - 1) * fs * 1.1) / 2 + fs * 0.35;
+          const { tag, ...attrs } = s;
+          return (
+            <g class={`cf-node cf-${n.t}`}>
+              {tag === 'ellipse' && <ellipse {...attrs} />}
+              {tag === 'polygon' && <polygon {...attrs} />}
+              {tag === 'rect' && <rect {...attrs} />}
+              <text x={cx} y={cy} style={`font-size:${fs}px`}>
+                {lines.map((ln, i) => (
+                  <tspan x={cx} dy={i ? fs * 1.1 : 0}>
+                    {ln}
+                  </tspan>
+                ))}
+              </text>
+            </g>
+          );
+        })
+      }
+      {flow.marks.map((m) => <polygon class={`cf-mark cf-mark-${m.kind}`} points={tri(m)} />)}
+    </svg>
+  </div>
+
+  <figcaption class="cf-bar">
+    <ul class="cf-key" aria-label="Key">
+      <li><svg viewBox="0 0 40 24" aria-hidden="true"><ellipse cx="20" cy="12" rx="11" ry="11" class="k-start" /></svg>Start</li>
+      <li><svg viewBox="0 0 40 24" aria-hidden="true"><rect x="2" y="3" width="36" height="18" rx="5" class="k-step" /></svg>Step</li>
+      <li><svg viewBox="0 0 40 24" aria-hidden="true"><polygon points="20,1 38,12 20,23 2,12" class="k-decision" /></svg>Decision</li>
+      <li><svg viewBox="0 0 40 24" aria-hidden="true"><polygon points="8,3 38,3 32,21 2,21" class="k-io" /></svg>Input / output</li>
+      <li><svg viewBox="0 0 40 24" aria-hidden="true"><polygon points="20,3 33,21 7,21" class="cf-mark-control" /></svg>Control point</li>
+      <li><svg viewBox="0 0 40 24" aria-hidden="true"><polygon points="20,3 33,21 7,21" class="cf-mark-setup" /></svg>Set up + verify</li>
+      <li><span class="k-swatch cf-group-auth"></span>Sign up &amp; verification</li>
+      <li><span class="k-swatch cf-group-setup"></span>Role &amp; personalisation</li>
+      <li><span class="k-swatch cf-group-dash"></span>Dashboards</li>
+    </ul>
+    <button type="button" class="cf-zoom" aria-pressed="false" data-cf-zoom>Zoom in</button>
+  </figcaption>
+  <p class="cf-hint">Click the map or “Zoom in” to read it; drag to move around.</p>
+</figure>
+
+<style>
+  .cf {
+    margin: 0;
+  }
+  .cf-view {
+    position: relative;
+    overflow: hidden;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 0 0 1px rgb(20 23 26 / 0.12);
+    cursor: zoom-in;
+  }
+  .cf-view:global(.is-zoomed) {
+    overflow: auto;
+    max-height: min(78svh, 760px);
+    cursor: grab;
+    overscroll-behavior: contain;
+  }
+  .cf-view:global(.is-dragging) {
+    cursor: grabbing;
+  }
+  .cf-svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    font-family: 'Satoshi', system-ui, sans-serif;
+  }
+  .cf-view:global(.is-zoomed) .cf-svg {
+    width: 3000px; /* about half the board's size: every label reads */
+    max-width: none;
+  }
+
+  .cf-group {
+    stroke-width: 3;
+    stroke-dasharray: 14 12;
+  }
+  .cf-group-dash {
+    fill: rgb(51 113 64 / 0.07);
+    stroke: rgb(51 113 64 / 0.4);
+  }
+  .cf-group-setup {
+    fill: rgb(244 182 63 / 0.12);
+    stroke: rgb(202 137 47 / 0.5);
+  }
+  .cf-group-auth {
+    fill: rgb(20 23 26 / 0.035);
+    stroke: rgb(20 23 26 / 0.2);
+  }
+  .cf-label {
+    font-size: 34px;
+    font-weight: 800;
+    fill: #14171a;
+    letter-spacing: -0.01em;
+  }
+  .cf-note {
+    font-size: 28px;
+    font-weight: 600;
+    font-style: italic;
+    fill: rgb(20 23 26 / 0.62);
+  }
+
+  .cf-edges path {
+    fill: none;
+    stroke: #337140;
+    stroke-width: 3.5;
+    stroke-linejoin: round;
+  }
+  .cf-edge-label {
+    font-size: 26px;
+    font-weight: 800;
+    text-anchor: middle;
+    fill: #337140;
+    paint-order: stroke;
+    stroke: #fff;
+    stroke-width: 8;
+  }
+
+  .cf-node text {
+    font-size: 30px;
+    font-weight: 700;
+    text-anchor: middle;
+    fill: #14171a;
+  }
+  .cf-step rect {
+    fill: #fff;
+    stroke: #14171a;
+    stroke-width: 3;
+  }
+  .cf-start ellipse {
+    fill: #337140;
+  }
+  .cf-start text {
+    fill: #fff;
+    font-weight: 800;
+  }
+  .cf-decision polygon {
+    fill: #fbe6b3;
+    stroke: #ca892f;
+    stroke-width: 3;
+  }
+  .cf-io polygon {
+    fill: #dcebdd;
+    stroke: #337140;
+    stroke-width: 3;
+  }
+  .cf-mark-control {
+    fill: #337140;
+  }
+  .cf-mark-setup {
+    fill: #f4b63f;
+  }
+
+  .cf-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 24px;
+    margin-top: 16px;
+  }
+  .cf-key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: #14171a;
+  }
+  .cf-key li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .cf-key svg {
+    width: 30px;
+    height: 18px;
+  }
+  .k-start {
+    fill: #337140;
+  }
+  .k-step {
+    fill: #fff;
+    stroke: #14171a;
+    stroke-width: 2;
+  }
+  .k-decision {
+    fill: #fbe6b3;
+    stroke: #ca892f;
+    stroke-width: 2;
+  }
+  .k-io {
+    fill: #dcebdd;
+    stroke: #337140;
+    stroke-width: 2;
+  }
+  .k-swatch {
+    width: 22px;
+    height: 16px;
+    border-radius: 5px;
+    border: 2px dashed;
+  }
+  .k-swatch.cf-group-dash {
+    background: rgb(51 113 64 / 0.1);
+    border-color: rgb(51 113 64 / 0.5);
+  }
+  .k-swatch.cf-group-setup {
+    background: rgb(244 182 63 / 0.16);
+    border-color: rgb(202 137 47 / 0.6);
+  }
+  .k-swatch.cf-group-auth {
+    background: rgb(20 23 26 / 0.05);
+    border-color: rgb(20 23 26 / 0.3);
+  }
+  .cf-zoom {
+    margin-left: auto;
+    padding: 8px 16px;
+    border-radius: 99px;
+    border: 1px solid rgb(20 23 26 / 0.2);
+    background: #fff;
+    color: #14171a;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .cf-zoom[aria-pressed='true'] {
+    background: #337140;
+    border-color: #337140;
+    color: #fff;
+  }
+  .cf-hint {
+    margin-top: 8px;
+    font-size: 0.8125rem;
+    color: rgb(20 23 26 / 0.62);
+  }
+  @media (max-width: 640px) {
+    .cf-view:global(.is-zoomed) .cf-svg {
+      width: 2200px;
+    }
+    .cf-key {
+      gap: 8px 12px;
+      font-size: 0.75rem;
+    }
+  }
+</style>
