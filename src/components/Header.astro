@@ -1,10 +1,11 @@
 ---
+import { withBase } from '../lib/url';
 import { site } from '../data/site';
 ---
 
 
 <header class="site-header" data-header data-reveal>
-  <a class="logo" href="/" aria-label={`${site.name}, home`} data-magnet>
+  <a class="logo" href={withBase('/')} aria-label={`${site.name}, home`} data-magnet>
     <span class="cube-stage" aria-hidden="true">
       <span class="cube">
         <span class="face front">A</span>

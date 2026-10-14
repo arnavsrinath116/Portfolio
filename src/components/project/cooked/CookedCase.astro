@@ -1,5 +1,6 @@
 ---
 import Phone from './Phone.astro';
+import { withBase } from '../../../lib/url';
 import type { Project } from '../../../data/projects';
 import { projects } from '../../../data/projects';
 
@@ -8,7 +9,7 @@ interface Props {
 }
 const { project } = Astro.props;
 const others = projects.filter((p) => p.slug !== project.slug);
-const img = (n: string) => `/projects/cooked/${n}.webp`;
+const img = (n: string) => withBase(`/projects/cooked/${n}.webp`);
 
 // facts shown in the hero; placeholders stay hidden until they're real
 const facts = [

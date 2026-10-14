@@ -1,8 +1,9 @@
 import { defineConfig } from 'astro/config';
 
 export default defineConfig({
-  // published with GitHub Pages at the root of the user site (repo: arnavsrinath116.github.io)
+  // published with GitHub Pages from the repo "Portfolio": https://arnavsrinath116.github.io/Portfolio/
   site: 'https://arnavsrinath116.github.io',
+  base: '/Portfolio',
   devToolbar: { enabled: false },
   vite: {
     // the 3D viewer imports these lazily; bundle them up front so the dev server

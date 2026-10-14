@@ -16,13 +16,27 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
-## 2026-10-14 · Publishing: GitHub Pages
+## 2026-10-14 · Publishing: GitHub Pages at /Portfolio/
 
-- **`.github/workflows/deploy.yml`:** on every push to `main` it builds with Astro's official action (`withastro/action@v3`, Node 24) and publishes with `actions/deploy-pages@v4`. It can also be re-run by hand from the Actions tab.
-- **`astro.config.mjs`:** `site: 'https://arnavsrinath116.github.io'`. The site is served from the root of the user site, so the root-relative asset paths (`/projects/…`, `/models/…`, `/fonts/…`, `/draco/…`) keep working.
-- **Setup on GitHub:**
-  1. Rename the repo to `arnavsrinath116.github.io`.
-  2. Settings → Pages → Source: "GitHub Actions".
+- **Address:** the repo keeps its name, so the site is served from a sub-folder: **https://arnavsrinath116.github.io/Portfolio/**.
+- **`astro.config.mjs`:** `site: 'https://arnavsrinath116.github.io'` and `base: '/Portfolio'`.
+- **`src/lib/url.ts` → `withBase()`** prefixes every root-relative link with the base path:
+  - Cooked images and the Phone frames;
+  - the work-tile cover;
+  - the 3D model URLs (`ModelViewer`);
+  - the favicon;
+  - the logo's home link;
+  - the menu's Work/Skills links;
+  - the Draco decoder path (`modelViewer.ts`, via `import.meta.env.BASE_URL`).
+  - CSS `url()`s (the grain texture, Satoshi `@font-face`) are rewritten by Vite at build time.
+- **`.github/workflows/deploy.yml`:** builds with `withastro/action@v3` (Node 24) and deploys with `actions/deploy-pages@v4` on every push to `main`. It can also be run by hand.
+- **Checked** on the production build served under `/Portfolio/`:
+  - zero failed requests and no script errors;
+  - all three Fusion models load (Draco decoder found);
+  - Satoshi loads;
+  - the logo and menu links resolve inside `/Portfolio/`.
+- **Local dev now runs at `http://localhost:4321/Portfolio/`**, because the base applies to dev too.
+- **One-time on GitHub:** Settings → Pages → Source: "GitHub Actions".
 
 ---
 

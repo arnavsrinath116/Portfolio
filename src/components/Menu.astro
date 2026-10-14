@@ -1,11 +1,12 @@
 ---
+import { withBase } from '../lib/url';
 import Icon from './Icon.astro';
 import { site } from '../data/site';
 
 // Sheets that exist are links; sheets still being drawn are listed honestly.
 const items = [
-  { label: 'Work', href: '/#work' },
-  { label: 'Skills', href: '/#skills' },
+  { label: 'Work', href: withBase('/#work') },
+  { label: 'Skills', href: withBase('/#skills') },
   { label: 'Sketchbook', href: null },
   { label: 'About', href: null },
   { label: 'Contact', href: '#contact' },

@@ -1,6 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import { projects } from '../data/projects';
+import { withBase } from '../lib/url';
 
 // tiles are laid out by position: the first is the large lead slab, the next two stack beside it
 const slots = ['a', 'b', 'c'];
@@ -28,7 +29,7 @@ const slots = ['a', 'b', 'c'];
         >
           {p.cover ? (
             <div class="panel-frame panel-cover">
-              <img src={p.cover.src} alt={p.cover.alt} width="2000" height="1160" loading="lazy" decoding="async" />
+              <img src={withBase(p.cover.src)} alt={p.cover.alt} width="2000" height="1160" loading="lazy" decoding="async" />
             </div>
           ) : (
             <div class="panel-frame" aria-hidden="true" />

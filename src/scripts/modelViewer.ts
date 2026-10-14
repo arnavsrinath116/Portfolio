@@ -144,7 +144,7 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
   const edgeMat = new THREE.LineBasicMaterial({ color: SAND, transparent: true, opacity: 0.55, clippingPlanes: clipping });
 
   // ---- load ----
-  const draco = new DRACOLoader().setDecoderPath('/draco/');
+  const draco = new DRACOLoader().setDecoderPath(`${import.meta.env.BASE_URL.replace(/\/$/, '')}/draco/`);
   const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(fig.dataset.model!, (e) => {
     if (e.total) status.textContent = `Loading model ${Math.round((e.loaded / e.total) * 100)}%`;
   });

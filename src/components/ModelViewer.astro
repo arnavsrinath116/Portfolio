@@ -1,5 +1,6 @@
 ---
 import type { SkillModel } from '../data/skills';
+import { withBase } from '../lib/url';
 
 interface Props {
   model: SkillModel;
@@ -13,7 +14,7 @@ const [x, y, z] = model.size;
 <!-- a Fusion model, turned by hand: modelViewer.ts loads three.js only when this scrolls into view -->
 <figure
   class="mv"
-  data-model={model.src}
+  data-model={withBase(model.src)}
   data-section={model.section ? '' : undefined}
   data-fade={model.fade?.join(',')}
 >
