@@ -7,7 +7,7 @@ import { skills } from '../data/skills';
 <section class="skills" id="skills" aria-labelledby="skills-title">
   <div class="skills-head">
     <h2 id="skills-title" class="skills-title">Skills</h2>
-    <p class="skills-note">The software I model, draw, prototype and render with. Open one to see the work made with it.</p>
+    <p class="skills-note">What I can do, and the tools I do it with. Open one to see the work.</p>
   </div>
 
   <div class="skills-grid" data-rise-group data-skills>
@@ -16,11 +16,13 @@ import { skills } from '../data/skills';
         <a href={`#skill-${s.slug}`} class="tile" data-open-project={`skill-${s.slug}`} data-panel={`skill-${s.slug}`} data-wire-host>
           <div class="tile-body" data-slab>
             <div class="tile-logo">
-              <WireLogo paths={s.logo} label={`${s.name} logo, drawn as a wireframe`} />
+              <WireLogo paths={s.logo} label={`${s.name} icon, drawn as a wireframe`} />
             </div>
             <div class="tile-meta">
               <h3 class="tile-name">{s.name}</h3>
               <p class="tile-use">{s.use}</p>
+              {/* an empty line still holds its height, so every tile's name sits on the same line */}
+              {s.tools.length > 0 ? <p class="tile-tools">{s.tools.join(' · ')}</p> : <p class="tile-tools" aria-hidden="true">&nbsp;</p>}
               <p class="tile-status">
                 <span class="status-dot" aria-hidden="true" />
                 {s.works.length} works
@@ -120,6 +122,15 @@ import { skills } from '../data/skills';
     font-size: 0.875rem;
     line-height: 1.45;
   }
+  /* the software behind the skill, set as small sheet data */
+  .tile-tools {
+    margin-top: -4px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
   .tile-status {
     display: inline-flex;
     align-items: center;
@@ -161,9 +172,23 @@ import { skills } from '../data/skills';
     outline-offset: 4px;
   }
 
-  @media (max-width: 1000px) {
+  @media (max-width: 1100px) {
     .skills-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  /* one skill a row on phones: icon on the left, words beside it */
+  @media (max-width: 760px) {
+    .skills-grid {
+      grid-template-columns: 1fr;
+    }
+    .tile-body {
+      grid-template-columns: 96px minmax(0, 1fr);
+      grid-template-rows: auto;
+      align-items: center;
+    }
+    .tile-logo {
+      padding: 16%;
     }
   }
   @media (max-width: 860px) {
@@ -174,12 +199,6 @@ import { skills } from '../data/skills';
   @media (max-width: 480px) {
     .tile-body {
       gap: 12px;
-    }
-    .tile-use {
-      display: none; /* two small tiles a row: name and count are enough */
-    }
-    .tile-name {
-      font-size: 0.9375rem; /* "Illustrator" fits a half-width tile */
     }
   }
 </style>

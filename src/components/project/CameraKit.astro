@@ -1,0 +1,160 @@
+---
+import type { KitItem } from '../../data/skills';
+
+interface Props {
+  kit: KitItem[];
+  id: string;
+}
+const { kit, id } = Astro.props;
+---
+
+<section class="kit sk-block" aria-labelledby={`${id}-kit`} data-kit>
+  <h3 class="sk-block-title" id={`${id}-kit`}>The kit</h3>
+  <ul class="kit-list">
+    {
+      kit.map((k) => (
+        <li>
+          <figure class="kit-fig">
+            {k.art === 'eos-500d' && (
+              <svg class="kit-art kit-dslr" viewBox="28 30 284 210" aria-hidden="true">
+                {/* body: grip on the left, pentaprism hump, top plate */}
+                <path class="ln" pathLength="1" d="M60 236 C46 236 40 226 40 212 V128 C40 106 56 94 78 94 H116 L132 50 Q135 42 143 42 H197 Q205 42 208 50 L224 94 H282 Q300 94 300 112 V218 Q300 236 282 236 Z" />
+                <path class="ln ln-2" pathLength="1" d="M98 98 C106 130 106 200 98 236" />
+                <path class="ln ln-2" pathLength="1" d="M150 42 V35 H190 V42" />
+                <path class="ln" pathLength="1" d="M58 94 Q58 86 72 86 Q86 86 86 94" />
+                <path class="ln ln-2" pathLength="1" d="M238 94 V84 H276 V94 M245 84 V94 M252 84 V94 M259 84 V94 M266 84 V94" />
+                <path class="ln ln-2" pathLength="1" d="M34 112 H40 V128 H34 Z M300 112 H306 V128 H300 Z" />
+                <circle class="ln ln-2" pathLength="1" cx="108" cy="106" r="5" />
+                <circle class="ln ln-2" pathLength="1" cx="246" cy="178" r="7" />
+                {/* the lens, face on */}
+                <circle class="ln" pathLength="1" cx="170" cy="160" r="56" />
+                <circle class="ln" pathLength="1" cx="170" cy="160" r="50" />
+                <circle class="ln ln-2 ln-dash" cx="170" cy="160" r="45" />
+                <circle class="ln" pathLength="1" cx="170" cy="160" r="36" />
+                <circle class="ln" pathLength="1" cx="170" cy="160" r="24" />
+                <circle class="ln ln-2" pathLength="1" cx="170" cy="160" r="12" />
+                <path class="ln ln-2" pathLength="1" d="M156 150 A17 17 0 0 1 172 143" />
+              </svg>
+            )}
+            {k.art === 'iphone-15' && (
+              <svg class="kit-art kit-phone" viewBox="24 18 152 297" aria-hidden="true">
+                {/* body, frame band and side buttons */}
+                <rect class="ln" pathLength="1" x="30" y="22" width="140" height="289" rx="24" />
+                <rect class="ln ln-2" pathLength="1" x="33.5" y="25.5" width="133" height="282" rx="21" />
+                <path class="ln ln-2" pathLength="1" d="M30 70 H27 V82 H30 M30 96 H27 V118 H30 M30 124 H27 V146 H30 M170 104 H173 V138 H170" />
+                {/* the camera bump: two lenses on the diagonal, flash and mic */}
+                <rect class="ln" pathLength="1" x="41" y="33" width="60" height="60" rx="15" />
+                <circle class="ln" pathLength="1" cx="58" cy="50" r="12" />
+                <circle class="ln ln-2" pathLength="1" cx="58" cy="50" r="7.5" />
+                <circle class="ln" pathLength="1" cx="84" cy="76" r="12" />
+                <circle class="ln ln-2" pathLength="1" cx="84" cy="76" r="7.5" />
+                <circle class="ln ln-2" pathLength="1" cx="85" cy="49" r="4.5" />
+                <circle class="ln ln-2" pathLength="1" cx="58" cy="77" r="1.6" />
+              </svg>
+            )}
+            <figcaption class="kit-name">{k.name}</figcaption>
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<script>
+  // the drawings ink themselves in when the kit scrolls into view on an open card
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  document.querySelectorAll<HTMLElement>('[data-kit]').forEach((kit) => {
+    if (reduce) return;
+    const strokes = Array.from(kit.querySelectorAll<SVGElement>('.kit-art [pathLength]'));
+    let io: IntersectionObserver | null = null;
+    document.addEventListener('pm:shown', (e) => {
+      const { slug, scroller } = (e as CustomEvent<{ slug: string; scroller: HTMLElement }>).detail;
+      if (!kit.closest(`[data-project="${slug}"]`)) return;
+      kit.classList.remove('is-drawn');
+      kit.classList.add('is-armed');
+      strokes.forEach((s, i) => (s.style.transitionDelay = `${(i % 18) * 45}ms`));
+      io?.disconnect();
+      io = new IntersectionObserver(
+        ([en]) => {
+          if (!en.isIntersecting) return;
+          kit.classList.add('is-drawn');
+          io?.disconnect();
+        },
+        { root: scroller, threshold: 0.25 },
+      );
+      io.observe(kit);
+    });
+  });
+</script>
+
+<style>
+  .kit-list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 28px clamp(36px, 6vw, 72px);
+    margin: 26px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kit-fig {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    margin: 0;
+  }
+  .kit-art {
+    display: block;
+    overflow: visible;
+  }
+  .kit-dslr {
+    height: 96px;
+  }
+  .kit-phone {
+    height: 112px;
+  }
+  .ln {
+    fill: none;
+    stroke: var(--sand);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ln-2 {
+    stroke: var(--sand-3);
+    stroke-width: 1.8;
+  }
+  .ln-dash {
+    stroke-dasharray: 2 5;
+  }
+  .kit-name {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-2);
+  }
+
+  /* inking in: armed hides every stroke, drawn runs them out in order */
+  .kit.is-armed [pathLength] {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.35, 0, 0.2, 1);
+  }
+  .kit.is-armed .ln-dash {
+    opacity: 0;
+    transition: opacity 0.4s ease-out 0.6s;
+  }
+  .kit.is-drawn [pathLength] {
+    stroke-dashoffset: 0;
+  }
+  .kit.is-drawn .ln-dash {
+    opacity: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .kit.is-armed [pathLength] {
+      stroke-dashoffset: 0;
+      transition: none;
+    }
+  }
+</style>

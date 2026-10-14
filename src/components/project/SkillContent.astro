@@ -1,6 +1,7 @@
 ---
 import WireLogo from '../WireLogo.astro';
 import ModelViewer from '../ModelViewer.astro';
+import CameraKit from './CameraKit.astro';
 import type { Skill } from '../../data/skills';
 import { skills } from '../../data/skills';
 import { projects } from '../../data/projects';
@@ -11,13 +12,13 @@ interface Props {
 const { skill } = Astro.props;
 const key = `skill-${skill.slug}`;
 const others = skills.filter((s) => s.slug !== skill.slug);
-const studies = projects.filter((p) => p.tools.includes(skill.name));
+const studies = projects.filter((p) => p.tools.some((t) => skill.tools.includes(t)));
 ---
 
 <article class="sk" data-project={key} aria-labelledby={`${key}-title`} hidden>
   <header class="sk-hero" data-pc-rise data-wire-host>
     <div class="sk-intro">
-      <p class="sk-maker">{skill.maker}</p>
+      {skill.tools.length > 0 && <p class="sk-maker">{skill.tools.join(' · ')}</p>}
       <h2 class="sk-title" id={`${key}-title`}>{skill.name}</h2>
       <p class="sk-summary">{skill.summary}</p>
       <dl class="sk-meta">
@@ -27,7 +28,7 @@ const studies = projects.filter((p) => p.tools.includes(skill.name));
       </dl>
     </div>
     <div class="sk-logo">
-      <WireLogo paths={skill.logo} label={`${skill.name} logo, drawn as a wireframe`} />
+      <WireLogo paths={skill.logo} label={`${skill.name} icon, drawn as a wireframe`} />
     </div>
   </header>
 
@@ -35,7 +36,7 @@ const studies = projects.filter((p) => p.tools.includes(skill.name));
     studies.length > 0 && (
       <section class="sk-block" data-pc-rise aria-labelledby={`${key}-studies`}>
         <h3 class="sk-block-title" id={`${key}-studies`}>
-          Case studies made with it
+          Case studies that use it
         </h3>
         <div class="sk-studies">
           {studies.map((p) => (
@@ -50,8 +51,10 @@ const studies = projects.filter((p) => p.tools.includes(skill.name));
     )
   }
 
+  {skill.kit && <CameraKit kit={skill.kit} id={key} />}
+
   <section class="sk-block" data-pc-rise aria-labelledby={`${key}-works`}>
-    <h3 class="sk-block-title" id={`${key}-works`}>Work made with {skill.name}</h3>
+    <h3 class="sk-block-title" id={`${key}-works`}>{skill.name} work</h3>
     <ul class="sk-works">
       {
         skill.works.map((w) => (
@@ -74,8 +77,8 @@ const studies = projects.filter((p) => p.tools.includes(skill.name));
     </ul>
   </section>
 
-  <nav class="sk-others pc-others" aria-label="Other software">
-    <p class="sk-others-label">Other software</p>
+  <nav class="sk-others pc-others" aria-label="Other skills">
+    <p class="sk-others-label">Other skills</p>
     <div class="sk-others-grid">
       {
         others.map((o) => (
@@ -148,10 +151,11 @@ const studies = projects.filter((p) => p.tools.includes(skill.name));
     margin-right: 40px; /* clear the close button's column */
   }
 
-  .sk-block {
+  /* global so blocks drawn by child components (the camera kit) share them */
+  .sk :global(.sk-block) {
     margin-top: clamp(48px, 8vh, 88px);
   }
-  .sk-block-title {
+  .sk :global(.sk-block-title) {
     padding-bottom: 14px;
     border-bottom: 1px solid var(--line);
     font-stretch: 125%;

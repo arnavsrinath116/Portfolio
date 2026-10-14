@@ -16,6 +16,49 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-15 · Photography: the kit, in line art
+
+- **The kit:** a block on the Photography card with the two cameras as small line drawings in the site's sand linework, each captioned with its name and nothing else (no panels, callouts or specs, by request).
+  - **Canon EOS 500D**, drawn from the front.
+  - **iPhone 15**, drawn from the back.
+- **Motion:** the strokes ink in, in order, when the kit comes into view on an open card. Under reduced motion they're simply there.
+- **Tools line:** Photography reads iPhone 15 · Canon EOS 500D.
+- **Code:**
+  - `src/components/project/CameraKit.astro`.
+  - `Skill.kit` is a list of `{ name, art }`.
+  - The card's block heading styles are global within the card, so the kit shares them.
+
+---
+
+## 2026-10-15 · Photography skill
+
+- A fourth skill: **Photography** ("Products, places and people"), with a drawn camera icon and four placeholder photo slots.
+- Its tools are still to add: `tools: []` hides the tools line on the card, and the tile keeps an empty line so the four names stay aligned.
+- The grid is four a row on desktop, two a row below 1100px and one a row on phones.
+
+---
+
+## 2026-10-15 · Skills are skills, not software
+
+Feedback from the dean: a skill is what you can do, not the program you do it in.
+
+- **The four software tiles are now three skills:**
+  - **3D modeling** (Fusion 360 · Blender): the three Fusion models, plus the render, animation and material placeholders that were under Blender.
+  - **UI design** (Figma · FigJam).
+  - **Graphic design** (Illustrator).
+- **Icons:** each skill gets a drawn icon instead of a brand logo (an isometric cube, a laid-out phone screen, a pen nib). They still extrude into the 3D wireframe.
+- **Tools line:** the software appears as a small mono line under each skill, on the tile and on the card.
+- **Data:** `Skill.maker` is replaced by `Skill.tools`. A case study is linked from a skill's card when its `tools` include any of the skill's tools, so the tracker shows under 3D modeling and Cooked under UI design.
+- **Copy:**
+  - Section note: "What I can do, and the tools I do it with."
+  - Card headings: "Case studies that use it" and "Other skills".
+- **Layout:**
+  - Three tiles a row on desktop.
+  - On phones, one per row with the icon beside the words.
+- **Links:** card links are now `#skill-3d-modeling`, `#skill-ui-design` and `#skill-graphic-design`; the old `#skill-fusion`-style links no longer open a card.
+
+---
+
 ## 2026-10-15 · Productivity tracker: more electronics, cleaner board
 
 - **Headings power on:** each chapter heading sits unlit (sand-3) until the copper trace reaches its pad, then it strikes on with a two-stutter flicker, like a tube. The hero title does the same when the card opens. Under reduced motion, everything is simply lit.
