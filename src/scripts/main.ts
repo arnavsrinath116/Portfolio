@@ -5,7 +5,6 @@ import { initFluid } from './ferrofluid';
 import { initDust } from './dust';
 import { playIntro } from './intro';
 import { initHeroAnnotations } from './annotate';
-import { initSlabs } from './slabs';
 import { initGuide } from './guide';
 import { initDims } from './dims';
 import { initProjectModal } from './projectModal';
@@ -40,7 +39,6 @@ initMenu({ fluid, lenis, reduce });
 
 document.fonts.ready.then(() => {
   initHeroAnnotations({ reduce });
-  initSlabs({ reduce });
   initGuide({ reduce });
   initDims({ reduce });
   initWire({ reduce });

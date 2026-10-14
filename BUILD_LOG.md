@@ -16,6 +16,32 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-14 · Publishing: GitHub Pages
+
+- **`.github/workflows/deploy.yml`:** on every push to `main` it builds with Astro's official action (`withastro/action@v3`, Node 24) and publishes with `actions/deploy-pages@v4`. It can also be re-run by hand from the Actions tab.
+- **`astro.config.mjs`:** `site: 'https://arnavsrinath116.github.io'`. The site is served from the root of the user site, so the root-relative asset paths (`/projects/…`, `/models/…`, `/fonts/…`, `/draco/…`) keep working.
+- **Setup on GitHub:**
+  1. Rename the repo to `arnavsrinath116.github.io`.
+  2. Settings → Pages → Source: "GitHub Actions".
+
+---
+
+## 2026-10-14 · Fix: stray dots before the arrow draws (Cooked)
+
+- **Cause:** strokes "drawn" by a dash offset still paint their round line caps at zero length. So the turmeric arrow (curve and head) showed as two dots before its draw began, and the market curve showed one.
+- **Fix:** each drawn stroke stays at opacity 0 until its draw starts, then is set visible in the same timeline.
+- **Checked:** the arrow's opacity is 0 while the line is struck out, and 1 once it draws; no dots appear in the frames.
+
+---
+
+## 2026-10-14 · Hero card stack removed
+
+- **Removed** the three fanned slate cards (Product / UX / HMI) from the hero: the markup and data in `Hero.astro`, their desktop and mobile styles, and `scripts/slabs.ts` with its `initSlabs()` call (pointer tilt and scroll fan).
+- **The hero is now** the name, the intro line, the drafted dimensions (W, CAP, OFFSET) and the scroll cue. On phones the heading still sits centred in normal flow.
+- **Checked** at desktop and 390 wide: no script errors, the dimensions still draw, and no sideways overflow.
+
+---
+
 ## 2026-10-14 · Cooked: course menu moved to a side rail
 
 - **Problem:** the course menu, a pill bar floating at the bottom of the card, sat over the booking journey's captions and read as clutter.

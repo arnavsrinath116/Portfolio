@@ -218,7 +218,8 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         const tl = gsap.timeline({ scrollTrigger: ST(el, { start: 'top 90%', end: 'top 62%', scrub: 0.35 }) });
         el.querySelectorAll<SVGGeometryElement>('path').forEach((p) => {
           const L = p.getTotalLength();
-          tl.fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
+          gsap.set(p, { opacity: 0 }); // hide the round cap's dot until drawing starts
+          tl.set(p, { opacity: 1 }, 0.001).fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
         });
         tl.from(el.querySelectorAll('circle'), { scale: 0, transformOrigin: 'center', ease: 'back.out(3)', duration: 0.25 });
       }
@@ -326,9 +327,12 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       tl.from(sh.querySelector('[data-shift-a]'), { autoAlpha: 0, y: 30, duration: 0.8 })
         .to(sh.querySelector('[data-strike]'), { scaleX: 1, duration: 1 }, '+=0.3')
         .to(sh.querySelector('[data-shift-a]'), { opacity: 0.35, duration: 0.6 });
+      // round line caps render as dots even at zero length, so each stroke stays hidden
+      // until the moment it starts drawing
       q<SVGPathElement>(sh, '[data-arrow], [data-arrow-head]').forEach((p) => {
         const L = p.getTotalLength();
-        tl.fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1 });
+        gsap.set(p, { opacity: 0 });
+        tl.set(p, { opacity: 1 }).fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1 });
       });
       tl.from(sh.querySelector('[data-shift-b]'), { autoAlpha: 0, y: 34, scale: 0.9, duration: 1.1, ease: 'back.out(1.6)' });
       hold(tl, 0.9);
