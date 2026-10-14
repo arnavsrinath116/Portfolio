@@ -29,7 +29,7 @@ const slots = ['a', 'b', 'c'];
         >
           {p.cover ? (
             <div class="panel-frame panel-cover">
-              <img src={withBase(p.cover.src)} alt={p.cover.alt} width="2000" height="1160" loading="lazy" decoding="async" />
+              <img src={withBase(p.cover.src)} alt={p.cover.alt} width="2000" height="1160" loading="lazy" decoding="async" style={p.cover.focus ? `object-position:${p.cover.focus}` : undefined} />
             </div>
           ) : (
             <div class="panel-frame" aria-hidden="true" />

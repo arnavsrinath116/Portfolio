@@ -16,6 +16,57 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-15 · Productivity tracker: more electronics, cleaner board
+
+- **Headings power on:** each chapter heading sits unlit (sand-3) until the copper trace reaches its pad, then it strikes on with a two-stutter flicker, like a tube. The hero title does the same when the card opens. Under reduced motion, everything is simply lit.
+- **Bench test 1, the sensor (new):** an HC-SR04 demo running the v1–v5 logic.
+  - Orange pings go out and green echoes come back. Echo time is `d × 2 / 0.034` µs, and a mini scope shows the TRIG and ECHO pulses.
+  - It switches on at ≤ 20 cm and only off at ≥ 30 cm (v5 hysteresis). A servo dial sweeps while it's on.
+  - Scrolling walks a person up to the desk and back, so the hysteresis plays out by itself. Dragging or the slider takes over.
+  - The pings run only while the demo is on screen.
+- **Scene sketches:** kept as the original pencil-on-paper photos, rotated upright and renamed by their handwritten labels (`scene-1-dorm`, `scene-2-library`, `scene-3-cafe`; the old file names had the café and dorm swapped).
+- **Whiteboard maths:** kept as the original photos.
+- **Scans as linework:** the form sketches and the circuit diagram are processed into light linework on transparency (`*-ink.webp`), so they sit on the dark board instead of as white paper. The schematic is revealed by a copper scan line as you scroll.
+- **Hero:** removed the eyebrow line. Callouts are now vias on the part with 45° leader traces that draw out when the card opens.
+- **Ship it:** the stats grid is replaced by a "Done uploading." progress bar that fills with the scroll, followed by the summary line.
+- **Other changes:**
+  - Perfboard-dot background.
+  - Real micro-servo horn on the button simulator.
+  - Copper text selection and focus ring.
+  - BOM row hover.
+  - Whiteboard pair sized to equal heights.
+  - Larger sensor-ruler lettering on phones.
+- **Performance:** removed the `drop-shadow` filter from the 14,000 px trace, which repainted on every scroll frame; the glow is now a second faint stroke. The hero photo is lazy (warmed on tile hover), and every image decodes async with intrinsic sizes.
+
+---
+
+## 2026-10-14 · Productivity tracker case study
+
+The UX placeholder tile is now **Productivity tracker** (Product, Makers Studio "Tinkering with Tech", 4 months, team of 4). It has its own case study, built from the A3/A4 boards, the code document and the Fusion model.
+
+- **Look:** a near-black circuit board (`data-theme="pcb"`, card `#101316`, faint 24 px grid). A copper trace routes down the left edge with 45° jogs and draws itself with the card's scroll, a spark at its tip. At each chapter a branch runs into the chapter's numbered pad, and its via lights up when the current arrives. An LED rail on the right tracks the chapter.
+- **Headings read as a build log**, with the Double Diamond stage in small print: Power on (Discover) → Read the signal (Define) → Breadboard it → Write the firmware (Develop) → Solder it down → Build the enclosure (Deliver) → Ship it (Outcome).
+- **The electronics work, shown:**
+  - round-1 parts (each with its job, e.g. IR "the phone trap");
+  - the final BOM with a running ₹1,838 total that counts up as the parts drop in;
+  - bench, breadboard and soldering photos, and the motor/encoder whiteboard maths;
+  - the 7 firmware versions as a commit log with the key line of each;
+  - the circuit diagram.
+- **Firmware simulator:** code v6's state machine runs in the browser.
+  - Tap to start or add 15 min; hold for more than 500 ms to lock; hold again to finish (the servo arm swings).
+  - It beeps quietly, only after a press, and prints the firmware's real `Serial.println` lines to a serial monitor.
+  - It works with the keyboard (Space or Enter) and with reduced motion.
+- **Enclosure:** form sketches, block-out, Fusion frame, laser-cut layout, plus the Fusion "Final Box" model in the 3D viewer (`public/models/finalbox.glb`, 34 KB).
+- **Assets:** 55 webp images in `public/projects/tracker/` (about 2.4 MB, lazy). The storyboard was rotated upright and cropped. The stock persona photo and the photos of other students observed during research were left out.
+- **Tiles:** `cover.focus` (CSS object-position) keeps a cover's subject in frame. The tracker's tile shows the box's two sensor "eyes".
+- **Files:**
+  - `src/components/project/tracker/TrackerCase.astro`
+  - `src/scripts/trackerCase.ts`
+  - hooks in `ProjectModal.astro` and `main.ts`
+- **Still to fill:** the role.
+
+---
+
 ## 2026-10-14 · Cooked: UI kit distilled
 
 The first version was too much, and its spec-sheet look (mono, uppercase tables) didn't match the case study. It is now about one screen on desktop:

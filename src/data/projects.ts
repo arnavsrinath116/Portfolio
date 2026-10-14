@@ -22,7 +22,8 @@ export interface Project {
   /** one line under the title on the work tile */
   note: string;
   /** cover image on the work tile (path under /public); without one the tile shows a dashed placeholder */
-  cover?: { src: string; alt: string };
+  /** focus is the CSS object-position that keeps the subject in frame when the tile crops it */
+  cover?: { src: string; alt: string; focus?: string };
   summary: string;
   role: string;
   team: string;
@@ -81,15 +82,16 @@ export const projects: Project[] = [
     learnings: 'What you would do differently next time.',
   },
   {
-    slug: 'ux',
-    discipline: 'UX',
-    title: 'UX project',
-    note: 'Research, flows and screens',
-    summary: 'One-line summary of the UX project: what it is and who it is for.',
+    slug: 'productivity-tracker',
+    discipline: 'Product',
+    title: 'Productivity tracker',
+    note: 'Tinkering with Tech',
+    cover: { src: '/projects/tracker/final-1.webp', alt: 'The productivity tracker: a black box with a wood front and two ultrasonic sensor eyes', focus: '50% 42%' },
+    summary: 'A desk device that gives students a small physical push to finish their assignments.',
     role: 'Role TBD',
-    team: 'Team TBD',
-    duration: 'Duration TBD',
-    tools: ['Figma'],
+    team: 'Team of 4',
+    duration: '4 months',
+    tools: ['ESP32', 'Arduino IDE', 'Fusion 360', 'Laser cutting', '3D printing'],
     phases: phases(),
     outcome: 'What happened in the end: results you can honestly state.',
     learnings: 'What you would do differently next time.',

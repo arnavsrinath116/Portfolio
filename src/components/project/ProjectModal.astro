@@ -1,6 +1,7 @@
 ---
 import ProjectContent from './ProjectContent.astro';
 import CookedCase from './cooked/CookedCase.astro';
+import TrackerCase from './tracker/TrackerCase.astro';
 import SkillContent from './SkillContent.astro';
 import { projects } from '../../data/projects';
 import { skills } from '../../data/skills';
@@ -16,7 +17,11 @@ import { skills } from '../../data/skills';
       </svg>
     </button>
     <div class="pm-scroll" data-pm-scroll data-lenis-prevent>
-      {projects.map((p) => (p.slug === 'cooked' ? <CookedCase project={p} /> : <ProjectContent project={p} />))}
+      {
+        projects.map((p) =>
+          p.slug === 'cooked' ? <CookedCase project={p} /> : p.slug === 'productivity-tracker' ? <TrackerCase project={p} /> : <ProjectContent project={p} />,
+        )
+      }
       {skills.map((s) => <SkillContent skill={s} />)}
     </div>
   </div>
@@ -99,6 +104,14 @@ import { skills } from '../../data/skills';
   }
   .pm-card.is-moving {
     transition: none;
+  }
+
+  /* the circuit-board case study sits on a deeper, near-black board */
+  .pm-card[data-theme='pcb'] {
+    background: #101316;
+  }
+  .pm-card[data-theme='pcb'] .pm-close {
+    background: #171b1f;
   }
 
   /* light case studies (data-theme="light" on the article): the card flips to slate white */

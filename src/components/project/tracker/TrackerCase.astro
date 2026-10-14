@@ -1,0 +1,1920 @@
+---
+import ModelViewer from '../../ModelViewer.astro';
+import { withBase } from '../../../lib/url';
+import type { Project } from '../../../data/projects';
+import { projects } from '../../../data/projects';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const others = projects.filter((p) => p.slug !== project.slug);
+const img = (n: string) => withBase(`/projects/tracker/${n}.webp`);
+
+// the build log: each chapter is a step in making the device, with its design stage underneath
+const chapters = [
+  { key: 'power', title: 'Power on', stage: 'Discover' },
+  { key: 'signal', title: 'Read the signal', stage: 'Define' },
+  { key: 'breadboard', title: 'Breadboard it', stage: 'Develop' },
+  { key: 'firmware', title: 'Write the firmware', stage: 'Develop' },
+  { key: 'solder', title: 'Solder it down', stage: 'Deliver' },
+  { key: 'enclosure', title: 'Build the enclosure', stage: 'Deliver' },
+  { key: 'ship', title: 'Ship it', stage: 'Outcome' },
+];
+
+// first round of parts (assignment 3), then the final bill of materials (assignment 4)
+const round1 = [
+  ['r1-piezo', 'Piezo', 'the trigger'],
+  ['r1-ir', 'IR sensor', 'the phone trap'],
+  ['r1-ultrasonic', 'Ultrasonic', 'the presence check'],
+  ['r1-servo', 'Servo', 'the physical display'],
+  ['r1-leds', 'LEDs', 'the alerts'],
+  ['r1-speaker', 'Speaker', 'the alerts'],
+];
+const bom = [
+  ['p-esp32', 'ESP32', 'the brain', 549],
+  ['p-ultrasonic', 'Ultrasonic sensor', 'is someone at the desk?', 190],
+  ['p-touch', 'Touch sensor', 'one button for everything', 173],
+  ['p-motor', 'BO motor', 'the moving part', 160],
+  ['p-encoder', 'Encoder', 'how far it turned', 95],
+  ['p-driver', 'Motor driver', 'PWM forward / back', 186],
+  ['p-buzzer', 'Buzzer', 'the nudge', 79],
+  ['p-j5019', 'J5019 module', 'charge + boost', 117],
+  ['p-holder', 'Battery holder', 'power in', 99],
+  ['', 'Battery', 'portable', 190],
+] as const;
+const total = bom.reduce((a, b) => a + b[3], 0);
+
+// seven iterations of the firmware (from the code document)
+const commits = [
+  { v: 'v1', t: 'Read the distance', why: 'Trigger a 10 µs pulse, time the echo, halve it.', code: 'distanceCm = duration * 0.034 / 2;' },
+  { v: 'v2', t: 'React under 20 cm', why: 'Someone at the desk swings the servo to 90°.', code: 'if (distanceCm > 0 && distanceCm < 20) myServo.write(90);' },
+  { v: 'v3', t: 'Move slowly', why: 'One-degree steps, so it eases instead of snapping.', code: 'for (pos = current; pos <= 180; pos += 1) { myServo.write(pos); delay(15); }' },
+  { v: 'v4', t: 'Stop freezing', why: 'millis() timing and a 24 ms echo timeout keep the loop alive with nothing in range.', code: 'duration = pulseIn(echoPin, HIGH, 24000);' },
+  { v: 'v5', t: 'No flicker at the edge', why: 'Hysteresis: start at ≤ 20 cm, stop only at ≥ 30 cm.', code: 'if (d <= 20) active = true;\nelse if (d >= 30) active = false;' },
+  { v: 'v6', t: 'One button, three states', why: 'Tap to add 15 min, hold to lock, hold again to finish, with a beep for each.', code: 'IDLE → EDITING (+15 min) → LOCKED → done' },
+  { v: 'v7', t: 'Drive the motor', why: 'Motor-driver test: PWM forward, stop, backward.', code: 'ledcWrite(enaPin, 150); // 0–255' },
+];
+
+const facts = [
+  ['Duration', project.duration],
+  ['Team', project.team],
+  ['Course', 'Makers Studio · Tinkering with Tech'],
+  ['Built with', 'ESP32 · Arduino · Fusion 360 · laser cutter'],
+].filter(([, v]) => v && !/TBD/i.test(v));
+
+// the sensor demo's field: 0–60 cm across x 70 → 610
+const cmX = (cm: number) => 70 + (cm / 60) * 540;
+---
+
+<article class="tk" data-project={project.slug} data-theme="pcb" data-card-bg="#101316" aria-labelledby="tk-title" hidden data-tk>
+  <svg class="tk-bus" aria-hidden="true" data-tk-bus>
+    <g data-tk-static></g>
+    <path class="tk-trace-glow" data-tk-glow></path>
+    <path class="tk-trace" data-tk-trace></path>
+    <g data-tk-vias></g>
+    <circle class="tk-spark-halo" r="9" data-tk-halo></circle>
+    <circle class="tk-spark" r="3.5" data-tk-spark></circle>
+  </svg>
+
+  <!-- ============ hero ============ -->
+  <header class="tk-hero">
+    <div class="tk-hero-copy">
+      <h2 class="tk-title" id="tk-title" data-tk-boot>Productivity<br />tracker</h2>
+      <p class="tk-lede">A desk device that gives students a small push to finish what they start. Tap it to set a focus timer; it watches the desk and nudges.</p>
+      <dl class="tk-facts">
+        {facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
+      </dl>
+    </div>
+    <figure class="tk-hero-shot">
+      <img src={img('final-2')} alt="The finished productivity tracker: a black 3D-printed box with a wood front and two ultrasonic sensor eyes" width="800" height="602" loading="lazy" decoding="async" data-tk-preload />
+      <!-- leader traces from a via on the part to its label -->
+      <svg class="tk-leads" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path d="M52 28 L44 17 H36" pathLength="1" data-tk-lead></path>
+        <path d="M60.6 73 L68 63 H70" pathLength="1" data-tk-lead></path>
+        <path d="M40 83 L34 91 H32" pathLength="1" data-tk-lead></path>
+      </svg>
+      <span class="tk-dot" style="left:52%;top:28%"></span>
+      <span class="tk-dot" style="left:60.6%;top:73%"></span>
+      <span class="tk-dot" style="left:40%;top:83%"></span>
+      <span class="tk-callout tk-end" style="left:36%;top:17%">3D-printed frame</span>
+      <span class="tk-callout" style="left:70%;top:63%">Ultrasonic eyes</span>
+      <span class="tk-callout tk-end" style="left:32%;top:91%">Laser-cut front</span>
+    </figure>
+  </header>
+
+  <!-- the rail: one LED per chapter -->
+  <div class="tk-rail-wrap" data-tk-rail>
+    <nav class="tk-rail" aria-label="Build log chapters">
+      <ol>
+        {
+          chapters.map((c) => (
+            <li>
+              <a href={`#tk-${c.key}`} data-phase-link={c.key}>
+                <span class="tk-rail-tag">
+                  <b>{c.title}</b>
+                  {c.stage}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  </div>
+
+  <!-- ============ 01 power on ============ -->
+  <section class="tk-ch" id="tk-power" data-phase="power" aria-labelledby="tk-power-t">
+    <header class="tk-chead" data-tk-via>
+      <p class="tk-pin"><span>01</span>Discover</p>
+      <h3 class="tk-h" id="tk-power-t">Power on</h3>
+      <p class="tk-sub" data-a="up">The problem we picked up</p>
+    </header>
+
+    <div class="tk-block">
+      <p class="tk-big" data-a="up">She studies for hours.<br /><span>Gets very little done.</span></p>
+      <div class="tk-persona" data-a="up">
+        <div class="tk-persona-id">
+          <span class="tk-avatar" aria-hidden="true">RS</span>
+          <div>
+            <p class="tk-persona-name">Riya Sharma</p>
+            <p class="tk-mutedline">20 · undergrad · Pune hostel</p>
+          </div>
+        </div>
+        <div class="tk-pins">
+          <div>
+            <p class="tk-pins-head"><i class="tk-led tk-led-red"></i>Pain points</p>
+            <ul>
+              <li>Phone always within reach</li>
+              <li>Unplanned breaks</li>
+              <li>Doesn’t track real focus time</li>
+              <li>Ignores productivity apps</li>
+            </ul>
+          </div>
+          <div>
+            <p class="tk-pins-head"><i class="tk-led tk-led-green"></i>Goals</p>
+            <ul>
+              <li>Stay focused for longer</li>
+              <li>Less phone while studying</li>
+              <li>See real productivity</li>
+              <li>Build a study habit</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">Where it happens</p>
+      <div class="tk-scenes" data-a="stagger">
+        <figure><img src={img('scene-1-dorm')} alt="Pencil sketch of a dorm room: the tracker on the study desk beside the bed" width="797" height="600" loading="lazy" decoding="async" /><figcaption>Dorm room</figcaption></figure>
+        <figure><img src={img('scene-2-library')} alt="Pencil sketch of a library: the tracker on a long shared study table" width="797" height="600" loading="lazy" decoding="async" /><figcaption>Library</figcaption></figure>
+        <figure><img src={img('scene-3-cafe')} alt="Pencil sketch of a café: the tracker on a round table" width="797" height="600" loading="lazy" decoding="async" /><figcaption>Café</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 read the signal ============ -->
+  <section class="tk-ch" id="tk-signal" data-phase="signal" aria-labelledby="tk-signal-t">
+    <header class="tk-chead" data-tk-via>
+      <p class="tk-pin"><span>02</span>Define</p>
+      <h3 class="tk-h" id="tk-signal-t">Read the signal</h3>
+      <p class="tk-sub" data-a="up">From notes to one clear brief</p>
+    </header>
+
+    <div class="tk-block tk-split">
+      <div class="tk-notes" data-a="stagger">
+        <img src={img('ideas-1')} alt="Handwritten idea notes" width="630" height="1120" loading="lazy" decoding="async" />
+        <img src={img('ideas-2')} alt="More handwritten idea notes" width="540" height="960" loading="lazy" decoding="async" />
+      </div>
+      <div>
+        <p class="tk-label" data-a="up">The brief</p>
+        <p class="tk-brief" data-a="up">Give students a <em>small physical push</em> to finish their assignments, something on the desk that’s harder to ignore than an app.</p>
+        <p class="tk-label" data-a="up">Mood</p>
+        <div class="tk-mood" data-a="stagger">
+          {['mood-1', 'mood-2', 'mood-3', 'mood-4', 'mood-5', 'mood-6'].map((m) => <img src={img(m)} alt="" width="300" height="300" loading="lazy" decoding="async" />)}
+        </div>
+        <p class="tk-mutedline">Soft, quiet desk objects: rounded, matte, a single light.</p>
+      </div>
+    </div>
+
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">Storyboard</p>
+      <figure class="tk-story" data-a="up">
+        <img src={img('storyboard')} alt="Six-frame storyboard: a student arrives at the desk, places the tracker, presses it on, works while it monitors, finishes and celebrates, then taps again for a closing beep" width="1532" height="925" loading="lazy" decoding="async" />
+        <ol class="tk-story-steps">
+          <li>Arrive at the desk</li>
+          <li>Place the tracker</li>
+          <li>Press to turn it on</li>
+          <li>Work while it watches</li>
+          <li>Finish and celebrate</li>
+          <li>Tap again: a beep to close</li>
+        </ol>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ 03 breadboard it ============ -->
+  <section class="tk-ch" id="tk-breadboard" data-phase="breadboard" aria-labelledby="tk-breadboard-t">
+    <header class="tk-chead" data-tk-via>
+      <p class="tk-pin"><span>03</span>Develop</p>
+      <h3 class="tk-h" id="tk-breadboard-t">Breadboard it</h3>
+      <p class="tk-sub" data-a="up">Two rounds of parts, a lot of jumper wire</p>
+    </header>
+
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">Round 1: the first idea had a sensor for everything</p>
+      <ul class="tk-r1" data-a="stagger">
+        {
+          round1.map(([src, name, role]) => (
+            <li>
+              <img src={img(src)} alt="" loading="lazy" decoding="async" />
+              <b>{name}</b>
+              <span>{role}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">Round 2: the final bill of materials</p>
+      <div class="tk-bom">
+        <ul>
+          {
+            bom.map(([src, name, role, cost], i) => (
+              <li data-tk-bom>
+                <span class="tk-bom-ref">{`J${i + 1}`}</span>
+                {src ? <img src={img(src)} alt="" loading="lazy" decoding="async" /> : <span class="tk-bom-ph" />}
+                <span class="tk-bom-name">
+                  <b>{name}</b>
+                  {role}
+                </span>
+                <span class="tk-bom-cost">₹{cost}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="tk-bom-total"><span>10 parts · total</span><b>₹<span data-tk-count={total}>{total.toLocaleString('en-IN')}</span></b></p>
+      </div>
+    </div>
+
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">On the bench</p>
+      <div class="tk-strip" data-a="stagger">
+        {['bench-1', 'bb-1', 'bb-3', 'bb-5', 'bb-6', 'bb-7'].map((s) => <img src={img(s)} alt="Breadboard prototype with the ESP32, sensors and jumper wires" loading="lazy" decoding="async" />)}
+      </div>
+    </div>
+
+    <div class="tk-block tk-split tk-calc">
+      <div>
+        <p class="tk-label" data-a="up">Motor + encoder maths</p>
+        <p class="tk-brief tk-brief-sm" data-a="up">Working out how far the motor turns per encoder tick, and the gearing for the moving part, on the whiteboard before writing a line of it.</p>
+      </div>
+      <div class="tk-calc-imgs" data-a="stagger">
+        <img src={img('calc-1')} alt="Whiteboard with motor and encoder calculations" width="1400" height="1050" loading="lazy" decoding="async" />
+        <img src={img('calc-2')} alt="Whiteboard sketch of the mechanism and control system" width="900" height="1199" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 firmware ============ -->
+  <section class="tk-ch" id="tk-firmware" data-phase="firmware" aria-labelledby="tk-firmware-t">
+    <header class="tk-chead" data-tk-via>
+      <p class="tk-pin"><span>04</span>Develop</p>
+      <h3 class="tk-h" id="tk-firmware-t">Write the firmware</h3>
+      <p class="tk-sub" data-a="up">Seven versions on an ESP32</p>
+    </header>
+
+    <div class="tk-block">
+      <ol class="tk-log">
+        {
+          commits.map((c) => (
+            <li data-tk-commit>
+              <span class="tk-log-v">{c.v}</span>
+              <div>
+                <p class="tk-log-t">{c.t}</p>
+                <p class="tk-log-why">{c.why}</p>
+                <pre><code>{c.code}</code></pre>
+              </div>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <!-- bench test 1: the ultrasonic sensor with v5's hysteresis -->
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">Bench test 1: the sensor <span>(v1–v5, running in your browser)</span></p>
+      <div class="tk-sonar" data-tk-sonar data-a="up">
+        <svg class="tk-sonar-field" viewBox="0 0 640 190" data-sonar-field aria-hidden="true">
+          <rect class="tk-zone-on" x={cmX(0)} y="18" width={cmX(20) - cmX(0)} height="124"></rect>
+          <rect class="tk-zone-hold" x={cmX(20)} y="18" width={cmX(30) - cmX(20)} height="124"></rect>
+          <text class="tk-zone-t" x={cmX(10)} y="34">ON ≤ 20</text>
+          <text class="tk-zone-t" x={cmX(25)} y="34">HOLD</text>
+          <text class="tk-zone-t tk-zone-off" x={cmX(45)} y="34">OFF ≥ 30</text>
+          <!-- ruler -->
+          <line class="tk-ruler" x1={cmX(0)} y1="150" x2={cmX(60)} y2="150"></line>
+          {
+            Array.from({ length: 13 }, (_, i) => i * 5).map((cm) => (
+              <g>
+                <line class="tk-ruler" x1={cmX(cm)} y1="150" x2={cmX(cm)} y2={cm % 10 ? 155 : 160}></line>
+                {cm % 10 === 0 && (
+                  <text class="tk-ruler-t" x={cmX(cm)} y="176">
+                    {cm}
+                  </text>
+                )}
+              </g>
+            ))
+          }
+          <text class="tk-ruler-t" x={cmX(60) + 16} y="176">cm</text>
+          <!-- the sensor: two transducers on a board -->
+          <g class="tk-hcsr">
+            <rect x="20" y="40" width="34" height="96" rx="4"></rect>
+            <circle cx="46" cy="66" r="13"></circle>
+            <circle cx="46" cy="110" r="13"></circle>
+          </g>
+          <g data-sonar-waves></g>
+          <!-- the person at the desk, draggable -->
+          <g class="tk-target" data-sonar-target>
+            <rect x="-9" y="44" width="18" height="92" rx="9"></rect>
+            <line x1="0" y1="140" x2="0" y2="150"></line>
+          </g>
+        </svg>
+        <div class="tk-sonar-ui">
+          <label class="tk-range">
+            <span>Distance to the desk</span>
+            <input type="range" min="2" max="60" step="0.5" value="60" data-sonar-range />
+          </label>
+          <dl class="tk-readout">
+            <div><dt>Distance</dt><dd><b data-sonar-cm>60.0</b> cm</dd></div>
+            <div><dt>Echo</dt><dd><b data-sonar-us>3529</b> µs</dd></div>
+            <div><dt>Servo</dt><dd class="tk-state" data-sonar-state>Idle</dd></div>
+          </dl>
+          <svg class="tk-scope" viewBox="0 0 280 74" aria-hidden="true">
+            <text x="0" y="16">TRIG</text>
+            <text x="0" y="52">ECHO</text>
+            <path class="tk-scope-trig" d="M44 22 H52 V8 H56 V22 H276"></path>
+            <path class="tk-scope-echo" d="M44 58 H60 V44 H160 V58 H276" data-sonar-echo></path>
+          </svg>
+          <span class="tk-gauge" aria-hidden="true"><i data-sonar-needle></i></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- bench test 2: v6's one-button state machine -->
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">Bench test 2: the button <span>(v6, running in your browser)</span></p>
+      <div class="tk-sim" data-tk-sim data-a="up">
+        <div class="tk-dev">
+          <div class="tk-dev-face">
+            <span class="tk-eye"></span><span class="tk-eye"></span>
+            <span class="tk-servo" aria-hidden="true"><i data-sim-servo></i></span>
+          </div>
+          <div class="tk-dev-top">
+            <p class="tk-lcd"><span data-sim-time>-- min</span><small data-sim-state>IDLE</small></p>
+            <ul class="tk-leds" aria-hidden="true">
+              <li data-sim-led="0">Idle</li>
+              <li data-sim-led="1">Edit</li>
+              <li data-sim-led="2">Lock</li>
+            </ul>
+            <button type="button" class="tk-pad" data-sim-pad aria-describedby="tk-sim-help">
+              <span class="tk-pad-ring" data-sim-beep></span>
+              Touch
+            </button>
+            <p class="tk-pad-help" id="tk-sim-help"><b>Tap</b> = start / +15 min · <b>Hold</b> = lock · <b>Hold</b> again = finish</p>
+          </div>
+        </div>
+        <div class="tk-serial" role="log" aria-live="polite" aria-label="Serial monitor">
+          <p class="tk-serial-head"><i class="tk-led tk-led-green"></i>Serial monitor · 115200 baud</p>
+          <div class="tk-serial-out" data-sim-out>
+            <p>System Ready.</p>
+            <p class="tk-dim">Short Press: Start/Add 15m | Long Press (&gt;500ms): Lock or Turn Off</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">Wiring it all together</p>
+      <figure class="tk-circuit" data-tk-scan>
+        <img src={img('circuit-ink')} alt="Circuit diagram: the ESP32 wired to the ultrasonic sensor, touch sensor, buzzer, L298N motor driver, motor with encoder, J5019 module and battery" width="1634" height="919" loading="lazy" decoding="async" />
+        <span class="tk-scanline" aria-hidden="true" data-tk-scanline></span>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============ 05 solder ============ -->
+  <section class="tk-ch" id="tk-solder" data-phase="solder" aria-labelledby="tk-solder-t">
+    <header class="tk-chead" data-tk-via>
+      <p class="tk-pin"><span>05</span>Deliver</p>
+      <h3 class="tk-h" id="tk-solder-t">Solder it down</h3>
+      <p class="tk-sub" data-a="up">Breadboard → perfboard, then test it for real</p>
+    </header>
+    <div class="tk-block">
+      <div class="tk-solder" data-a="stagger">
+        <img src={img('solder-1')} alt="Soldering the motor leads" width="478" height="850" loading="lazy" decoding="async" />
+        <img src={img('solder-3')} alt="Perfboard with soldered connections" width="1100" height="1467" loading="lazy" decoding="async" />
+        <img src={img('solder-2')} alt="Perfboard held up with its wiring" width="936" height="1248" loading="lazy" decoding="async" />
+        <img src={img('test-1')} alt="Testing the motor and encoder on a laser-cut mount" width="720" height="960" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 06 enclosure ============ -->
+  <section class="tk-ch" id="tk-enclosure" data-phase="enclosure" aria-labelledby="tk-enclosure-t">
+    <header class="tk-chead" data-tk-via>
+      <p class="tk-pin"><span>06</span>Deliver</p>
+      <h3 class="tk-h" id="tk-enclosure-t">Build the enclosure</h3>
+      <p class="tk-sub" data-a="up">Sketch, model, print, cut, assemble</p>
+    </header>
+
+    <div class="tk-block">
+      <div class="tk-forms" data-a="stagger">
+        <figure><img class="tk-ink" src={img('form-sketch-ink')} alt="Line sketches of the box form" width="1400" height="973" loading="lazy" decoding="async" /><figcaption>Form sketches</figcaption></figure>
+        <figure><img src={img('form-block')} alt="Simple block model with two sensor holes" width="790" height="616" loading="lazy" decoding="async" /><figcaption>Block-out</figcaption></figure>
+        <figure><img src={img('cad-3')} alt="Fusion 360 model of the frame" width="1280" height="705" loading="lazy" decoding="async" /><figcaption>Fusion 360 frame</figcaption></figure>
+        <figure><img src={img('laser')} alt="Laser-cut panel layout" width="1600" height="833" loading="lazy" decoding="async" /><figcaption>Laser-cut panels</figcaption></figure>
+      </div>
+    </div>
+
+    <div class="tk-block">
+      <p class="tk-label" data-a="up">The enclosure, in 3D <span>(from Fusion 360)</span></p>
+      <div data-a="up">
+        <ModelViewer model={{ src: '/models/finalbox.glb', size: [92, 122, 77], parts: 3 }} title="enclosure" />
+      </div>
+    </div>
+
+    <div class="tk-block">
+      <div class="tk-wip" data-a="stagger">
+        <img src={img('wip-1')} alt="Fitting the electronics behind the sensor front" width="1120" height="843" loading="lazy" decoding="async" />
+        <img src={img('wip-2')} alt="Soldering at the electronics bench" width="1024" height="768" loading="lazy" decoding="async" />
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 07 ship it ============ -->
+  <section class="tk-ch" id="tk-ship" data-phase="ship" aria-labelledby="tk-ship-t">
+    <header class="tk-chead" data-tk-via>
+      <p class="tk-pin"><span>07</span>Outcome</p>
+      <h3 class="tk-h" id="tk-ship-t">Ship it</h3>
+      <p class="tk-sub" data-a="up">A working tracker on the desk</p>
+    </header>
+    <div class="tk-block">
+      <!-- the last upload: scrubbed by scroll, finished by default -->
+      <div class="tk-upload" data-tk-upload>
+        <p class="tk-upload-line"><span data-up-status>Done uploading.</span><span data-up-pct>100%</span></p>
+        <span class="tk-upload-bar"><i data-up-bar></i></span>
+        <p class="tk-upload-sum" data-up-sum>4 months · 10 parts · 7 firmware versions · 3D printed, laser cut and hand-soldered</p>
+      </div>
+      <div class="tk-final" data-a="stagger">
+        <img src={img('final-1')} alt="Front of the tracker" width="640" height="482" loading="lazy" decoding="async" />
+        <img src={img('final-3')} alt="Side view through the clear panel" width="640" height="482" loading="lazy" decoding="async" />
+        <img src={img('final-4')} alt="Through the clear panel: the motor and electronics inside" width="640" height="482" loading="lazy" decoding="async" />
+      </div>
+    </div>
+
+    <nav class="tk-others pc-others" aria-label="Other case studies">
+      <p class="tk-label">Next project</p>
+      <div class="tk-others-grid">
+        {
+          others.map((o) => (
+            <button type="button" class="tk-other" data-switch-project={o.slug} data-magnet>
+              <span>{o.discipline}</span>
+              <b>{o.title}</b>
+            </button>
+          ))
+        }
+      </div>
+    </nav>
+  </section>
+</article>
+
+<style>
+  .tk {
+    --tk-bg: #101316;
+    --tk-panel: #161a1e;
+    --tk-panel-2: #1c2126;
+    --tk-line: rgb(230 220 200 / 0.11);
+    --tk-copper: var(--orange);
+    --tk-green: #7ef0a2;
+    --tk-pad: clamp(26px, 6vw, 96px);
+    --tk-ease: cubic-bezier(0.16, 1, 0.3, 1);
+    --stage-h: calc(100svh - var(--pm-inset, 20px) * 2);
+    position: relative;
+    color: var(--sand);
+    overflow-x: clip;
+    /* perfboard: a hole every 2.54 mm-ish, the board the whole case study is built on */
+    background-color: var(--tk-bg);
+    background-image: radial-gradient(circle at 1px 1px, rgb(230 220 200 / 0.07) 1px, transparent 1.6px);
+    background-size: 24px 24px;
+  }
+  .tk[hidden] {
+    display: none;
+  }
+  .tk ::selection {
+    background: var(--tk-copper);
+    color: var(--tk-bg);
+  }
+  :where(.tk) :where(h2, h3, p, ul, ol, dl, dd, figure, pre) {
+    margin: 0;
+  }
+  :where(.tk) :where(img) {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+  :where(.tk) :where(ul, ol) {
+    padding: 0;
+    list-style: none;
+  }
+  .tk em {
+    font-style: normal;
+    color: var(--tk-copper);
+  }
+  .tk :focus-visible {
+    outline: 1.5px solid var(--tk-copper);
+    outline-offset: 4px;
+  }
+  .tk-hero,
+  .tk-ch {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- the bus: a copper trace down the left edge ---------- */
+  .tk-bus {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .tk-bus :global(.tk-static) {
+    fill: none;
+    stroke: rgb(230 220 200 / 0.09);
+    stroke-width: 1.5;
+  }
+  /* the glow is a wide faint stroke under the copper, not a filter: a filter on a
+     14000 px path repaints the whole thing on every scroll frame */
+  .tk-trace,
+  .tk-trace-glow {
+    fill: none;
+    stroke: var(--tk-copper);
+    stroke-linejoin: round;
+  }
+  .tk-trace {
+    stroke-width: 2.5;
+  }
+  .tk-trace-glow {
+    stroke-width: 9;
+    opacity: 0.16;
+  }
+  .tk-bus :global(.tk-stub) {
+    fill: none;
+    stroke: rgb(230 220 200 / 0.16);
+    stroke-width: 2;
+    transition: stroke 0.4s ease-out;
+  }
+  .tk-bus :global(.tk-via) {
+    fill: var(--tk-bg);
+    stroke: rgb(230 220 200 / 0.28);
+    stroke-width: 2;
+    transition:
+      stroke 0.4s ease-out,
+      fill 0.4s ease-out;
+  }
+  .tk-bus :global(.is-live .tk-stub) {
+    stroke: var(--tk-copper);
+  }
+  .tk-bus :global(.is-live .tk-via) {
+    stroke: var(--tk-copper);
+    fill: rgb(255 107 44 / 0.3);
+  }
+  .tk-spark {
+    fill: #ffe3d2;
+  }
+  .tk-spark-halo {
+    fill: rgb(255 107 44 / 0.28);
+  }
+
+  /* ---------- type ---------- */
+  .tk-title,
+  .tk-h {
+    font-stretch: 125%;
+    font-weight: 640;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.95;
+    text-wrap: balance;
+  }
+  .tk-title {
+    font-size: clamp(2.2rem, 3.7vw, 4rem);
+  }
+  .tk-h {
+    font-size: clamp(2.2rem, 5.6vw, 4.6rem);
+    /* unpowered until the current reaches the chapter's pad */
+    color: var(--sand-3);
+    transition: color 0.5s ease-out;
+  }
+  .tk-chead:global(.is-live) .tk-h {
+    color: var(--sand);
+    animation: tk-ignite 0.7s steps(1, end);
+  }
+  /* a tube striking: two stutters, then it holds */
+  @keyframes tk-ignite {
+    0% {
+      opacity: 0.35;
+    }
+    12% {
+      opacity: 1;
+    }
+    22% {
+      opacity: 0.45;
+    }
+    34% {
+      opacity: 1;
+    }
+    44% {
+      opacity: 0.7;
+    }
+    56%,
+    100% {
+      opacity: 1;
+    }
+  }
+  .tk-title:global(.is-booting) {
+    animation: tk-ignite 0.8s steps(1, end);
+  }
+  .tk-sub {
+    margin-top: 14px;
+    font-size: 1.0625rem;
+    color: var(--sand-2);
+  }
+  .tk-label {
+    margin-bottom: 18px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .tk-label span {
+    text-transform: none;
+    letter-spacing: 0;
+  }
+  .tk-mutedline {
+    margin-top: 10px;
+    font-size: 0.875rem;
+    color: var(--sand-3);
+  }
+  .tk-block {
+    padding: clamp(32px, 5.5vh, 64px) var(--tk-pad);
+  }
+
+  /* ---------- hero ---------- */
+  .tk-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    align-items: center;
+    gap: clamp(28px, 5vw, 72px);
+    min-height: min(var(--stage-h), 820px);
+    padding: clamp(56px, 9vh, 96px) var(--tk-pad);
+  }
+  .tk-lede {
+    margin-top: 24px;
+    max-width: 40ch;
+    font-size: clamp(1rem, 1.4vw, 1.1875rem);
+    line-height: 1.5;
+    color: var(--sand-2);
+  }
+  .tk-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+    margin-top: 32px;
+    padding-top: 22px;
+    border-top: 1px solid var(--tk-line);
+  }
+  .tk-facts dt {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .tk-facts dd {
+    margin-top: 4px;
+    font-size: 0.9375rem;
+  }
+  .tk-hero-shot {
+    position: relative;
+  }
+  .tk-hero-shot img {
+    width: 100%;
+    border-radius: 14px;
+    box-shadow: 0 40px 80px -40px rgb(0 0 0 / 0.8);
+  }
+  /* silkscreen callouts: a via on the part, a 45° leader, a label */
+  .tk-leads {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .tk-leads path {
+    fill: none;
+    stroke: var(--tk-copper);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+  }
+  .tk-dot {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    margin: -5.5px 0 0 -5.5px;
+    border-radius: 50%;
+    background: var(--tk-copper);
+    box-shadow:
+      0 0 0 3px rgb(16 19 22 / 0.85),
+      0 0 14px 2px rgb(255 107 44 / 0.6);
+  }
+  .tk-callout {
+    position: absolute;
+    translate: 0 -50%;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: rgb(16 19 22 / 0.9);
+    box-shadow: inset 0 0 0 1px rgb(255 107 44 / 0.55);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--sand);
+    white-space: nowrap;
+  }
+  .tk-callout.tk-end {
+    translate: -100% -50%;
+  }
+
+  /* ---------- rail (LEDs on the right edge) ---------- */
+  .tk-rail-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 30 !important;
+    height: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease-out;
+  }
+  .tk-rail-wrap:global(.is-on) {
+    opacity: 1;
+  }
+  .tk-rail {
+    position: absolute;
+    right: clamp(10px, 1.6vw, 22px);
+    top: calc(var(--stage-h) / 2);
+    translate: 0 -50%;
+  }
+  .tk-rail-wrap:global(.is-on) .tk-rail {
+    pointer-events: auto;
+  }
+  .tk-rail ol {
+    display: grid;
+    justify-items: end;
+    gap: 4px;
+  }
+  .tk-rail a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 5px 0 5px 10px;
+    text-decoration: none;
+    color: var(--sand);
+  }
+  .tk-rail a::after {
+    content: '';
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #2c3238;
+    box-shadow: inset 0 0 0 1px rgb(230 220 200 / 0.2);
+    transition:
+      background-color 0.25s ease-out,
+      box-shadow 0.25s ease-out;
+  }
+  .tk-rail a:global(.is-active)::after {
+    background: var(--tk-copper);
+    box-shadow: 0 0 10px 2px rgb(255 107 44 / 0.7);
+  }
+  .tk-rail-tag {
+    display: grid;
+    justify-items: end;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: rgb(16 19 22 / 0.95);
+    box-shadow: 0 0 0 1px var(--tk-line);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--sand-3);
+    opacity: 0;
+    translate: 6px 0;
+    transition:
+      opacity 0.25s ease-out,
+      translate 0.3s var(--tk-ease);
+  }
+  .tk-rail-tag b {
+    font-family: var(--font-letter);
+    font-size: 0.8125rem;
+    color: var(--sand);
+  }
+  .tk-rail a:hover .tk-rail-tag,
+  .tk-rail a:focus-visible .tk-rail-tag {
+    opacity: 1;
+    translate: 0 0;
+  }
+
+  /* ---------- chapter heads ---------- */
+  .tk-chead {
+    display: grid;
+    gap: 6px;
+    padding: clamp(80px, 13vh, 150px) var(--tk-pad) clamp(16px, 3vh, 32px);
+  }
+  .tk-pin {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  /* the chip pad the trace connects to; it powers up with the heading */
+  .tk-pin span {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 28px;
+    border-radius: 5px;
+    background: var(--tk-panel-2);
+    box-shadow: inset 0 0 0 1.5px rgb(255 107 44 / 0.3);
+    color: var(--sand-3);
+    font-weight: 600;
+    transition:
+      box-shadow 0.4s ease-out,
+      color 0.4s ease-out;
+  }
+  .tk-chead:global(.is-live) .tk-pin span {
+    color: var(--tk-copper);
+    box-shadow:
+      inset 0 0 0 1.5px var(--tk-copper),
+      0 0 18px 0 rgb(255 107 44 / 0.4);
+  }
+
+  /* ---------- 01 ---------- */
+  .tk-big {
+    font-stretch: 112%;
+    font-weight: 600;
+    font-size: clamp(1.8rem, 4vw, 3.2rem);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .tk-big span {
+    color: var(--tk-copper);
+  }
+  .tk-persona {
+    display: grid;
+    grid-template-columns: minmax(200px, 0.7fr) 1.6fr;
+    gap: clamp(20px, 4vw, 48px);
+    margin-top: clamp(28px, 4vh, 44px);
+    padding: clamp(20px, 3vw, 32px);
+    border-radius: 16px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+  }
+  .tk-persona-id {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .tk-avatar {
+    display: grid;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--tk-panel-2);
+    box-shadow: inset 0 0 0 1.5px var(--tk-copper);
+    font-family: var(--font-mono);
+    color: var(--tk-copper);
+  }
+  .tk-persona-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  .tk-pins {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .tk-pins-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .tk-pins li {
+    padding: 7px 0;
+    border-top: 1px solid var(--tk-line);
+    font-size: 0.9375rem;
+    color: var(--sand-2);
+  }
+  .tk-led {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .tk-led-red {
+    background: #ff5a4a;
+    box-shadow: 0 0 8px #ff5a4a;
+  }
+  .tk-led-green {
+    background: #4ade80;
+    box-shadow: 0 0 8px #4ade80;
+  }
+  .tk-scenes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 2vw, 28px);
+  }
+  .tk-scenes figure,
+  .tk-forms figure {
+    display: grid;
+    gap: 10px;
+  }
+  .tk-scenes img {
+    width: 100%;
+    border-radius: 12px;
+  }
+  .tk-scenes figcaption,
+  .tk-forms figcaption {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--sand-3);
+  }
+
+  /* ---------- 02 ---------- */
+  .tk-split {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(24px, 5vw, 64px);
+    align-items: start;
+  }
+  .tk-notes {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tk-notes img {
+    width: 100%;
+    border-radius: 10px;
+  }
+  .tk-notes img:nth-child(2) {
+    margin-top: 40px;
+  }
+  .tk-brief {
+    margin-bottom: 32px;
+    font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    text-wrap: pretty;
+  }
+  .tk-brief-sm {
+    font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+    font-weight: 500;
+    color: var(--sand-2);
+  }
+  .tk-mood {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .tk-mood img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .tk-story {
+    display: grid;
+    gap: 18px;
+  }
+  .tk-story img {
+    width: 100%;
+    border-radius: 12px;
+  }
+  .tk-story-steps {
+    counter-reset: step;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .tk-story-steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.875rem;
+    color: var(--sand-2);
+  }
+  .tk-story-steps li::before {
+    content: '0' counter(step);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--tk-copper);
+  }
+
+  /* ---------- 03 ---------- */
+  .tk-r1 {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .tk-r1 li {
+    display: grid;
+    justify-items: center;
+    gap: 4px;
+    padding: 14px 10px;
+    border-radius: 12px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    text-align: center;
+  }
+  .tk-r1 img {
+    width: 100%;
+    max-width: 90px;
+    aspect-ratio: 1;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
+  .tk-r1 b {
+    font-size: 0.875rem;
+  }
+  .tk-r1 span {
+    font-size: 0.75rem;
+    color: var(--sand-3);
+  }
+  .tk-bom {
+    border-radius: 16px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    overflow: hidden;
+  }
+  .tk-bom ul {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .tk-bom li {
+    display: grid;
+    grid-template-columns: 34px 48px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--tk-line);
+    transition: background-color 0.2s ease-out;
+  }
+  .tk-bom li:nth-child(odd) {
+    border-right: 1px solid var(--tk-line);
+  }
+  @media (hover: hover) {
+    .tk-bom li:hover {
+      background: var(--tk-panel-2);
+    }
+    .tk-bom li:hover .tk-bom-ref {
+      text-shadow: 0 0 8px var(--tk-copper);
+    }
+  }
+  .tk-bom-ref {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--tk-copper);
+  }
+  .tk-bom img,
+  .tk-bom-ph {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 8px;
+    background: #000;
+  }
+  .tk-bom-name {
+    display: grid;
+    font-size: 0.75rem;
+    color: var(--sand-3);
+  }
+  .tk-bom-name b {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--sand);
+  }
+  .tk-bom-cost {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--sand-2);
+  }
+  .tk-bom-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 16px 18px;
+    background: var(--tk-panel-2);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .tk-bom-total b {
+    font-size: 1.6rem;
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
+    color: var(--tk-copper);
+  }
+  .tk-strip {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .tk-strip img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .tk-strip img:first-child {
+    grid-column: span 2;
+    aspect-ratio: auto;
+    height: 100%;
+  }
+  /* columns in the photos' own proportions (4:3 and 3:4), so both stand the same height */
+  .tk-calc-imgs {
+    display: grid;
+    grid-template-columns: 1.78fr 1fr;
+    gap: 10px;
+  }
+  .tk-calc-imgs img {
+    width: 100%;
+    border-radius: 12px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+  }
+
+  /* ---------- 04 ---------- */
+  .tk-log {
+    position: relative;
+    display: grid;
+    gap: 6px;
+  }
+  /* a git-graph spine */
+  .tk-log::before {
+    content: '';
+    position: absolute;
+    left: 21px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background: linear-gradient(var(--tk-copper), rgb(255 107 44 / 0.15));
+  }
+  .tk-log li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 16px;
+    padding: 12px 0;
+  }
+  .tk-log-v {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 26px;
+    border-radius: 99px;
+    background: var(--tk-bg);
+    box-shadow: inset 0 0 0 1.5px var(--tk-copper);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--tk-copper);
+  }
+  .tk-log-t {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .tk-log-why {
+    margin-top: 2px;
+    font-size: 0.9375rem;
+    color: var(--sand-2);
+  }
+  .tk-log pre {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #0b0d0f;
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: #9be3ac;
+    white-space: pre;
+    scrollbar-width: thin;
+    scrollbar-color: var(--tk-line) transparent;
+  }
+
+  /* sonar bench test */
+  .tk-sonar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    border-radius: 18px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    overflow: hidden;
+  }
+  .tk-sonar-field {
+    display: block;
+    align-self: center;
+    width: 100%;
+    height: auto;
+    padding: 18px 10px 10px;
+    touch-action: pan-y;
+    cursor: ew-resize;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .tk-zone-on {
+    fill: rgb(255 107 44 / 0.1);
+  }
+  .tk-zone-hold {
+    fill: rgb(255 107 44 / 0.04);
+    stroke: rgb(255 107 44 / 0.3);
+    stroke-dasharray: 3 4;
+  }
+  .tk-zone-t {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-anchor: middle;
+    fill: var(--tk-copper);
+  }
+  .tk-zone-off {
+    fill: var(--sand-3);
+  }
+  .tk-ruler {
+    stroke: var(--sand-3);
+    stroke-width: 1;
+  }
+  .tk-ruler-t {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-anchor: middle;
+    fill: var(--sand-3);
+  }
+  .tk-hcsr rect {
+    fill: #1d5ca8;
+  }
+  .tk-hcsr circle {
+    fill: #2b3036;
+    stroke: #c9ccd0;
+    stroke-width: 3;
+  }
+  .tk-sonar-field :global(.tk-ping) {
+    fill: none;
+    stroke: var(--tk-copper);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .tk-sonar-field :global(.tk-echo) {
+    stroke: var(--tk-green);
+  }
+  .tk-target rect {
+    fill: var(--sand);
+    transition: fill 0.2s;
+  }
+  .tk-target line {
+    stroke: var(--sand);
+    stroke-width: 1.5;
+  }
+  .tk-sonar:global(.is-active) .tk-target rect {
+    fill: var(--tk-copper);
+  }
+  .tk-sonar-ui {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    padding: 22px;
+    border-left: 1px solid var(--tk-line);
+    background: var(--tk-panel-2);
+  }
+  .tk-range {
+    display: grid;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .tk-range input {
+    width: 100%;
+    accent-color: var(--tk-copper);
+  }
+  .tk-readout {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: start;
+    gap: 6px 22px;
+  }
+  .tk-readout dt {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .tk-readout dd {
+    margin-top: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--sand-2);
+    white-space: nowrap;
+  }
+  .tk-readout b {
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--sand);
+  }
+  .tk-state {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-top: 6px;
+  }
+  .tk-state::before {
+    content: '';
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #2c3238;
+    transition:
+      background-color 0.15s,
+      box-shadow 0.15s;
+  }
+  .tk-sonar:global(.is-active) .tk-state {
+    color: var(--tk-copper);
+  }
+  .tk-sonar:global(.is-active) .tk-state::before {
+    background: var(--tk-copper);
+    box-shadow: 0 0 10px var(--tk-copper);
+  }
+  .tk-scope {
+    display: block;
+    width: 100%;
+    height: auto;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #0b0d0f;
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+  }
+  .tk-scope text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: var(--sand-3);
+  }
+  .tk-scope path {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+  }
+  .tk-scope-trig {
+    stroke: var(--tk-copper);
+  }
+  .tk-scope-echo {
+    stroke: var(--tk-green);
+  }
+  /* servo dial: sweeps in 1° steps while someone is at the desk (v3 + v5) */
+  .tk-gauge {
+    position: absolute;
+    right: 22px;
+    top: 22px;
+    width: 46px;
+    height: 23px;
+    border-radius: 46px 46px 0 0;
+    box-shadow: inset 0 0 0 1.5px var(--tk-line);
+    overflow: hidden;
+  }
+  .tk-gauge i {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 2px;
+    height: 20px;
+    margin-left: -1px;
+    background: var(--sand-3);
+    transform-origin: 50% 100%;
+    rotate: -80deg;
+  }
+  .tk-sonar:global(.is-active) .tk-gauge i {
+    background: var(--tk-copper);
+    animation: tk-sweep 1.6s ease-in-out infinite alternate;
+  }
+  .tk-sonar:global(.is-paused) .tk-gauge i {
+    animation-play-state: paused;
+  }
+  @keyframes tk-sweep {
+    from {
+      rotate: -80deg;
+    }
+    to {
+      rotate: 80deg;
+    }
+  }
+
+  /* button simulator */
+  .tk-sim {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+  }
+  .tk-dev {
+    display: grid;
+    gap: 14px;
+    padding: 22px;
+    border-radius: 18px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+  }
+  .tk-dev-face {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 22px;
+    padding: 26px;
+    border-radius: 12px;
+    background: linear-gradient(#8a6a4a, #6e533a);
+    box-shadow: inset 0 0 0 6px #1a1d20;
+  }
+  .tk-eye {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #3a3f45 30%, #b8bcc2 32%, #6b7076 60%, #2a2e33 62%);
+    box-shadow: 0 0 0 4px #20252a;
+  }
+  /* a micro servo on the side of the box: body, hub and horn */
+  .tk-servo {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    width: 30px;
+    height: 44px;
+    translate: 0 -50%;
+    border-radius: 4px;
+    background: #2e6fd1;
+    box-shadow: inset 0 0 0 2px rgb(0 0 0 / 0.25);
+  }
+  .tk-servo i {
+    position: absolute;
+    left: 50%;
+    top: 12px;
+    width: 34px;
+    height: 7px;
+    margin: -3.5px 0 0 -3.5px;
+    border-radius: 4px;
+    background: #f2f2f2;
+    transform-origin: 3.5px 50%;
+    rotate: -90deg;
+    transition: rotate 0.8s cubic-bezier(0.45, 0, 0.55, 1);
+  }
+  .tk-servo i::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #c9ccd0;
+  }
+  .tk-dev-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 14px;
+  }
+  .tk-lcd {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: #0d1a10;
+    box-shadow: inset 0 0 0 1px rgb(74 222 128 / 0.25);
+    font-family: var(--font-mono);
+    color: var(--tk-green);
+  }
+  .tk-lcd span {
+    white-space: nowrap;
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+  }
+  .tk-lcd small {
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    opacity: 0.8;
+  }
+  .tk-leds {
+    display: flex;
+    gap: 12px;
+    grid-column: 1;
+  }
+  .tk-leds li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--sand-3);
+  }
+  .tk-leds li::before {
+    content: '';
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #2c3238;
+    transition:
+      background-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .tk-leds li:global(.is-on)::before {
+    background: var(--tk-copper);
+    box-shadow: 0 0 10px var(--tk-copper);
+  }
+  .tk-leds li:global(.is-on) {
+    color: var(--sand);
+  }
+  .tk-pad {
+    position: relative;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    display: grid;
+    place-items: center;
+    width: 92px;
+    height: 92px;
+    border: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #1b4fa0 0 26%, #2563c9 27% 30%, #1b4fa0 31% 44%, #2563c9 45% 48%, #1d58b8 49%);
+    box-shadow:
+      0 0 0 6px #14171a,
+      0 10px 24px -10px #000;
+    color: #dfe9ff;
+    font: inherit;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition:
+      transform 0.12s ease-out,
+      box-shadow 0.2s ease-out;
+  }
+  .tk-pad:global(.is-down) {
+    transform: scale(0.94);
+  }
+  /* held past 500 ms: it now counts as a long press */
+  .tk-pad:global(.is-held) {
+    box-shadow:
+      0 0 0 6px #14171a,
+      0 0 0 8px var(--tk-copper),
+      0 0 24px 4px rgb(255 107 44 / 0.5);
+  }
+  .tk-pad-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 0 rgb(255 107 44 / 0.7);
+    pointer-events: none;
+  }
+  .tk-pad-ring:global(.is-beep) {
+    animation: tk-beep 0.5s ease-out;
+  }
+  @keyframes tk-beep {
+    to {
+      box-shadow: 0 0 0 22px rgb(255 107 44 / 0);
+    }
+  }
+  .tk-pad-help {
+    grid-column: 1 / -1;
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+  .tk-pad-help b {
+    color: var(--sand);
+  }
+  .tk-serial {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border-radius: 18px;
+    background: #0b0d0f;
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    overflow: hidden;
+  }
+  .tk-serial-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--tk-line);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--sand-3);
+  }
+  .tk-serial-out {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+    min-height: 240px;
+    max-height: 300px;
+    padding: 14px 16px;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: #9be3ac;
+  }
+  .tk-serial-out :global(p) {
+    animation: tk-line-in 0.25s ease-out;
+  }
+  .tk-serial-out :global(.tk-dim) {
+    color: var(--sand-3);
+  }
+  @keyframes tk-line-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  /* the schematic, plotted onto the board by a scan line */
+  .tk-circuit {
+    position: relative;
+    border-radius: 16px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    overflow: hidden;
+  }
+  .tk-circuit img {
+    width: 100%;
+  }
+  .tk-scanline {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background: var(--tk-copper);
+    box-shadow: 0 0 16px 3px rgb(255 107 44 / 0.55);
+    opacity: 0;
+  }
+
+  /* ---------- 05 / 06 / 07 ---------- */
+  .tk-solder {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .tk-solder img,
+  .tk-final img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .tk-forms {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .tk-forms img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+  .tk-forms img.tk-ink {
+    object-fit: contain;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+  }
+  .tk-wip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tk-wip img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .tk-final {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .tk-final img {
+    aspect-ratio: 4 / 3;
+  }
+  /* the last upload */
+  .tk-upload {
+    display: grid;
+    gap: 10px;
+    padding: 18px 20px;
+    border-radius: 14px;
+    background: #0b0d0f;
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+  }
+  .tk-upload-line {
+    display: flex;
+    justify-content: space-between;
+    color: var(--tk-green);
+  }
+  .tk-upload-line span:last-child {
+    font-variant-numeric: tabular-nums;
+  }
+  .tk-upload-bar {
+    display: block;
+    height: 6px;
+    border-radius: 3px;
+    background: rgb(126 240 162 / 0.12);
+    overflow: hidden;
+  }
+  .tk-upload-bar i {
+    display: block;
+    height: 100%;
+    background: var(--tk-green);
+    box-shadow: 0 0 12px var(--tk-green);
+    transform-origin: left;
+  }
+  .tk-upload-sum {
+    color: var(--sand-2);
+    transition: opacity 0.4s ease-out;
+  }
+  .tk-others {
+    margin: 0 var(--tk-pad);
+    padding: 32px 0 clamp(100px, 14vh, 140px);
+    border-top: 1px solid var(--tk-line);
+  }
+  .tk-others-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .tk-other {
+    display: grid;
+    gap: 4px;
+    padding: 20px 22px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--tk-panel);
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+    color: var(--sand);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      transform 0.4s var(--tk-ease),
+      box-shadow 0.25s ease-out;
+  }
+  .tk-other span {
+    font-size: 0.8125rem;
+    color: var(--tk-copper);
+  }
+  .tk-other b {
+    font-stretch: 125%;
+    font-weight: 640;
+    text-transform: uppercase;
+  }
+  @media (hover: hover) {
+    .tk-other:hover {
+      transform: translateY(-3px);
+      box-shadow: inset 0 0 0 1px var(--tk-copper);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .tk-hero,
+    .tk-split,
+    .tk-sim,
+    .tk-sonar,
+    .tk-persona {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .tk-hero-shot {
+      order: -1;
+    }
+    .tk-title {
+      font-size: clamp(1.9rem, 8.6vw, 3.6rem);
+    }
+    .tk-sonar-ui {
+      border-left: 0;
+      border-top: 1px solid var(--tk-line);
+    }
+    /* the field scales to about half size on a phone: set its lettering larger to land near 9px */
+    .tk-zone-t,
+    .tk-ruler-t {
+      font-size: 17px;
+    }
+    .tk-story-steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .tk-r1 {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .tk-bom ul {
+      grid-template-columns: 1fr;
+    }
+    .tk-bom li:nth-child(odd) {
+      border-right: 0;
+    }
+    .tk-strip {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+    .tk-strip img:first-child {
+      grid-column: 1 / -1;
+      aspect-ratio: 16 / 9;
+      height: auto;
+    }
+    .tk-solder,
+    .tk-forms {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .tk-pins,
+    .tk-final,
+    .tk-wip,
+    .tk-others-grid,
+    .tk-calc-imgs {
+      grid-template-columns: 1fr;
+    }
+    .tk-scenes {
+      grid-template-columns: 1fr;
+    }
+    .tk-story-steps {
+      grid-template-columns: 1fr 1fr;
+    }
+    .tk-callout {
+      padding: 4px 7px;
+      font-size: 0.5625rem;
+    }
+    .tk-rail-tag {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .tk-chead:global(.is-live) .tk-h,
+    .tk-title:global(.is-booting) {
+      animation: none;
+    }
+    .tk-h {
+      color: var(--sand);
+    }
+    .tk-sonar:global(.is-active) .tk-gauge i {
+      animation: none;
+      rotate: 0deg;
+    }
+  }
+</style>
