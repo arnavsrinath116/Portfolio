@@ -16,6 +16,17 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-14 · Cooked: layout grids on the wireframes
+
+- **Read from the UI kit:** the wireframes use one layout grid throughout: 4 columns, 24 px margins, 20 px gutters, plus a row band inset 48 px top and bottom. The same 4/24/20 column grid sits on the Home wireframe's frame and the final screens.
+- **Overlay:** Figma's screenshot export never renders layout grids, so `Phone.astro` takes a `grid` prop and draws the grid over the screen in CSS:
+  - in Figma's grid red, softened to 7.5% so the screens stay readable;
+  - sized as fractions of the 390×844 screen, so it lines up at any phone size.
+- **Caption** under the wireframes states the grid's specs.
+- **Follow-up:** the grid is now shown on the Home wireframe only (the one with the grid applied in Figma); the other three are back to plain screens.
+
+---
+
 ## 2026-10-14 · Cooked: the full user flow from FigJam
 
 - **Replaced** the simplified two-lane flow with the full "Final user flow" from the FigJam board:

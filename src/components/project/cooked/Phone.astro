@@ -7,23 +7,60 @@ interface Props {
   /** intrinsic size of the screen image (defaults to the final screens' 402×874) */
   w?: number;
   h?: number;
+  /** overlay the Figma layout grid used on the wireframes: 4 columns, 24 margin, 20 gutter, 48 row inset */
+  grid?: boolean;
   class?: string;
 }
 import { withBase } from '../../../lib/url';
-const { src, alt, framed = false, w: iw, h: ih, class: cls } = Astro.props;
+const { src, alt, framed = false, w: iw, h: ih, grid = false, class: cls } = Astro.props;
 const w = iw ?? (framed ? 466 : 402);
 const h = ih ?? (framed ? 920 : 874);
 ---
 
-<figure class:list={['ph', { 'ph-framed': framed }, cls]}>
+<figure class:list={['ph', { 'ph-framed': framed }, cls]} style={grid ? `--gw:${w};--gh:${h}` : undefined}>
   <img src={withBase(`/projects/cooked/${src}.webp`)} alt={alt} width={w} height={h} loading="lazy" decoding="async" />
+  {
+    grid && (
+      <span class="ph-grid" aria-hidden="true">
+        <span class="ph-cols">
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
+      </span>
+    )
+  }
 </figure>
 
 <style>
   .ph {
+    position: relative;
     margin: 0;
     width: var(--ph-w, 236px);
     flex: none;
+  }
+  /* the Figma layout grid, in Figma's own grid red at 10%, scaled with the screen */
+  .ph-grid {
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--ph-w, 236px) * 0.12);
+    overflow: hidden;
+    pointer-events: none;
+    /* row grid: one stretched row inset 48px top and bottom */
+    background:
+      linear-gradient(rgb(255 0 0 / 0.075), rgb(255 0 0 / 0.075)) top / 100% calc(48 / var(--gh) * 100%) no-repeat,
+      linear-gradient(rgb(255 0 0 / 0.075), rgb(255 0 0 / 0.075)) bottom / 100% calc(48 / var(--gh) * 100%) no-repeat;
+  }
+  .ph-cols {
+    position: absolute;
+    inset: 0 calc(24 / var(--gw) * 100%);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: calc(20 / (var(--gw) - 48) * 100%);
+  }
+  .ph-cols i {
+    background: rgb(255 0 0 / 0.075);
   }
   .ph img {
     display: block;
