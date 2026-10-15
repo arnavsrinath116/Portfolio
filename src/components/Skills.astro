@@ -134,7 +134,7 @@ const built = (s: (typeof skills)[number]) => s.works.filter((w) => !w.pending).
     background:
       linear-gradient(var(--line-faint) 1px, transparent 1px) 0 0 / 24px 24px,
       linear-gradient(90deg, var(--line-faint) 1px, transparent 1px) 0 0 / 24px 24px,
-      rgb(20 23 26 / 0.35);
+      rgb(var(--bg-rgb) / 0.35);
     --wire-ink: var(--sand);
   }
   .view-item {

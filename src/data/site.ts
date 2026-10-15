@@ -3,8 +3,7 @@
 export const site = {
   name: 'Arnav Srinath',
   disciplines: ['Product', 'UX', 'HMI'],
-  // PLACEHOLDER: real contact details
-  email: 'hello@example.com',
+  email: '116.arnavsrinath@gmail.com',
   linkedin: 'https://www.linkedin.com/',
   resume: '#', // PLACEHOLDER: /resume.pdf once added to /public
   // PLACEHOLDER: city label. Time zone was read from this Mac; confirm it.

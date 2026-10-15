@@ -82,7 +82,7 @@ import { skills } from '../../data/skills';
     height: 44px;
     border-radius: 50%;
     background: var(--slate-2);
-    border: 1px solid rgb(230 220 200 / 0.14);
+    border: 1px solid rgb(var(--ink-rgb) / 0.14);
     color: var(--sand);
     transition:
       transform var(--dur-base) var(--ease-out),
@@ -107,7 +107,22 @@ import { skills } from '../../data/skills';
   }
 
   /* the circuit-board case study sits on a deeper, near-black board */
+  /* the circuit board is always dark: it keeps the dark sheet's tokens in light mode too */
   .pm-card[data-theme='pcb'] {
+    --slate: #14171a;
+    --slate-2: #1b2025;
+    --slate-3: #232a31;
+    --slate-4: #2d353e;
+    --slate-edge: rgb(230 220 200 / 0.09);
+    --sand: #e6dcc8;
+    --sand-2: #b8af9d;
+    --sand-3: #928b7c;
+    --line: #4a4740;
+    --line-faint: rgb(230 220 200 / 0.07);
+    --bg-rgb: 20 23 26;
+    --ink-rgb: 230 220 200;
+    --accent: #94c4d9;
+    color-scheme: dark;
     background: #101316;
   }
   .pm-card[data-theme='pcb'] .pm-close {

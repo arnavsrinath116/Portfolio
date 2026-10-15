@@ -15,8 +15,8 @@ const { title, description } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
-    <meta name="theme-color" content="#14171a" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#14171a" data-theme-color />
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="author" content={site.name} />
@@ -27,6 +27,13 @@ const { title, description } = Astro.props;
       (function () {
         var d = document.documentElement;
         d.classList.add('js');
+        // light or dark, as last chosen (dark by default), set before anything paints
+        try {
+          if (localStorage.getItem('as-theme') === 'light') {
+            d.setAttribute('data-theme', 'light');
+            document.querySelector('[data-theme-color]').setAttribute('content', '#ece6da');
+          }
+        } catch (e) {}
         var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         var seen = false;
         try {

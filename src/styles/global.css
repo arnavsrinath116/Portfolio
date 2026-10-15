@@ -61,7 +61,7 @@ body::after {
   position: relative;
   isolation: isolate;
   white-space: nowrap;
-  color: var(--slate);
+  color: var(--on-accent);
   transition: color 0.35s var(--ease-out) calc(var(--hl-delay, 0s) + 0.25s);
 }
 .hl-block::before {
@@ -71,7 +71,7 @@ body::after {
      a touch because a letter's own left side bearing already adds space there */
   inset: 0.05em -0.1em 0.075em -0.07em;
   z-index: -1;
-  background: var(--accent);
+  background: var(--accent-fill);
   transform-origin: 0 50%;
   transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1) var(--hl-delay, 0s);
 }
@@ -82,15 +82,15 @@ body::after {
   transform: scaleX(0);
 }
 .hl-block.is-armed.is-in {
-  color: var(--slate);
+  color: var(--on-accent);
 }
 .hl-block.is-armed.is-in::before {
   transform: none;
 }
 
 ::selection {
-  background: var(--accent);
-  color: var(--slate);
+  background: var(--accent-fill);
+  color: var(--on-accent);
 }
 
 ::-webkit-scrollbar {
@@ -240,6 +240,14 @@ html.menu-open .fluid-canvas {
   .bracket:hover::after {
     opacity: 1;
     transform: none;
+  }
+}
+/* with the mercury cursor running, the liquid itself outlines a hovered link, so its
+   brackets stand down (they still mark keyboard focus, and hovers on touch screens) */
+@media (hover: hover) {
+  html.has-fluid .bracket:hover::before,
+  html.has-fluid .bracket:hover::after {
+    opacity: 0 !important;
   }
 }
 .bracket:focus-visible {

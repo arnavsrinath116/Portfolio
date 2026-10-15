@@ -16,8 +16,15 @@
   --line: #4a4740;
   --line-faint: rgb(230 220 200 / 0.07);
 
-  /* Accent: dimensions, leaders, live state */
+  /* the sheet and ink as channels, for alphas: rgb(var(--ink-rgb) / 0.1) */
+  --bg-rgb: 20 23 26;
+  --ink-rgb: 230 220 200;
+
+  /* Accent: dimensions, leaders, live state. --accent draws lines and text; --accent-fill
+     is the block behind a highlighted word, always read with --on-accent ink */
   --accent: #94c4d9; /* sand blue: a dusty light blue that sits with the sand linework */
+  --accent-fill: #94c4d9;
+  --on-accent: #14171a;
 
   /* Mercury (menu flood surface) */
   --mercury-ink: #14171a;
@@ -38,4 +45,32 @@
   --dur-fast: 0.3s;
   --dur-base: 0.4s;
   --dur-slow: 0.5s;
+
+  color-scheme: dark;
+}
+
+/* Light: the same sheet in daylight. Sand paper, slate ink, the same sand blue (a deeper
+   tone of it for lines and small text, so they hold contrast on paper). Slabs step lighter
+   instead of darker, and shadows are warm and soft */
+:root[data-theme='light'] {
+  --slate: #ece6da;
+  --slate-2: #f4f0e8;
+  --slate-3: #f8f5ef;
+  --slate-4: #fcfaf6;
+  --slate-edge: rgb(255 255 255 / 0.85);
+  --slab-shadow: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 24px 48px -20px rgb(70 58 36 / 0.2),
+    0 8px 16px -8px rgb(70 58 36 / 0.12);
+
+  --sand: #14171a;
+  --sand-2: #3e434a;
+  --sand-3: #5f646b;
+  --line: #bab2a2;
+  --line-faint: rgb(20 23 26 / 0.08);
+
+  --bg-rgb: 236 230 218;
+  --ink-rgb: 20 23 26;
+
+  --accent: #2f6a84;
+
+  color-scheme: light;
 }

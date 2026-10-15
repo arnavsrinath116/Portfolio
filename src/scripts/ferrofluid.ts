@@ -46,6 +46,7 @@ uniform float uEntry;   // angle where it arrived
 uniform float uRectOn;
 uniform vec3 uFlood;    // center.xy, radius
 uniform vec3 uHole;     // center.xy, radius
+uniform float uInk;     // 0 = silver mercury (dark sheet), 1 = black ink (light sheet)
 
 float smin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
@@ -143,6 +144,20 @@ vec3 env(vec3 r, float pool) {
   return min(col, vec3(0.95));
 }
 
+// Black ink for the light sheet: the same studio, reflected in a dark liquid.
+// Sky and floor sit low; the light streaks stay bright, so it still reads glossy.
+vec3 envInk(vec3 r, float pool) {
+  float hz = r.y;
+  vec3 sky = mix(vec3(0.17, 0.18, 0.19), vec3(0.27, 0.28, 0.29), smoothstep(0.0, -0.8, hz));
+  vec3 flo = mix(vec3(0.035, 0.04, 0.045), vec3(0.07, 0.075, 0.08), smoothstep(0.0, 0.9, hz));
+  float edge = mix(0.12, 0.02, pool);
+  vec3 col = mix(sky, flo, smoothstep(-edge, edge, hz));
+  col += vec3(0.62) * smoothstep(0.975, 0.997, dot(r, normalize(vec3(-0.55, -0.62, 0.55))));
+  col += vec3(0.32) * smoothstep(0.985, 0.998, dot(r, normalize(vec3(0.5, -0.72, 0.48))));
+  col += vec3(0.58, 0.77, 0.85) * smoothstep(0.8, 0.98, dot(r, normalize(vec3(0.95, 0.18, 0.25)))) * 0.3 * (1.0 - pool);
+  return min(col, vec3(0.92));
+}
+
 void main() {
   vec2 p = vec2(gl_FragCoord.x, uRes.y * uDpr - gl_FragCoord.y) / uDpr;
   float d = scene(p);
@@ -171,11 +186,11 @@ void main() {
   n = normalize(n);
 
   vec3 r = reflect(vec3(0.0, 0.0, -1.0), n);
-  vec3 col = env(r, pool);
+  vec3 col = mix(env(r, pool), envInk(r, pool), uInk);
   float band = sin(p.x * 0.0042 + p.y * 0.0021 + uTime * 0.32 + 2.2 * sin(p.y * 0.0029 - uTime * 0.21));
   col += pool * vec3(0.06) * smoothstep(0.93, 0.995, band);
   float fres = pow(1.0 - max(n.z, 0.0), 3.0);
-  col = mix(col, vec3(0.16, 0.17, 0.18), fres * 0.55 * (1.0 - pool));
+  col = mix(col, mix(vec3(0.16, 0.17, 0.18), vec3(0.02, 0.022, 0.025), uInk), fres * 0.55 * (1.0 - pool));
   col = min(col, vec3(0.95));
 
   float alpha = clamp(0.5 - d, 0.0, 1.0);
@@ -251,6 +266,7 @@ export function initFluid(): Fluid | null {
     rectOn: U('uRectOn'),
     flood: U('uFlood'),
     hole: U('uHole'),
+    ink: U('uInk'),
   };
 
   document.body.appendChild(canvas);
@@ -269,6 +285,16 @@ export function initFluid(): Fluid | null {
   const mag = { x: 1, y: 0, amp: 0 };
   const wrap = { on: 0, p: 0, entry: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
   const flood = { x: 0, y: 0, r: 0, hole: 0 };
+  // silver on dark surfaces, black ink on light ones. An open case study brings its own
+  // world (Cooked is light, the tracker's board is dark); otherwise the site's theme decides
+  const pmCard = document.querySelector<HTMLElement>('[data-pm-card]');
+  const inkTarget = () => {
+    const world = pmCard?.dataset.theme;
+    if (world === 'light') return 1;
+    if (world === 'pcb') return 0;
+    return document.documentElement.dataset.theme === 'light' ? 1 : 0;
+  };
+  const ink = { v: inkTarget() };
   let lastVx = 0;
   let lastVy = 0;
   let raf = 0;
@@ -520,6 +546,7 @@ export function initFluid(): Fluid | null {
     gl.uniform1f(u.rectOn, rect ? wrap.on * s : 0);
     gl.uniform3f(u.flood, flood.x, flood.y, flood.r);
     gl.uniform3f(u.hole, head.x, head.y, flood.hole);
+    gl.uniform1f(u.ink, ink.v);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   };
 
@@ -547,6 +574,13 @@ export function initFluid(): Fluid | null {
   });
   window.addEventListener('resize', resize);
   resize();
+  const retint = () => {
+    kick();
+    gsap.to(ink, { v: inkTarget(), duration: 0.5, ease: 'power2.inOut', overwrite: true, onUpdate: kick });
+  };
+  document.addEventListener('themechange', retint);
+  // the card takes on a case study's world as it opens, and gives it back once it has closed
+  if (pmCard) new MutationObserver(retint).observe(pmCard, { attributes: true, attributeFilter: ['data-theme'] });
 
   return {
     flood(open, x, y) {

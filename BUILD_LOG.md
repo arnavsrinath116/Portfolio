@@ -16,6 +16,78 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-15 · Hero scrolls immediately
+
+The hero was a 200vh track (170vh on phones) with the title pinned: the first screen of scrolling only scrubbed the dimension drawing while the page stood still, and people thought scrolling was broken.
+
+- **No pinning:** the hero is now one screen (`100svh`), so the first scroll moves the page.
+- **The drawing:** the hero dimensions (W, CAP, OFFSET; one W on phones) are still drawn by the scroll, but without holding it. They draw in over the first 10% of a screen (scrub 0.25), so one or two wheel steps bring them in while the page moves. Under reduced motion they're simply there.
+- **Fading on scroll:** the scroll cue fades out with the work peek over the first 30% of a screen of scrolling.
+
+---
+
+## 2026-10-15 · Hero: no false bottom
+
+The first screen showed only the title on an empty sheet, with a small grey "Scroll" in the corner, so it read as a finished page (a false bottom).
+
+- **Peek:** the covers of the first two projects (Cooked, Productivity tracker) sit at the bottom right of the hero, cut roughly in half by the edge of the sheet, under a mono "Next · Selected work" label.
+  - The cut-off cards say there's more below, and what it is.
+  - Clicking them goes to the work, and hovering lifts the cards.
+  - They rise slightly and fade out over the first ~45% of a screen of scrolling, once they've done their job.
+- **Scroll cue:** the arrow beside "Scroll" now nudges downward on a slow loop. It holds still under reduced motion.
+
+---
+
+## 2026-10-15 · Real contact email
+
+- **Email:** `site.email` is now 116.arnavsrinath@gmail.com, which every mailto link uses; the footer is the main one.
+- **Clicking it:** opens a new Gmail draft in a new tab, already addressed to that email (`mail.google.com/mail/?view=cm&fs=1&to=…`), instead of a `mailto:` link, which does nothing without a desktop mail app.
+- **Phones:** the footer address scales to stay on one line (`clamp(0.75rem, 3.7vw, 1.125rem)`, no wrap) instead of breaking mid-domain. Checked at 390 and 340 px.
+- **Still placeholders in `site.ts`:** LinkedIn, Résumé and city.
+
+---
+
+## 2026-10-15 · Black ink cursor in light mode
+
+- **Light mode:** the mercury cursor becomes black ferrofluid on the light sheet. Its blob, trail and the ring it wraps around buttons are all ink.
+- **How:** the shader has a second environment, `envInk`. It reflects the same studio in a dark liquid, with the sky and floor near black and the light streaks kept bright so it still reads glossy. The edge darkens to ink.
+- **Switching:** a `uInk` uniform (0 = silver, 1 = ink) eases over 0.5 s when the theme flips, and starts at the saved theme on load.
+- **Case studies:** each brings its own cursor. Cooked's light world gets the ink cursor, and the tracker's dark board gets silver, whatever the site's mode. Skill cards follow the site. It watches the card's `data-theme`: it changes as a card opens and returns to the site's mode once the card has closed.
+
+---
+
+## 2026-10-15 · Header tabs instead of the menu; a sun/moon switch
+
+- **Menu removed:** the mercury flood menu (`Menu.astro`, `menu.ts`) is gone. The mercury cursor itself stays.
+- **Header tabs:** Work, Skills and Contact sit on the header as bracket links.
+  - Each glides to its section (Lenis, 1.4 s) and moves focus there.
+  - The section you're reading is marked with `aria-current`: it shows in the accent with its brackets drawn.
+  - Sketchbook and About aren't listed, since they have no pages yet.
+- **Theme switch:** the light/dark button is now a pill switch (`role="switch"`, on = light). Both marks are faint in the track, and a sand knob carrying the current one (moon or sun, drawn SVG) springs across, with the icons rotating as they swap.
+- **Cursor on the switch:** the button is the pill itself (no padding, 13 px radius), so the mercury cursor, which follows the hovered element's corner radius, wraps it as a pill instead of a box.
+- **No brackets under the mercury:** with the mercury cursor running, a hovered bracket link hides its brackets, since the liquid already outlines it. Keyboard focus and touch-screen hovers keep them.
+- **Header backing:** once the page scrolls, the header gets a translucent sheet-coloured backing with a blur and a hairline, so content never reads through the tabs.
+- **Phones:** tighter tabs and padding, so the logo, three tabs and the switch fit at 390 px.
+
+---
+
+## 2026-10-15 · Light / dark toggle
+
+- **The toggle:** a mono bracket button beside MENU, with two small swatches (filled = the mode you're in). It reads "LIGHT" in dark mode and "DARK" in light mode. It's hidden while the mercury menu is open.
+- **Remembering it:** the choice is saved in `localStorage` (`as-theme`) and applied in `<head>` before first paint, so there's no flash. The default is dark. It crossfades with the View Transitions API where the browser has it, and switches instantly under reduced motion.
+- **Light mode keeps the same scheme, inverted, in `tokens.css` `:root[data-theme='light']`:**
+  - sand paper (`#ece6da`) for the sheet, with slabs stepping lighter instead of darker and soft warm shadows;
+  - slate lettering in three strengths, with `--sand-3` at about 4.5:1 on paper;
+  - the same sand blue for highlight blocks and selection (`--accent-fill`), always with dark ink (`--on-accent`);
+  - a deeper tone of it, `#2f6a84`, for lines and small text so they read on paper.
+- **Wiring:**
+  - Hard-coded alphas now use channel tokens: `rgb(var(--ink-rgb) / a)` and `rgb(var(--bg-rgb) / a)`.
+  - The dust canvas reads `--ink-rgb` and re-reads it on a `themechange` event.
+  - The browser's `theme-color` follows the mode.
+- **Case studies:** each keeps its own world. The tracker's circuit board pins the dark tokens on its card, and Cooked was already light.
+
+---
+
 ## 2026-10-15 · Accent: orange → sand blue
 
 - **The colour:** the site accent is now **sand blue, `#94c4d9`**, a dusty light blue that sits with the sand linework. It has about 9.7:1 contrast on the slate, and slate text on a blue block reads the same.

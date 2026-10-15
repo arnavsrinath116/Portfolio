@@ -111,7 +111,7 @@ const slots = ['a', 'b', 'c'];
   }
   /* dashed = not drawn yet: where the project's visual will sit */
   .panel-frame {
-    border: 1px dashed rgb(230 220 200 / 0.16);
+    border: 1px dashed rgb(var(--ink-rgb) / 0.16);
     border-radius: 8px;
     min-height: 90px;
   }
@@ -177,7 +177,7 @@ const slots = ['a', 'b', 'c'];
   @media (hover: hover) {
     a.panel:hover {
       --lift: -6px;
-      border-top-color: rgb(230 220 200 / 0.2);
+      border-top-color: rgb(var(--ink-rgb) / 0.2);
       box-shadow:
         0 1px 0 rgb(255 255 255 / 0.04) inset,
         0 36px 64px -18px rgb(0 0 0 / 0.65),

@@ -15,7 +15,7 @@ import { initTrackerCase } from './trackerCase';
 import { initSkillDims } from './skillDims';
 import { initHighlights } from './highlights';
 import { initFooter } from './footer';
-import { initMenu } from './menu';
+import { initNav } from './nav';
 import { initHeader } from './header';
 import { initFrame } from './frame';
 import { initClock } from './clock';
@@ -33,12 +33,12 @@ if (!reduce) {
 }
 
 initDust({ reduce });
-const fluid = initFluid();
+initFluid(); // the mercury cursor
 
 initFrame();
 initHeader();
 initClock();
-initMenu({ fluid, lenis, reduce });
+initNav({ lenis });
 // armed before first paint settles, so the blocks never flash full and then empty
 initHighlights({ reduce });
 

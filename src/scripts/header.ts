@@ -2,16 +2,19 @@
 export function initHeader() {
   const header = document.querySelector<HTMLElement>('[data-header]');
   if (!header) return;
-  const html = document.documentElement;
   let last = 0;
 
   const update = (y: number) => {
     const delta = y - last;
     if (Math.abs(delta) < 4) return;
-    const hide = delta > 0 && y > 140 && !html.classList.contains('menu-open');
+    const hide = delta > 0 && y > 140;
     header.classList.toggle('is-hidden', hide);
     last = y;
   };
+  // a backing behind the tabs once the page moves under them
+  const solid = () => header.classList.toggle('is-solid', window.scrollY > 40);
+  window.addEventListener('scroll', solid, { passive: true });
+  solid();
 
   // Native scroll fires for wheel, touch, keys, anchors and Lenis alike.
   window.addEventListener('scroll', () => update(window.scrollY), { passive: true });

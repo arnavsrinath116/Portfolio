@@ -2,13 +2,15 @@
 import Icon from './Icon.astro';
 import { site } from '../data/site';
 const year = new Date().getFullYear();
+// opens a new Gmail draft in a new tab, already addressed to me
+const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(site.email)}`;
 ---
 
 <footer class="site-footer" id="contact" aria-labelledby="footer-title" data-footer>
   <div class="contact-slab" data-contact data-dim="h-right">
     <div class="contact-main">
       <h2 id="footer-title" class="footer-lead">If you’ve scrolled this far, we should probably <span class="hl-block">talk.</span></h2>
-      <a class="footer-email bracket" href={`mailto:${site.email}`} data-magnet>
+      <a class="footer-email bracket" href={compose} target="_blank" rel="noopener" data-magnet>
         {site.email}
         <Icon name="arrow-up-right" size={16} />
       </a>
@@ -86,6 +88,14 @@ const year = new Date().getFullYear();
     text-decoration: underline 1px var(--sand-3);
     text-underline-offset: 0.28em;
     overflow-wrap: anywhere;
+  }
+  /* phones: the address scales to stay on one line rather than breaking mid-domain */
+  @media (max-width: 520px) {
+    .footer-email {
+      font-size: clamp(0.75rem, 3.7vw, 1.125rem);
+      white-space: nowrap;
+      overflow-wrap: normal;
+    }
   }
   .footer-email :global(.icon) {
     flex: none;

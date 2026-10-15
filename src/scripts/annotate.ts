@@ -65,8 +65,6 @@ export function initHeroAnnotations({ reduce }: { reduce: boolean }) {
     const m1 = measureLine(l1, stage);
     const m2 = measureLine(l2, stage);
 
-    if (cue) tl.to(cue, { opacity: 0, duration: 0.08 }, 0);
-
     if (!mobile) {
       // 1. overall width of line one
       hDim(svg, tl, 0.02, m1.left, m1.right, m1.capTop, m1.capTop - 34, 'W ', (m1.right - m1.left));
@@ -80,19 +78,21 @@ export function initHeroAnnotations({ reduce }: { reduce: boolean }) {
       hDim(svg, tl, 0.04, m2.left, m2.right, m2.baseline, m2.baseline + 14, 'W ', (m2.right - m2.left), true);
     }
 
-    tl.to({}, { duration: 0.12 }); // hold the finished drawing before the sheet moves on
     built = { tl };
 
     if (reduce) {
       tl.progress(1);
       return;
     }
+    // drawn by the scroll, but never holding it: the page moves from the first scroll, and
+    // the dimensions draw in over the first ~10% of a screen, so a single scroll brings them in
     st = ScrollTrigger.create({
       trigger: hero,
       start: 'top top',
-      end: 'bottom bottom',
-      scrub: 0.6,
+      end: () => `+=${Math.round(window.innerHeight * 0.1)}`,
+      scrub: 0.25,
       animation: tl,
+      invalidateOnRefresh: true,
     });
   };
 

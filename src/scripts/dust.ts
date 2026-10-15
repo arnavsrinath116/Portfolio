@@ -19,7 +19,8 @@ interface Speck {
   seed: number;
 }
 
-const SAND = '230, 220, 200';
+// the speck colour is the sheet's ink, read from the theme (and re-read when it flips)
+const inkOf = () => getComputedStyle(document.documentElement).getPropertyValue('--ink-rgb').trim() || '230 220 200';
 const RADIUS = 190; // reach of the cursor's influence
 
 export function initDust({ reduce }: { reduce: boolean }) {
@@ -28,6 +29,8 @@ export function initDust({ reduce }: { reduce: boolean }) {
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
+  let ink = inkOf();
+  document.addEventListener('themechange', () => (ink = inkOf()));
   if (!ctx) return;
 
   let W = 0;
@@ -139,7 +142,7 @@ export function initDust({ reduce }: { reduce: boolean }) {
       }
       // a slow shimmer so the field feels alive at rest
       a *= 0.8 + 0.2 * Math.sin(t * 0.8 + s.seed);
-      ctx.fillStyle = `rgba(${SAND}, ${Math.min(a, 0.75).toFixed(3)})`;
+      ctx.fillStyle = `rgb(${ink} / ${Math.min(a, 0.75).toFixed(3)})`;
       const size = Math.max(0.6, s.r * 1.6);
       ctx.fillRect(s.x - size / 2, s.y - size / 2, size, size);
     }

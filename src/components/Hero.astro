@@ -1,5 +1,10 @@
 ---
 import Icon from './Icon.astro';
+import { projects } from '../data/projects';
+import { withBase } from '../lib/url';
+
+// the first screen must not look finished: the project covers peek up from below its edge
+const peeks = projects.filter((p) => p.cover).slice(0, 2);
 ---
 
 <section class="hero" aria-labelledby="hero-title" data-hero>
@@ -15,16 +20,47 @@ import Icon from './Icon.astro';
     <svg class="annotations" aria-hidden="true" data-annotations></svg>
 
     <p class="scroll-cue" data-reveal>
-      <Icon name="arrow-down" />
+      <span class="cue-arrow"><Icon name="arrow-down" /></span>
       Scroll
     </p>
+
+    <!-- a glimpse of the work below, cut by the bottom of the sheet -->
+    <a class="peek" href="#work" data-reveal data-peek aria-label="Selected work, below">
+      <span class="peek-label">Next · Selected work</span>
+      <span class="peek-row">
+        {
+          peeks.map((p) => (
+            <span class="peek-card">
+              <img src={withBase(p.cover!.src)} alt="" width="2000" height="1160" decoding="async" style={p.cover!.focus ? `object-position:${p.cover!.focus}` : undefined} />
+            </span>
+          ))
+        }
+      </span>
+    </a>
   </div>
 </section>
 
+<script>
+  // the peek and the scroll cue have done their job once you start scrolling: they fade away
+  const peek = document.querySelector<HTMLElement>('[data-peek]');
+  const cue = document.querySelector<HTMLElement>('.scroll-cue');
+  if (peek) {
+    const update = () => {
+      const p = Math.min(1, Math.max(0, window.scrollY / (window.innerHeight * 0.3)));
+      peek.style.setProperty('--gone', String(p));
+      peek.style.visibility = p >= 1 ? 'hidden' : '';
+      if (cue) cue.style.opacity = String(1 - p);
+    };
+    window.addEventListener('scroll', update, { passive: true });
+    update();
+  }
+</script>
+
 <style>
+  /* one screen: nothing is pinned, so the first scroll moves the page */
   .hero {
     position: relative;
-    height: 200vh;
+    height: 100svh;
   }
   .hero-stage {
     position: sticky;
@@ -90,6 +126,83 @@ import Icon from './Icon.astro';
   .scroll-cue :global(.icon) {
     color: var(--accent);
   }
+  /* the arrow keeps nudging downward: there's more */
+  .cue-arrow {
+    display: inline-grid;
+    animation: cue-nudge 1.8s var(--ease-inout) infinite;
+  }
+  @keyframes cue-nudge {
+    0%,
+    100% {
+      transform: translateY(-2px);
+    }
+    50% {
+      transform: translateY(4px);
+    }
+  }
+
+  /* the peek: the covers of the work below, sitting half off the bottom of the sheet */
+  .peek {
+    --gone: 0;
+    position: absolute;
+    right: calc(var(--frame) + var(--gutter));
+    bottom: 0;
+    display: grid;
+    gap: 12px;
+    justify-items: end;
+    color: inherit;
+    text-decoration: none;
+    opacity: calc(1 - var(--gone));
+    transform: translateY(calc(var(--gone) * -24px));
+  }
+  .peek-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+    transition: color var(--dur-base) var(--ease-out);
+  }
+  .peek-row {
+    display: flex;
+    gap: clamp(10px, 1.2vw, 16px);
+    /* push the cards half below the edge of the sheet */
+    margin-bottom: calc(clamp(150px, 17vw, 260px) * 1160 / 2000 * -0.45);
+  }
+  .peek-card {
+    display: block;
+    width: clamp(150px, 17vw, 260px);
+    aspect-ratio: 2000 / 1160;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--slate-2);
+    box-shadow: var(--slab-shadow);
+    border-top: 1px solid var(--slate-edge);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .peek-card img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 30% 50%;
+  }
+  @media (hover: hover) {
+    .peek:hover .peek-label {
+      color: var(--accent);
+    }
+    .peek:hover .peek-card {
+      transform: translateY(-14px);
+    }
+    .peek:hover .peek-card:nth-child(2) {
+      transition-delay: 0.05s;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cue-arrow {
+      animation: none;
+    }
+  }
 
   /* narrower screens: the heading sits in normal flow, centred */
   @media (max-width: 900px) {
@@ -113,8 +226,11 @@ import Icon from './Icon.astro';
     }
   }
   @media (max-width: 700px) {
-    .hero {
-      height: 170vh;
+    .peek-card {
+      width: clamp(104px, 30vw, 150px);
+    }
+    .peek-row {
+      margin-bottom: calc(clamp(104px, 30vw, 150px) * 1160 / 2000 * -0.5);
     }
     .title {
       font-size: clamp(2.2rem, 11.2vw, 3.4rem);

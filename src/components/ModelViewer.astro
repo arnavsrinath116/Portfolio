@@ -63,9 +63,9 @@ const [x, y, z] = model.size;
     overflow: hidden;
     border-radius: 10px;
     background:
-      radial-gradient(120% 90% at 50% 40%, rgb(230 220 200 / 0.05), transparent 60%),
-      rgb(20 23 26 / 0.55);
-    border: 1px solid rgb(230 220 200 / 0.08);
+      radial-gradient(120% 90% at 50% 40%, rgb(var(--ink-rgb) / 0.05), transparent 60%),
+      rgb(var(--bg-rgb) / 0.55);
+    border: 1px solid rgb(var(--ink-rgb) / 0.08);
     cursor: grab;
   }
   .mv-stage:active {
@@ -123,7 +123,7 @@ const [x, y, z] = model.size;
   .mv-btn {
     padding: 6px 12px;
     border-radius: 999px;
-    border: 1px solid rgb(230 220 200 / 0.16);
+    border: 1px solid rgb(var(--ink-rgb) / 0.16);
     color: var(--sand-2);
     font-size: 0.8125rem;
     transition:
@@ -142,8 +142,8 @@ const [x, y, z] = model.size;
       color: var(--accent);
     }
     .mv-btn[aria-pressed='true']:hover {
-      color: var(--slate);
-      background: var(--accent);
+      color: var(--on-accent);
+      background: var(--accent-fill);
     }
   }
   .mv-hint {
@@ -153,7 +153,7 @@ const [x, y, z] = model.size;
   }
   .mv-hint kbd {
     padding: 1px 5px;
-    border: 1px solid rgb(230 220 200 / 0.18);
+    border: 1px solid rgb(var(--ink-rgb) / 0.18);
     border-radius: 4px;
     font: inherit;
     color: var(--sand-2);
