@@ -16,6 +16,59 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-16 · Jet V1 hologram in the hero
+
+- **What it is:** the Jet V1 Fusion model (`public/models/jet.glb`, 38 parts) is drawn straight onto the hero as accent line art, with no box or panel, styled like an isometric technical illustration with hidden lines removed:
+  - **Hiding:** every part is an invisible solid (depth only, no colour, drawn before any line) that hides what's behind it.
+  - **Silhouettes:** an inverted-hull shader outlines each part at a constant 1.15 px.
+  - **Creases:** creases sharper than 40° are drawn on top.
+  - **Glow:** a soft CSS glow in dark mode.
+- **Casings left out:** the outer and inner casings (any part nearly the jet's full length) aren't drawn, so the hologram shows the engine's working parts from the start.
+- **Placement:** it sits across the lower right, fully on the first screen (canvas 68vw × 80svh, 12vw past the right edge, a 10% fade at its base), drawn behind the title so the lettering stays on top.
+  - **The view, matched to the Fusion file:** the intake faces you at the lower left, seen a little from above, with the exhaust going away to the upper right (yaw 0.78, tilt 0.42, lean 0.32 rad).
+  - **No hard cut:** the hero stage no longer clips (`overflow: visible`, with `overflow-x: clip` on the hero), so the jet overhangs the hero's foot and its bottom mask fades it out.
+- **Not interactive:** `pointer-events: none`, `aria-hidden`.
+- **Exploded view on scroll:** every part slides along the jet's axis by 0.85× its distance from the middle, with smoothstep easing, from assembled at the top to fully exploded after 60% of a screen. The camera frames the fully exploded jet, so the spread stays on the sheet.
+- **Spinning blades:** the rotating parts turn about the engine's axis all the time, assembled or exploded. Struts, flanges and casing rings stay still, which is what makes the spin read.
+  - **Which parts:** identified from the Fusion export numbers by drawing every part end-on.
+    - Fan: spinner, hub and blades, at 1.4 rad/s.
+    - Shaft and small ring: 2.6 rad/s.
+    - Six compressor rows: 3.2 rad/s.
+    - Four turbine stages: 3.8 rad/s. The rear flange ring with the nozzle guide vanes (037) is bolted to the casing and stays still.
+  - **When it runs:** the loop only runs while the hologram is on screen and the tab is visible. Under reduced motion nothing turns.
+- **Casings ghost on scroll:** as the explosion runs, the casings round the blade rows drop to 14% opacity over its first half, so the spinning blades inside show.
+  - **Which parts:**
+    - High-pressure core casing: 023 outer and 018 compressor case.
+    - Low-pressure turbine casing: 025 outer and 020 turbine case.
+    - The fan stator casing (021 fan case, 022 stator ring) stays solid.
+  - **How:** the jet is rendered two ways and crossfaded on an eased curve over the first 60% of the explosion, so the blades fade in as the casings fade out instead of popping in.
+    - Solid: the casings hide what's inside.
+    - Ghosted: the casings at 14% in a pass of their own layer, after the rest and depth-tested against it. Solid parts in front still hide them, while the blades already drawn behind them stay visible.
+    - Each look renders to a 4× MSAA target, and a full-screen quad mixes them. Every frame takes this same path, even at either end; switching to direct canvas rendering blended the faint lines differently and made them jump.
+    - The outline shader applies the output colour space, so its colour is identical in every path.
+    - The blend un-premultiplies before converting to sRGB and premultiplies after, so faint casing lines stay their own blue. Converting the premultiplied value had turned them into a pale haze on the light sheet. Checked in both themes, at the top and through the fade.
+- **Rendering and loading:** it renders only when the scroll changes it, and three.js and the model load at idle after the page settles. It follows the theme, in deep blue lines on the light sheet. Under reduced motion it stays assembled.
+- **Peek cards:** the cover peek cards moved to the bottom left, half off the foot of the sheet. The scroll cue folds into their label ("↓ Next · Selected work", the arrow still nudging), and they fade as you scroll.
+- **Code:** `src/scripts/heroJet.ts`; canvas in `Hero.astro`.
+
+---
+
+## 2026-10-15 · Reveals always land in place; Cooked opener centred
+
+- **Bug: reveals could freeze in their start pose.** Cooked's UI-kit buttons rested shrunk to 92% and 22 px low.
+  - **Cause:** the reveals were `gsap.from()`, which records the resting pose from the page. When the card re-measured (on open, or as images loaded) while an element was still in its start pose, that start pose became the "end", so the tween animated from start to start.
+  - **Fix:** every reveal in Cooked (`up`, `pop`, `left`/`right`, `fill`, `fill-x`, `stagger`) and in the tracker (`up`, `stagger`) is now a `fromTo()` with explicit end values.
+  - **Staggered rows:** in Cooked these also play through once in view (0.5 s, 0.07 s apart), instead of scrubbing with the scroll, so a row is never caught half-arrived.
+- **Centring:** "CONTROL." in the Cooked opener scaled up after layout and pushed the centred line off-centre (growing it from the middle overlapped "up" instead). It is now laid out at its full grown size (1.18em), so the line centres true, and the scene grows it from 1/1.18 to 1, from its left edge.
+
+---
+
+## 2026-10-15 · Header stays transparent
+
+The scrolled header backing (translucent fill, blur and hairline) is removed. Only the logo, the tabs and the switch float over the page, which the header already hides while you read down.
+
+---
+
 ## 2026-10-15 · Hero scrolls immediately
 
 The hero was a 200vh track (170vh on phones) with the title pinned: the first screen of scrolling only scrubbed the dimension drawing while the page stood still, and people thought scrolling was broken.

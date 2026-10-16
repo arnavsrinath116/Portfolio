@@ -865,7 +865,10 @@ const journey = [
   .ck-beat-3 em {
     display: inline-block;
     text-transform: uppercase;
-    transform-origin: 0% 70%; /* grows away from "real", never into it */
+    /* the line is laid out with CONTROL at its full, grown size, so it centres true;
+       the scene starts it smaller and grows it from its left edge, away from "up" */
+    font-size: 1.18em;
+    transform-origin: 0% 70%;
   }
   .ck-seesaw {
     position: absolute;

@@ -14,6 +14,7 @@ import { initCookedCase } from './cookedCase';
 import { initTrackerCase } from './trackerCase';
 import { initSkillDims } from './skillDims';
 import { initHighlights } from './highlights';
+import { initHeroJet } from './heroJet';
 import { initFooter } from './footer';
 import { initNav } from './nav';
 import { initHeader } from './header';
@@ -44,6 +45,7 @@ initHighlights({ reduce });
 
 document.fonts.ready.then(() => {
   initHeroAnnotations({ reduce });
+  initHeroJet({ reduce });
   initGuide({ reduce });
   initDims({ reduce });
   initWire({ reduce });

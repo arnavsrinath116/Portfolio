@@ -11,10 +11,7 @@ export function initHeader() {
     header.classList.toggle('is-hidden', hide);
     last = y;
   };
-  // a backing behind the tabs once the page moves under them
-  const solid = () => header.classList.toggle('is-solid', window.scrollY > 40);
-  window.addEventListener('scroll', solid, { passive: true });
-  solid();
+
 
   // Native scroll fires for wheel, touch, keys, anchors and Lenis alike.
   window.addEventListener('scroll', () => update(window.scrollY), { passive: true });

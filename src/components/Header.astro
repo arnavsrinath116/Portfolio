@@ -99,8 +99,7 @@ const tabs = [
     grid-template-columns: 1fr 1fr;
     align-items: center;
     padding: 0 var(--gutter);
-    /* at the top it floats over the sheet; once you scroll, it gets a backing so the
-       page never reads through the tabs */
+    /* no bar: just the mark, the tabs and the switch floating over the page */
     background: transparent;
     pointer-events: none;
     transition:
@@ -109,12 +108,7 @@ const tabs = [
       background-color var(--dur-base) var(--ease-out),
       box-shadow var(--dur-base) var(--ease-out);
   }
-  .site-header:global(.is-solid) {
-    background: rgb(var(--bg-rgb) / 0.88);
-    box-shadow: 0 1px 0 var(--line-faint);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-  }
+
   .site-header > * {
     pointer-events: auto;
   }

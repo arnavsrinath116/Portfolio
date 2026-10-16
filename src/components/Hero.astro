@@ -19,14 +19,9 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
 
     <svg class="annotations" aria-hidden="true" data-annotations></svg>
 
-    <p class="scroll-cue" data-reveal>
-      <span class="cue-arrow"><Icon name="arrow-down" /></span>
-      Scroll
-    </p>
-
-    <!-- a glimpse of the work below, cut by the bottom of the sheet -->
+    <!-- a glimpse of the work below, cut by the bottom of the sheet; it carries the scroll cue -->
     <a class="peek" href="#work" data-reveal data-peek aria-label="Selected work, below">
-      <span class="peek-label">Next · Selected work</span>
+      <span class="peek-label"><span class="cue-arrow"><Icon name="arrow-down" /></span>Next · Selected work</span>
       <span class="peek-row">
         {
           peeks.map((p) => (
@@ -37,19 +32,20 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
         }
       </span>
     </a>
+
+    <!-- the Jet V1 hologram: line art straight on the sheet, exploded by the scroll (heroJet.ts) -->
+    <canvas class="hero-jet" aria-hidden="true" data-hero-jet></canvas>
   </div>
 </section>
 
 <script>
-  // the peek and the scroll cue have done their job once you start scrolling: they fade away
+  // the peek has done its job once you start scrolling: it rises a touch and fades away
   const peek = document.querySelector<HTMLElement>('[data-peek]');
-  const cue = document.querySelector<HTMLElement>('.scroll-cue');
   if (peek) {
     const update = () => {
       const p = Math.min(1, Math.max(0, window.scrollY / (window.innerHeight * 0.3)));
       peek.style.setProperty('--gone', String(p));
       peek.style.visibility = p >= 1 ? 'hidden' : '';
-      if (cue) cue.style.opacity = String(1 - p);
     };
     window.addEventListener('scroll', update, { passive: true });
     update();
@@ -66,11 +62,17 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     position: sticky;
     top: 0;
     height: 100svh;
-    overflow: hidden;
+    /* not clipped: the hologram overhangs the foot of the hero and fades out (its own mask)
+       rather than being cut off as the page scrolls */
+    overflow: visible;
+  }
+  .hero {
+    overflow-x: clip;
   }
 
   .hero-type {
     position: absolute;
+    z-index: 1;
     left: calc(var(--frame) + var(--gutter));
     right: calc(var(--frame) + var(--gutter));
     top: 27%;
@@ -113,19 +115,6 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     pointer-events: none;
   }
 
-  .scroll-cue {
-    position: absolute;
-    left: calc(var(--frame) + var(--gutter));
-    bottom: calc(var(--frame) + 26px);
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 0.8125rem;
-    color: var(--sand-3);
-  }
-  .scroll-cue :global(.icon) {
-    color: var(--accent);
-  }
   /* the arrow keeps nudging downward: there's more */
   .cue-arrow {
     display: inline-grid;
@@ -141,21 +130,25 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     }
   }
 
-  /* the peek: the covers of the work below, sitting half off the bottom of the sheet */
+  /* the peek: the covers of the work below, half off the foot of the sheet, bottom left */
   .peek {
     --gone: 0;
     position: absolute;
-    right: calc(var(--frame) + var(--gutter));
+    left: calc(var(--frame) + var(--gutter));
     bottom: 0;
+    z-index: 1;
     display: grid;
     gap: 12px;
-    justify-items: end;
+    justify-items: start;
     color: inherit;
     text-decoration: none;
     opacity: calc(1 - var(--gone));
     transform: translateY(calc(var(--gone) * -24px));
   }
   .peek-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.06em;
@@ -163,10 +156,12 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     color: var(--sand-3);
     transition: color var(--dur-base) var(--ease-out);
   }
+  .peek-label :global(.icon) {
+    color: var(--accent);
+  }
   .peek-row {
     display: flex;
     gap: clamp(10px, 1.2vw, 16px);
-    /* push the cards half below the edge of the sheet */
     margin-bottom: calc(clamp(150px, 17vw, 260px) * 1160 / 2000 * -0.45);
   }
   .peek-card {
@@ -197,6 +192,30 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     .peek:hover .peek-card:nth-child(2) {
       transition-delay: 0.05s;
     }
+  }
+
+  /* the hologram: a diagonal band across the lower right, running off the bottom of the
+     sheet; it never takes the pointer */
+  .hero-jet {
+    position: absolute;
+    right: -12vw;
+    bottom: 0;
+    width: 68vw;
+    height: 80svh;
+    z-index: 0; /* behind the title: the lettering always reads on top */
+    pointer-events: none;
+    /* it dissolves into the foot of the sheet instead of being cut by it */
+    -webkit-mask-image: linear-gradient(to top, transparent 0, #000 10%);
+    mask-image: linear-gradient(to top, transparent 0, #000 10%);
+    opacity: 0;
+    filter: drop-shadow(0 0 6px rgb(148 196 217 / 0.45));
+    transition: opacity 1.2s var(--ease-out);
+  }
+  .hero-jet:global(.is-on) {
+    opacity: 1;
+  }
+  :global(html[data-theme='light']) .hero-jet {
+    filter: none;
   }
   @media (prefers-reduced-motion: reduce) {
     .cue-arrow {
@@ -231,6 +250,11 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     }
     .peek-row {
       margin-bottom: calc(clamp(104px, 30vw, 150px) * 1160 / 2000 * -0.5);
+    }
+    .hero-jet {
+      width: 100vw;
+      height: 48svh;
+      bottom: 0;
     }
     .title {
       font-size: clamp(2.2rem, 11.2vw, 3.4rem);

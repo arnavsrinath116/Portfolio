@@ -264,11 +264,17 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     // ---- generic reveals ----
     article.querySelectorAll<HTMLElement>('[data-a]').forEach((el) => {
       const kind = el.dataset.a;
-      if (kind === 'up') gsap.from(el, { y: 54, autoAlpha: 0, ease: 'power2.out', scrollTrigger: enter(el) });
+      // every reveal names where it ends (fromTo, not from): a re-measure while an element is
+      // still in its start pose would otherwise record that pose as its resting place
+      if (kind === 'up') gsap.fromTo(el, { y: 54, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: enter(el) });
       else if (kind === 'pop')
-        gsap.from(el, { scale: 0.55, autoAlpha: 0, rotation: gsap.utils.random(-8, 8), ease: 'back.out(2)', scrollTrigger: enter(el) });
+        gsap.fromTo(el, { scale: 0.55, autoAlpha: 0, rotation: gsap.utils.random(-8, 8) }, { scale: 1, autoAlpha: 1, rotation: 0, ease: 'back.out(2)', scrollTrigger: enter(el) });
       else if (kind === 'left' || kind === 'right')
-        gsap.from(el, { x: kind === 'left' ? -110 : 110, rotation: kind === 'left' ? -8 : 8, autoAlpha: 0, ease: 'power2.out', scrollTrigger: enter(el) });
+        gsap.fromTo(
+          el,
+          { x: kind === 'left' ? -110 : 110, rotation: kind === 'left' ? -8 : 8, autoAlpha: 0 },
+          { x: 0, rotation: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: enter(el) },
+        );
       else if (kind === 'spin')
         gsap.fromTo(
           el,
@@ -279,16 +285,19 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         const s = parseFloat(el.dataset.speed || '40');
         gsap.fromTo(el, { y: s }, { y: -s, ease: 'none', scrollTrigger: ST(el, { start: 'top bottom', end: 'bottom top', scrub: true }) });
       } else if (kind === 'fill')
-        gsap.from(el, { scaleX: 0, ease: 'power2.out', scrollTrigger: ST(el, { start: 'top 94%', end: 'top 72%', scrub: 0.35 }) });
-      else if (kind === 'fill-x') gsap.from(el, { scaleX: 0.15, autoAlpha: 0, ease: 'power3.out', scrollTrigger: enter(el) });
+        gsap.fromTo(el, { scaleX: 0 }, { scaleX: 1, ease: 'power2.out', scrollTrigger: ST(el, { start: 'top 94%', end: 'top 72%', scrub: 0.35 }) });
+      else if (kind === 'fill-x') gsap.fromTo(el, { scaleX: 0.15, autoAlpha: 0 }, { scaleX: 1, autoAlpha: 1, ease: 'power3.out', scrollTrigger: enter(el) });
       else if (kind === 'stagger')
-        gsap.from(el.children, {
-          y: 22,
-          autoAlpha: 0,
-          scale: 0.92,
-          stagger: 0.18,
+        // played through once it's in view (not scrubbed), so a row can never rest half
+        // arrived, shrunk and out of line with its neighbours
+        gsap.fromTo(el.children, { y: 22, autoAlpha: 0, scale: 0.92 }, {
+          y: 0,
+          autoAlpha: 1,
+          scale: 1,
+          stagger: 0.07,
+          duration: 0.5,
           ease: 'back.out(1.6)',
-          scrollTrigger: ST(el, { start: 'top 92%', end: 'top 70%', scrub: 0.35 }),
+          scrollTrigger: ST(el, { start: 'top 88%', toggleActions: 'play none none reverse' }),
         });
       else if (kind === 'draw') {
         const tl = gsap.timeline({ scrollTrigger: ST(el, { start: 'top 90%', end: 'top 62%', scrub: 0.35 }) });
@@ -334,7 +343,7 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         .fromTo(b2, { autoAlpha: 0, y: 70 }, { autoAlpha: 1, y: 0, duration: 1 })
         .to(b2, { autoAlpha: 0, y: -70, duration: 1 }, '+=0.8')
         .fromTo(b3, { autoAlpha: 0, y: 70 }, { autoAlpha: 1, y: 0, duration: 1 })
-        .fromTo(im.querySelector('[data-control]'), { scale: 1 }, { scale: 1.18, duration: 0.6, ease: 'back.out(3)' })
+        .fromTo(im.querySelector('[data-control]'), { scale: 1 / 1.18 }, { scale: 1, duration: 0.6, ease: 'back.out(3)' })
         .fromTo(im.querySelector('[data-seesaw]'), { autoAlpha: 0, y: 90 }, { autoAlpha: 1, y: 0, duration: 1 }, '<')
         .to(im.querySelector('[data-beam]'), { rotation: -11, svgOrigin: '400 260', duration: 1.6, ease: 'power2.inOut' })
         .to(im.querySelector('[data-ss-left]'), { y: 50, duration: 1.6, ease: 'power2.inOut' }, '<')

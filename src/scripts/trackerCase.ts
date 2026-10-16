@@ -370,12 +370,13 @@ export function initTrackerCase({ reduce }: { reduce: boolean }) {
     if (reduce) return;
 
     article.querySelectorAll<HTMLElement>('[data-a]').forEach((el) => {
-      if (el.dataset.a === 'up') gsap.from(el, { y: 44, autoAlpha: 0, ease: 'power2.out', scrollTrigger: enter(el) });
+      // explicit end values (fromTo): a re-measure mid-reveal must not become the resting pose
+      if (el.dataset.a === 'up') gsap.fromTo(el, { y: 44, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: enter(el) });
       else if (el.dataset.a === 'stagger')
-        gsap.from(el.children, {
-          y: 26,
-          autoAlpha: 0,
-          scale: 0.94,
+        gsap.fromTo(el.children, { y: 26, autoAlpha: 0, scale: 0.94 }, {
+          y: 0,
+          autoAlpha: 1,
+          scale: 1,
           stagger: 0.14,
           ease: 'power2.out',
           scrollTrigger: ST(el, { start: 'top 92%', end: 'top 66%', scrub: 0.35 }),

@@ -47,7 +47,6 @@ export function initHeroAnnotations({ reduce }: { reduce: boolean }) {
   const svg = document.querySelector<SVGSVGElement>('[data-annotations]');
   const l1 = document.querySelector<HTMLElement>('[data-line="1"]');
   const l2 = document.querySelector<HTMLElement>('[data-line="2"]');
-  const cue = document.querySelector<HTMLElement>('.scroll-cue');
   if (!hero || !stageEl || !svg || !l1 || !l2) return;
 
   let built: Built | null = null;
