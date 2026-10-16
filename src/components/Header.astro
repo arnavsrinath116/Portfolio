@@ -4,9 +4,9 @@ import { site } from '../data/site';
 
 // the sections of the page, always one click away
 const tabs = [
-  { label: 'Work', href: '#work' },
-  { label: 'Skills', href: '#skills' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Work', href: withBase('/#work') },
+  { label: 'Skills', href: withBase('/#skills') },
+  { label: 'Contact', href: '#contact' }, // every page ends on the contact slab
 ];
 ---
 
@@ -41,6 +41,12 @@ const tabs = [
         }
       </ul>
     </nav>
+
+    <!-- the one thing a reviewer reaches for first: always in the top bar -->
+    <a class="resume-btn" href={withBase(site.resume)} target="_blank" rel="noopener" data-magnet>
+      Résumé
+      <svg class="resume-ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5v7M3 5.5 6 8.5 9 5.5M2 10.5h8"></path></svg>
+    </a>
 
     <!-- light / dark: a switch, moon on the dark side, sun on the light -->
     <button class="theme-switch" type="button" role="switch" aria-checked="false" aria-label="Light mode" data-theme-toggle data-magnet>
@@ -215,6 +221,43 @@ const tabs = [
     transform: none;
   }
 
+  /* résumé: the only filled control in the bar, so it reads as the primary action */
+  .resume-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 30px;
+    padding: 0 13px;
+    border-radius: 15px;
+    background: var(--accent-fill);
+    color: var(--on-accent);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .resume-ico {
+    width: 12px;
+    height: 12px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .resume-btn:hover .resume-ico {
+      transform: translateY(2px);
+    }
+  }
+  .resume-btn:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 3px;
+  }
+
   /* the switch: a pill track with both marks, and a knob carrying the current one */
   /* the button is the pill itself, so the mercury cursor wraps it as a pill
      (it follows the hovered element's own corner radius) */
@@ -319,6 +362,26 @@ const tabs = [
     }
     .theme-switch {
       margin-left: 4px;
+    }
+    .resume-btn {
+      margin-left: 2px;
+    }
+  }
+  /* phones: everything still fits on one line; the résumé keeps its label, drops the icon */
+  @media (max-width: 520px) {
+    .hdr-nav a {
+      padding: 0.55em 0.4em;
+      font-size: 0.6875rem;
+      letter-spacing: 0;
+    }
+    .resume-btn {
+      height: 26px;
+      padding: 0 9px;
+      font-size: 0.6875rem;
+      letter-spacing: 0.02em;
+    }
+    .resume-ico {
+      display: none;
     }
   }
 </style>

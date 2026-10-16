@@ -7,16 +7,18 @@ import type Lenis from 'lenis';
 export function initNav({ lenis }: { lenis: Lenis | null }) {
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
   if (!links.length) return;
-  const byId = new Map(links.map((a) => [a.getAttribute('href')!.slice(1), a]));
+  // a tab's section: the part after #; on another page, a tab whose section isn't here just navigates
+  const idOf = (a: HTMLAnchorElement) => a.getAttribute('href')!.split('#')[1] ?? '';
+  const byId = new Map(links.map((a) => [idOf(a), a]));
 
   links.forEach((a) =>
     a.addEventListener('click', (e) => {
-      const target = document.getElementById(a.getAttribute('href')!.slice(1));
+      const target = document.getElementById(idOf(a));
       if (!target) return;
       e.preventDefault();
       if (lenis) lenis.scrollTo(target, { duration: 1.4 });
       else target.scrollIntoView({ behavior: 'smooth' });
-      history.replaceState(null, '', a.getAttribute('href'));
+      history.replaceState(null, '', `#${idOf(a)}`);
       target.setAttribute('tabindex', '-1');
       target.focus({ preventScroll: true });
     }),

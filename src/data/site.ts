@@ -5,7 +5,7 @@ export const site = {
   disciplines: ['Product', 'UX', 'HMI'],
   email: '116.arnavsrinath@gmail.com',
   linkedin: 'https://www.linkedin.com/',
-  resume: '#', // PLACEHOLDER: /resume.pdf once added to /public
+  resume: '/resume.pdf', // the PDF lives at public/resume.pdf
   // PLACEHOLDER: city label. Time zone was read from this Mac; confirm it.
   city: 'Your city',
   timeZone: 'Asia/Kolkata',

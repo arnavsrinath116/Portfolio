@@ -16,6 +16,37 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-16 · All projects: a projects page
+
+- **New page `/projects/` (`src/pages/projects.astro`):** the full drawing set.
+  - **Header:** a "Back to the front page" link, "All projects" (block highlight on "projects"), and a short note.
+  - **Case studies:** every project as a wide sheet: cover, sheet number (P-01…), discipline, title, note, duration and tools, "Open case study".
+  - **Models & side builds:** the finished 3D pieces (M-01…) from the 3D modelling skill.
+  - **Cards:** they open in the same expanding card as the homepage (the page carries its own `ProjectModal`), with deep links `/projects/#project-<slug>`.
+  - **Chrome:** the page ends on the same contact footer.
+- **Homepage:** Selected work shows the first three projects (`projects.slice(0, 3)`).
+  - **Under the grid:** "Three on the wall. The rest are in the drawers." and an "Explore more projects" button to the new page.
+- **Header tabs work from any page:** Work and Skills point at `/#work` and `/#skills`. `nav.ts` scrolls when the section is on the page, and otherwise lets the link navigate; Contact stays in-page, since every page ends on it.
+
+---
+
+## 2026-10-16 · About section: tried and parked
+
+An About section drawn as an exploded assembly of Arnav (portrait at the centre; car, piston, plane, ESP32, phone, Bézier, camera, cube and ⌘Z key around it; a humorous parts list) was built and then taken out for now. It's saved on the local branch `draft/about-exploded` (`src/components/About.astro`, `src/scripts/aboutDrawing.ts`) to revisit. A simpler version (heading, portrait slot, two paragraphs, an "Off the clock" line) was also tried and taken out.
+
+---
+
+## 2026-10-16 · Résumé button
+
+Feedback from a friend: the résumé should be reachable from anywhere. (Section tones were tried, first blended, then as solid bands, and taken out for now.)
+
+- **Résumé button:** in the top bar after the tabs, the bar's only filled control, in the accent with dark ink and a download arrow. It opens `site.resume` (`/resume.pdf`, served from `public/resume.pdf`) in a new tab.
+  - The footer's Résumé link now shows too.
+  - On phones the button tightens and drops its icon, so the logo, three tabs, Résumé and the switch fit at 390 px.
+  - **Still needed:** the PDF itself, at `public/resume.pdf`.
+
+---
+
 ## 2026-10-16 · Jet V1 hologram in the hero
 
 - **What it is:** the Jet V1 Fusion model (`public/models/jet.glb`, 38 parts) is drawn straight onto the hero as accent line art, with no box or panel, styled like an isometric technical illustration with hidden lines removed:

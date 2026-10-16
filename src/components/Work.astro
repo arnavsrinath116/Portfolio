@@ -5,6 +5,8 @@ import { withBase } from '../lib/url';
 
 // tiles are laid out by position: the first is the large lead slab, the next two stack beside it
 const slots = ['a', 'b', 'c'];
+// the front page shows the first three; the projects page holds them all
+const featured = projects.slice(0, 3);
 ---
 
 <section class="work" id="work" aria-labelledby="work-title" data-work>
@@ -18,7 +20,7 @@ const slots = ['a', 'b', 'c'];
 
   <div class="work-grid" data-rise-group>
     {
-      projects.map((p, i) => (
+      featured.map((p, i) => (
         <a
           href={`#project-${p.slug}`}
           data-open-project={p.slug}
@@ -47,6 +49,15 @@ const slots = ['a', 'b', 'c'];
         </a>
       ))
     }
+  </div>
+
+  <!-- the rest of the set -->
+  <div class="work-more">
+    <p class="work-more-note">Three on the wall. The rest are in the drawers.</p>
+    <a class="work-more-btn" href={withBase('/projects/')} data-magnet>
+      <span class="work-more-label">Explore more projects</span>
+      <Icon name="arrow-up-right" />
+    </a>
   </div>
 </section>
 
@@ -200,6 +211,61 @@ const slots = ['a', 'b', 'c'];
     width: 6px;
     height: 6px;
     border: 1px solid var(--accent);
+  }
+
+  /* under the grid: a quiet line, and the way into the full set */
+  .work-more {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px 32px;
+    margin-top: clamp(24px, 4vh, 40px);
+  }
+  .work-more-note {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .work-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    border-radius: var(--radius-slab);
+    background: var(--slate-2);
+    border-top: 1px solid var(--slate-edge);
+    box-shadow: var(--slab-shadow);
+    color: var(--sand);
+    text-decoration: none;
+    transition:
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 240ms ease-out;
+  }
+  .work-more-label {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: 1.0625rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .work-more-btn :global(.icon) {
+    color: var(--accent);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .work-more-btn:hover {
+      transform: translateY(-3px);
+      background: var(--slate-3);
+    }
+    .work-more-btn:hover :global(.icon) {
+      transform: translate(2px, -2px);
+    }
   }
 
   @media (max-width: 860px) {
