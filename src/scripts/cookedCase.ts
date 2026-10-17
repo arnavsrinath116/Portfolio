@@ -387,12 +387,15 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     const sp = scene('spectrum');
     if (sp) {
       const track = sp.querySelector('[data-spec-track]')!;
-      const tl = tlFor(sp, { scrub: 0.8 });
-      tl.fromTo(track, { '--p': '4%' }, { '--p': '96%', duration: 1.6, ease: 'power1.inOut' })
-        .to(track, { '--p': '10%', duration: 1.4, ease: 'power1.inOut' })
-        .to(track, { '--p': '50%', duration: 1.1, ease: 'power2.out' })
-        .from(sp.querySelector('[data-spec-verdict]'), { autoAlpha: 0, y: 26, duration: 0.8 });
-      hold(tl, 1);
+      // one clear move, played on its own (not tied to the scroll) as soon as the scene is in
+      // view: from control-seeker to the middle, then the verdict. Scrolling back above resets it
+      const play = gsap
+        .timeline({ paused: true })
+        .fromTo(track, { '--p': '4%' }, { '--p': '50%', duration: 1.4, ease: 'power2.inOut' })
+        .fromTo(sp.querySelector('[data-spec-verdict]'), { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.2');
+      ScrollTrigger.create(ST(sp, { start: 'top 55%', onEnter: () => play.play(), onLeaveBack: () => play.pause(0) }));
+      // the scene still holds on screen for a moment while it plays
+      hold(tlFor(sp), 1);
     }
 
     // define: the HMW lights up word by word, then the insight lands
