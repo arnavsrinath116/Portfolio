@@ -2,6 +2,12 @@
 import { withBase } from '../lib/url';
 import { site } from '../data/site';
 
+interface Props {
+  /** on pages other than home: a back-to-home button by the logo, and the bar never hides */
+  back?: boolean;
+}
+const { back = false } = Astro.props;
+
 // the sections of the page, always one click away
 const tabs = [
   { label: 'Work', href: withBase('/#work') },
@@ -11,7 +17,8 @@ const tabs = [
 ---
 
 
-<header class="site-header" data-header data-reveal>
+<header class="site-header" data-header data-reveal data-pinned={back ? '' : undefined}>
+  <div class="hdr-left">
   <a class="logo" href={withBase('/')} aria-label={`${site.name}, home`} data-magnet>
     <span class="cube-stage" aria-hidden="true">
       <span class="cube">
@@ -24,6 +31,15 @@ const tabs = [
       </span>
     </span>
   </a>
+  {
+    back && (
+      <a class="back-btn" href={withBase('/')} aria-label="Back to home" data-magnet>
+        <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M10 6H2M5.5 2.5 2 6l3.5 3.5" /></svg>
+        Home
+      </a>
+    )
+  }
+  </div>
 
 
   <div class="hdr-right">
@@ -122,6 +138,45 @@ const tabs = [
     transform: translateY(calc(-100% - var(--frame) - 2px));
   }
 
+  .hdr-left {
+    justify-self: start;
+    display: flex;
+    align-items: center;
+    gap: clamp(20px, 2.4vw, 36px);
+  }
+  /* back to the front page: just an arrow, set apart from the logo */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    color: inherit;
+    font-size: 0.875rem;
+    font-weight: 560;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: color var(--dur-base) var(--ease-out);
+  }
+  .back-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .back-btn:hover {
+      color: var(--accent);
+    }
+    .back-btn:hover svg {
+      transform: translateX(-3px);
+    }
+  }
+
   /* ---- Isometric AS cube: true 3D, orthographic (no perspective) ---- */
   .logo {
     justify-self: start;
@@ -129,6 +184,7 @@ const tabs = [
     place-items: center;
     width: 52px;
     height: 52px;
+    border-radius: 50%; /* the mercury cursor wraps it as a circle */
   }
   .cube-stage {
     --s: 22px;
@@ -381,6 +437,13 @@ const tabs = [
       letter-spacing: 0.02em;
     }
     .resume-ico {
+      display: none;
+    }
+    .hdr-left {
+      gap: 10px;
+    }
+    /* with Home in the bar, Contact (the foot of the page) gives up its room */
+    .site-header[data-pinned] .hdr-nav li:last-child {
       display: none;
     }
   }

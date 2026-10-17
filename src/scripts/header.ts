@@ -7,7 +7,7 @@ export function initHeader() {
   const update = (y: number) => {
     const delta = y - last;
     if (Math.abs(delta) < 4) return;
-    const hide = delta > 0 && y > 140;
+    const hide = delta > 0 && y > 140 && !header.hasAttribute('data-pinned');
     header.classList.toggle('is-hidden', hide);
     last = y;
   };

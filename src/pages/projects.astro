@@ -18,12 +18,11 @@ const models = skills.find((s) => s.slug === '3d-modeling')?.works.filter((w) =>
 
 <Base title={`All projects · ${site.name}`} description={`All projects by ${site.name}: product, UX and HMI case studies, and the models in between.`}>
   <SheetFrame />
-  <Header />
+  <Header back />
   <ProjectModal />
   <span id="top"></span>
   <main id="main" class="pj">
     <header class="pj-head">
-      <a class="pj-back bracket" href={withBase('/')} data-magnet><Icon name="arrow-up" /> Back to the front page</a>
       <h1 class="pj-title">All <span class="hl-block">projects</span></h1>
       <p class="pj-note">
         The full drawing set: each case study from the first sketch to the last iteration, and the models built along the
@@ -104,13 +103,6 @@ const models = skills.find((s) => s.slug === '3d-modeling')?.works.filter((w) =>
     gap: 18px clamp(32px, 6vw, 96px);
     align-items: end;
     margin-bottom: clamp(48px, 9vh, 96px);
-  }
-  .pj-back {
-    grid-column: 1 / -1;
-    justify-self: start;
-    margin-left: -0.9em;
-    font-size: 0.8125rem;
-    color: var(--sand-2);
   }
   .pj-title {
     margin: 0;
