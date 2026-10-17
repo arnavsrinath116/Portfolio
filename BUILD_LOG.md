@@ -16,6 +16,31 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-17 · Cursor goes flat: comic line art
+
+- **No more 3D chrome:** the cursor (and the ring it wraps round buttons) is now flat comic line art instead of shaded mercury: a bold 1.8 px ink outline round a flat fill, plus a crisp offset shadow (2.5, 3 px, 22%).
+  - **Dark sheet:** sand fill, near-black ink.
+  - **Light sheet:** white fill, slate ink.
+- **The wrap ring:** thickened (3.2 px) so its fill shows inside the outline.
+- **Unchanged:** all the motion (arrow shape, speed squash and stretch, sphere on a fast throw, the arrow-shaped trail, the wrap).
+- **How:** the fragment shader's environment shading is replaced by an outline/fill split on the distance field, anti-aliased to one device pixel.
+
+---
+
+## 2026-10-17 · Mercury cursor, arrow-shaped
+
+- **The shape:** the liquid cursor's head is now a pointer arrow instead of a round drop. Its tip sits on the pointer, and it's still the same mercury: silver and glossy on the dark sheet, black ink on the light one.
+- **Speed-reactive squash and stretch:** the arrow stretches along its direction of travel in proportion to speed (up to 30% at about 3,200 px/s), area-preserving, about its middle. The stretch is sprung, so when it stops it overshoots into a brief squash, then settles.
+- **Sphere when thrown:** fast enough (from about 2,200 px/s) it pulls into a sphere quickly, then takes about a second to become an arrow again.
+- **Trail:** the whole body smears out behind it along the way it's moving. A smooth tapered streak (a round cone, as wide as the arrow where it leaves it and ending in a round 1 px line) joined to the body, so its edges stay clean.
+- **Shadow:** softer and lighter, a wide falloff at 16% instead of a tight one at 38%.
+- **Performance:** the arrow's polygon distance is unrolled edge by edge (no nested loop), so the smear stays cheap.
+- **Unchanged:** the click wobble, the lean toward nearby buttons, and the liquid ring that wraps a hovered button.
+- **How:** a new `uMove` uniform (stretch, angle, sphere blend). The shader blends the arrow distance into a circle and joins the trail cone with a smooth union.
+- **How:** `sdArrow`, an exact polygon distance (7 vertices), replaces the circle in the shader's `body()`, scaled with the drop's size. `jelly()` now rotates back after its squash, so the arrow keeps pointing up-left while it wobbles.
+
+---
+
 ## 2026-10-16 · All projects: a projects page
 
 - **New page `/projects/` (`src/pages/projects.astro`):** the full drawing set.

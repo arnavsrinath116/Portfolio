@@ -38,6 +38,7 @@ uniform float uTime;
 uniform vec3 uHead;     // x, y, radius
 uniform vec3 uTail;     // x, y, radius
 uniform vec3 uWob;      // squash amount, squash angle, ripple amplitude
+uniform vec3 uMove;     // stretch along the motion (negative = squash), motion angle, sphere blend
 uniform vec3 uMag;      // dir.xy, bulge amplitude
 uniform vec4 uRect;     // center.xy, half size.xy
 uniform float uRectR;   // corner radius of the wrapped element (+ gap)
@@ -82,14 +83,74 @@ vec2 jelly(vec2 v) {
   float c = cos(uWob.y);
   float s = sin(uWob.y);
   v = vec2(c * v.x + s * v.y, -s * v.x + c * v.y);
-  return vec2(v.x / (1.0 + uWob.x), v.y * (1.0 + uWob.x)); // area-preserving squash
+  v = vec2(v.x / (1.0 + uWob.x), v.y * (1.0 + uWob.x)); // area-preserving squash
+  return vec2(c * v.x - s * v.y, s * v.x + c * v.y); // and back, so the arrow keeps pointing up-left
+}
+
+// exact distance to the pointer arrow (tip at the origin, pointing up-left), in px: the polygon
+// distance, one edge at a time (unrolled: WebGL 1 has no dynamic array indexing)
+void arrowEdge(vec2 p, vec2 a, vec2 b, inout float d, inout float s) {
+  vec2 e = b - a;
+  vec2 w = p - a;
+  vec2 q = w - e * clamp(dot(w, e) / dot(e, e), 0.0, 1.0);
+  d = min(d, dot(q, q));
+  bvec3 c = bvec3(p.y >= a.y, p.y < b.y, e.x * w.y > e.y * w.x);
+  if (all(c) || all(not(c))) s *= -1.0;
+}
+float sdArrow(vec2 p) {
+  vec2 v0 = vec2(0.0, 0.0);
+  vec2 v1 = vec2(0.0, 19.0);
+  vec2 v2 = vec2(4.6, 14.6);
+  vec2 v3 = vec2(7.6, 21.4);
+  vec2 v4 = vec2(10.6, 20.2);
+  vec2 v5 = vec2(7.7, 13.6);
+  vec2 v6 = vec2(13.6, 13.6);
+  float d = dot(p, p);
+  float s = 1.0;
+  arrowEdge(p, v0, v6, d, s);
+  arrowEdge(p, v1, v0, d, s);
+  arrowEdge(p, v2, v1, d, s);
+  arrowEdge(p, v3, v2, d, s);
+  arrowEdge(p, v4, v3, d, s);
+  arrowEdge(p, v5, v4, d, s);
+  arrowEdge(p, v6, v5, d, s);
+  return s * sqrt(d);
+}
+
+// the head's outline at a given size: an arrow (tip at the origin) blended into a sphere
+float headShape(vec2 qs, float k, vec2 C) {
+  float dArrow = sdArrow(qs / max(k, 0.05)) * k - 1.2 * k;
+  float dBall = length(qs - C) - 8.5 * k;
+  return mix(dArrow, dBall, uMove.z);
 }
 
 float body(vec2 p) {
   if (uHead.z < 0.05) return 1e4;
   vec2 q = jelly(p - uHead.xy);
-  vec2 t = jelly(uTail.xy - uHead.xy);
-  float d = dot(t, t) < 0.25 ? length(q) - uHead.z : sdRoundCone(q, vec2(0.0), t, uHead.z, uTail.z);
+  float k = uHead.z / 10.0;
+  vec2 C = vec2(6.5, 12.5) * k; // the arrow's middle: it stretches and rounds about here
+
+  // stretch along the motion, area-preserving (it squashes when it stops, as the spring overshoots)
+  float ca = cos(uMove.y);
+  float sa = sin(uMove.y);
+  vec2 m = q - C;
+  m = vec2(ca * m.x + sa * m.y, -sa * m.x + ca * m.y);
+  m = vec2(m.x / (1.0 + uMove.x), m.y * (1.0 + uMove.x));
+  vec2 qs = C + vec2(ca * m.x - sa * m.y, sa * m.x + ca * m.y);
+
+  // the head: a pointer arrow (tip on the pointer) that pulls itself into a sphere when it's
+  // thrown fast, and settles back into an arrow
+  float d = headShape(qs, k, C);
+
+  // the trail: the whole body smeared out behind it, along the way it's moving, shrinking as
+  // it goes (a few copies of the shape, each further back and smaller, melted together)
+  vec2 t = uTail.xy - uHead.xy;
+  if (dot(t, t) > 1.0) {
+    // a smooth streak behind the body, as wide as the arrow where it leaves it, tapering to a
+    // round-ended line: no copies, so its edges stay clean
+    float dt = sdRoundCone(qs, C, C + t, 4.0 * k, 1.1 * k);
+    d = smin(d, dt, 3.0 * k);
+  }
 
   // soft wobble running round the surface after a click (low order: no facets)
   float ang = atan(q.y, q.x);
@@ -110,7 +171,7 @@ float scene(vec2 p) {
     float rd = sdBox(rp, uRect.zw, min(uRectR, min(uRect.z, uRect.w)));
     float a = atan(rp.y / max(uRect.w, 1.0), rp.x / max(uRect.z, 1.0));
     float ad = abs(wrapAng(a - uEntry)) / 3.14159;
-    float th = (1.7 + 0.35 * sin(a * 3.0 + uTime * 1.6)) * uRectOn; // even line, slow undulation
+    float th = (3.2 + 0.35 * sin(a * 3.0 + uTime * 1.6)) * uRectOn; // a ring wide enough to show its fill inside the outline
     float ring = abs(rd) - th;
     ring += max(0.0, ad - uRectP) * 80.0;      // only where the liquid has reached
     d = smin(d, ring, 10.0);                    // joined to the drop: one body
@@ -162,41 +223,23 @@ void main() {
   vec2 p = vec2(gl_FragCoord.x, uRes.y * uDpr - gl_FragCoord.y) / uDpr;
   float d = scene(p);
 
-  float sd = scene(p - vec2(2.0, 5.0));
-  float shadow = (1.0 - smoothstep(-2.0, 12.0, sd)) * 0.38;
-  if (d > 1.5) {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, shadow);
-    return;
-  }
+  // flat, comic line art: a bold ink outline round a flat fill, and a crisp offset shadow.
+  // No shading, no reflections. Dark sheet: sand fill, near-black ink. Light sheet: white fill.
+  vec3 fill = mix(vec3(0.902, 0.863, 0.784), vec3(1.0), uInk);
+  vec3 ink = mix(vec3(0.035, 0.04, 0.05), vec3(0.078, 0.09, 0.102), uInk);
+  float px = 1.0 / uDpr;                 // one device pixel, for anti-aliasing
+  float W = 1.8;                         // outline weight, in CSS px
 
-  float e = 0.75;
-  vec2 g = vec2(scene(p + vec2(e, 0.0)) - d, scene(p + vec2(0.0, e)) - d) / e;
-  float depth = clamp(-d / 11.0, 0.0, 1.0);
-  float tilt = 1.0 - depth;
-  tilt = tilt * tilt;
-  vec3 n = normalize(vec3(g * tilt * 1.9, 1.0 - 0.5 * tilt));
+  float sd = scene(p - vec2(2.5, 3.0));
+  float shadow = clamp(0.5 - sd / px, 0.0, 1.0) * 0.22;
 
-  float pool = smoothstep(18.0, 60.0, -d);
-  n.xy += pool * 0.16 * vec2(
-    sin(p.x * 0.0032 + uTime * 0.22 + sin(p.y * 0.0041 - uTime * 0.17) * 1.6),
-    cos(p.y * 0.0036 - uTime * 0.19 + sin(p.x * 0.0027 + uTime * 0.11) * 1.6));
-  n.xy += pool * 0.06 * vec2(
-    sin(p.x * 0.011 + uTime * 0.55 + sin(p.y * 0.008 + uTime * 0.3) * 2.0),
-    cos(p.y * 0.012 - uTime * 0.45 + sin(p.x * 0.006) * 2.0));
-  n = normalize(n);
-
-  vec3 r = reflect(vec3(0.0, 0.0, -1.0), n);
-  vec3 col = mix(env(r, pool), envInk(r, pool), uInk);
-  float band = sin(p.x * 0.0042 + p.y * 0.0021 + uTime * 0.32 + 2.2 * sin(p.y * 0.0029 - uTime * 0.21));
-  col += pool * vec3(0.06) * smoothstep(0.93, 0.995, band);
-  float fres = pow(1.0 - max(n.z, 0.0), 3.0);
-  col = mix(col, mix(vec3(0.16, 0.17, 0.18), vec3(0.02, 0.022, 0.025), uInk), fres * 0.55 * (1.0 - pool));
-  col = min(col, vec3(0.95));
-
-  float alpha = clamp(0.5 - d, 0.0, 1.0);
-  float a = alpha + shadow * (1.0 - alpha);
-  gl_FragColor = vec4(col * alpha, a);
+  float inside = clamp(0.5 - d / px, 0.0, 1.0);          // the whole shape, outline included
+  float core = clamp(0.5 - (d + W) / px, 0.0, 1.0);      // the fill, inside the outline
+  vec3 col = mix(ink, fill, core);
+  float a = inside + shadow * (1.0 - inside);
+  gl_FragColor = vec4(col * inside, a);
 }
+
 `;
 
 /** Critically-damped-ish spring step for one axis. */
@@ -258,6 +301,7 @@ export function initFluid(): Fluid | null {
     head: U('uHead'),
     tail: U('uTail'),
     wob: U('uWob'),
+    move: U('uMove'),
     mag: U('uMag'),
     rect: U('uRect'),
     rectR: U('uRectR'),
@@ -282,6 +326,9 @@ export function initFluid(): Fluid | null {
   const tail = { x: -300, y: -300, vx: 0, vy: 0 };
   const size = { s: 0, v: 0, target: 0 }; // overall presence (appear / leave)
   const wob = { w: 0, v: 0, angle: 0, ripple: 0 };
+  // speed-reactive shape: stretch along the motion (sprung, so it overshoots into a squash when
+  // it stops), the motion angle, and how far it has pulled into a sphere
+  const move = { st: 0, sv: 0, a: 0, ball: 0 };
   const mag = { x: 1, y: 0, amp: 0 };
   const wrap = { on: 0, p: 0, entry: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
   const flood = { x: 0, y: 0, r: 0, hole: 0 };
@@ -480,6 +527,20 @@ export function initFluid(): Fluid | null {
     }
     lastVx = head.vx;
     lastVy = head.vy;
+
+    // speed-reactive squash and stretch
+    const sp = Math.hypot(head.vx, head.vy);
+    const target = Math.min(sp / 3200, 0.3);
+    for (let i = 0; i < n; i++) [move.st, move.sv] = spring(move.st, move.sv, target, 260, 0.4, h);
+    if (sp > 60) {
+      const want = Math.atan2(head.vy, head.vx);
+      const da = Math.atan2(Math.sin(want - move.a), Math.cos(want - move.a));
+      move.a += da * (1 - Math.exp(-dt * 18));
+    }
+    // thrown fast, it pulls into a sphere quickly, and takes about a second to become an arrow again
+    const bt = Math.min(1, Math.max(0, (sp - 2200) / 1400));
+    const kb = bt > move.ball ? 14 : 2.4;
+    move.ball += (bt - move.ball) * (1 - Math.exp(-dt * kb));
     wob.ripple *= Math.exp(-dt * 6);
 
     flood.hole += ((flood.r > 60 ? 7 : 0) - flood.hole) * (1 - Math.exp(-dt * 12));
@@ -489,7 +550,9 @@ export function initFluid(): Fluid | null {
       Math.hypot(tx - head.x, ty - head.y) > 0.3 ||
       Math.abs(size.s - size.target) > 0.002 ||
       Math.abs(wob.w) + Math.abs(wob.v) > 0.002 ||
-      wob.ripple > 0.02;
+      wob.ripple > 0.02 ||
+      Math.abs(move.st) + Math.abs(move.sv) > 0.002 ||
+      move.ball > 0.002;
     return { busy: moving || mag.amp > 0.05 || wrap.on > 0.001 || flood.r > 0.5 || flood.hole > 0.05, rect, len };
   };
 
@@ -536,6 +599,7 @@ export function initFluid(): Fluid | null {
     gl.uniform3f(u.head, head.x, head.y, r1);
     gl.uniform3f(u.tail, tail.x, tail.y, Math.max(r2, 0.5));
     gl.uniform3f(u.wob, Math.max(-0.35, Math.min(0.35, wob.w)), wob.angle, wob.ripple * s);
+    gl.uniform3f(u.move, Math.max(-0.3, Math.min(0.45, move.st)), move.a, move.ball);
     gl.uniform3f(u.mag, mag.x, mag.y, mag.amp * s);
     if (rect) {
       gl.uniform4f(u.rect, rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width / 2 + PAD, rect.height / 2 + PAD);
