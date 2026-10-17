@@ -16,6 +16,23 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-18 · Cursor keeps its size while moving
+
+- **Size:** the arrow no longer shrinks when it moves. Its size used to drop by up to 18% as the trail grew (volume borrowed for the trail); the trail is now extra, not taken from the arrow.
+- **Stretch:** it lengthens along the motion with the width held, where the area-preserving version used to narrow it. The brief squash on stopping stays.
+
+---
+
+## 2026-10-17 · Cursor: smoother trail; the bead follows the pointer
+
+- **Trail:** it's now a jointed chain that bends with the path. A middle joint follows the head and the tail follows the middle, both critically damped, so it draws out and reels back in without wobble.
+  - **No jolt:** a soft `tanh` limit replaces the hard length clamp, so it never jolts at full stretch.
+  - **No pop:** the streak's width grows in with its length.
+  - **Settles fully:** the animation keeps running until the trail has fully retracted, instead of freezing part-way.
+- **Wrap:** while the cursor wraps a button, its bead rides the ring to whichever side the pointer is on (eased the short way round). Before, it stayed parked where it entered, which felt like the cursor was stuck.
+
+---
+
 ## 2026-10-17 · Cursor goes flat: comic line art
 
 - **No more 3D chrome:** the cursor (and the ring it wraps round buttons) is now flat comic line art instead of shaded mercury: a bold 1.8 px ink outline round a flat fill, plus a crisp offset shadow (2.5, 3 px, 22%).

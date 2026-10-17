@@ -37,6 +37,7 @@ uniform float uDpr;
 uniform float uTime;
 uniform vec3 uHead;     // x, y, radius
 uniform vec3 uTail;     // x, y, radius
+uniform vec2 uMid;      // the trail's middle joint (it lags behind the head, the tail lags behind it)
 uniform vec3 uWob;      // squash amount, squash angle, ripple amplitude
 uniform vec3 uMove;     // stretch along the motion (negative = squash), motion angle, sphere blend
 uniform vec3 uMag;      // dir.xy, bulge amplitude
@@ -130,12 +131,13 @@ float body(vec2 p) {
   float k = uHead.z / 10.0;
   vec2 C = vec2(6.5, 12.5) * k; // the arrow's middle: it stretches and rounds about here
 
-  // stretch along the motion, area-preserving (it squashes when it stops, as the spring overshoots)
+  // stretch along the motion (it squashes when it stops, as the spring overshoots)
   float ca = cos(uMove.y);
   float sa = sin(uMove.y);
   vec2 m = q - C;
   m = vec2(ca * m.x + sa * m.y, -sa * m.x + ca * m.y);
-  m = vec2(m.x / (1.0 + uMove.x), m.y * (1.0 + uMove.x));
+  // lengthen along the motion only: the width holds, so the arrow never looks smaller as it moves
+  m = vec2(m.x / (1.0 + max(uMove.x, 0.0)) * (1.0 - min(uMove.x, 0.0)), m.y * (1.0 - min(uMove.x, 0.0) * 0.6));
   vec2 qs = C + vec2(ca * m.x - sa * m.y, sa * m.x + ca * m.y);
 
   // the head: a pointer arrow (tip on the pointer) that pulls itself into a sphere when it's
@@ -145,10 +147,16 @@ float body(vec2 p) {
   // the trail: the whole body smeared out behind it, along the way it's moving, shrinking as
   // it goes (a few copies of the shape, each further back and smaller, melted together)
   vec2 t = uTail.xy - uHead.xy;
-  if (dot(t, t) > 1.0) {
-    // a smooth streak behind the body, as wide as the arrow where it leaves it, tapering to a
-    // round-ended line: no copies, so its edges stay clean
-    float dt = sdRoundCone(qs, C, C + t, 4.0 * k, 1.1 * k);
+  vec2 mid = uMid - uHead.xy;
+  float tl = length(t);
+  if (tl > 0.5) {
+    // a smooth streak behind the body that bends with the path (two tapering pieces, head to a
+    // lagging middle joint to a further-lagging tail), and grows in with its length so it never pops
+    float grow = smoothstep(0.5, 14.0, tl);
+    float r0 = 4.0 * k * grow;
+    float r1 = 2.4 * k * grow;
+    float r2 = 0.9 * k * grow;
+    float dt = min(sdRoundCone(qs, C, C + mid, max(r0, 0.3), max(r1, 0.3)), sdRoundCone(qs, C + mid, C + t, max(r1, 0.3), max(r2, 0.3)));
     d = smin(d, dt, 3.0 * k);
   }
 
@@ -300,6 +308,7 @@ export function initFluid(): Fluid | null {
     time: U('uTime'),
     head: U('uHead'),
     tail: U('uTail'),
+    mid: U('uMid'),
     wob: U('uWob'),
     move: U('uMove'),
     mag: U('uMag'),
@@ -324,13 +333,14 @@ export function initFluid(): Fluid | null {
   const mouse = { x: -300, y: -300, inside: false };
   const head = { x: -300, y: -300, vx: 0, vy: 0 };
   const tail = { x: -300, y: -300, vx: 0, vy: 0 };
+  const midJ = { x: -300, y: -300, vx: 0, vy: 0 }; // the trail's middle joint
   const size = { s: 0, v: 0, target: 0 }; // overall presence (appear / leave)
   const wob = { w: 0, v: 0, angle: 0, ripple: 0 };
   // speed-reactive shape: stretch along the motion (sprung, so it overshoots into a squash when
   // it stops), the motion angle, and how far it has pulled into a sphere
   const move = { st: 0, sv: 0, a: 0, ball: 0 };
   const mag = { x: 1, y: 0, amp: 0 };
-  const wrap = { on: 0, p: 0, entry: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
+  const wrap = { on: 0, p: 0, entry: 0, at: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
   const flood = { x: 0, y: 0, r: 0, hole: 0 };
   // silver on dark surfaces, black ink on light ones. An open case study brings its own
   // world (Cooked is light, the tracker's board is dark); otherwise the site's theme decides
@@ -384,9 +394,9 @@ export function initFluid(): Fluid | null {
         mouse.y = e.clientY;
         if (!mouse.inside) {
           // form a fresh drop where the pointer re-enters
-          head.x = tail.x = mouse.x;
-          head.y = tail.y = mouse.y;
-          head.vx = head.vy = tail.vx = tail.vy = 0;
+          head.x = tail.x = midJ.x = mouse.x;
+          head.y = tail.y = midJ.y = mouse.y;
+          head.vx = head.vy = tail.vx = tail.vy = midJ.vx = midJ.vy = 0;
           mouse.inside = true;
         }
         size.target = 1;
@@ -422,6 +432,7 @@ export function initFluid(): Fluid | null {
       const rad = br.endsWith('%') ? (parseFloat(br) / 100) * Math.min(r.width, r.height) : parseFloat(br) || 0;
       wrap.radius = Math.max(3, rad + PAD);
       wrap.entry = Math.atan2((mouse.y - cy) / (r.height / 2), (mouse.x - cx) / (r.width / 2));
+      wrap.at = wrap.entry;
       gsap.killTweensOf(wrap);
       gsap.to(wrap, { on: 1, duration: 0.2, ease: 'power2.out' });
       gsap.to(wrap, { p: 1, duration: 0.6, delay: 0.06, ease: 'power3.out' });
@@ -489,7 +500,14 @@ export function initFluid(): Fluid | null {
     if (wrap.el && wrap.on > 0.001) {
       rect = wrap.el.getBoundingClientRect();
       if (!wrap.leaving) {
-        const ep = edgePoint(rect, wrap.entry);
+        // the bead rides the ring to wherever the pointer is, instead of staying where it
+        // arrived (eased round the shorter way, so it glides rather than jumps)
+        const hw = rect.width / 2 + PAD;
+        const hh = rect.height / 2 + PAD;
+        const want = Math.atan2((mouse.y - (rect.top + rect.height / 2)) / hh, (mouse.x - (rect.left + rect.width / 2)) / hw);
+        const da = Math.atan2(Math.sin(want - wrap.at), Math.cos(want - wrap.at));
+        wrap.at += da * (1 - Math.exp(-dt * 16));
+        const ep = edgePoint(rect, wrap.at);
         tx = ep.x;
         ty = ep.y;
       }
@@ -501,21 +519,30 @@ export function initFluid(): Fluid | null {
     for (let i = 0; i < n; i++) {
       [head.x, head.vx] = spring(head.x, head.vx, tx, 820, 0.62, h);
       [head.y, head.vy] = spring(head.y, head.vy, ty, 820, 0.62, h);
-      [tail.x, tail.vx] = spring(tail.x, tail.vx, head.x, 280, 0.8, h);
-      [tail.y, tail.vy] = spring(tail.y, tail.vy, head.y, 280, 0.8, h);
+      // a chain: the middle joint follows the head, the tail follows the middle (critically damped,
+      // so the trail draws out and reels back in smoothly, without wobble)
+      [midJ.x, midJ.vx] = spring(midJ.x, midJ.vx, head.x, 420, 1, h);
+      [midJ.y, midJ.vy] = spring(midJ.y, midJ.vy, head.y, 420, 1, h);
+      [tail.x, tail.vx] = spring(tail.x, tail.vx, midJ.x, 320, 1, h);
+      [tail.y, tail.vy] = spring(tail.y, tail.vy, midJ.y, 320, 1, h);
       [size.s, size.v] = spring(size.s, size.v, size.target, 260, 0.45, h);
       [wob.w, wob.v] = spring(wob.w, wob.v, 0, 340, 0.18, h); // jelly: very underdamped
     }
 
-    // keep the tail attached: never longer than the drop can stretch
-    const dx = tail.x - head.x;
-    const dy = tail.y - head.y;
-    const len = Math.hypot(dx, dy);
-    const maxLen = 30; // a drop, not a rod
-    if (len > maxLen) {
-      tail.x = head.x + (dx / len) * maxLen;
-      tail.y = head.y + (dy / len) * maxLen;
-    }
+    // keep the trail attached: a soft limit (it eases towards its longest, never hits a wall),
+    // so it stretches and settles without the jolt a hard clamp gives
+    const leash = (j: { x: number; y: number }, from: { x: number; y: number }, max: number) => {
+      const dx = j.x - from.x;
+      const dy = j.y - from.y;
+      const l = Math.hypot(dx, dy);
+      if (l < 1e-3) return;
+      const nl = max * Math.tanh(l / max);
+      j.x = from.x + (dx / l) * nl;
+      j.y = from.y + (dy / l) * nl;
+    };
+    leash(midJ, head, 22);
+    leash(tail, midJ, 22);
+    const len = Math.hypot(tail.x - head.x, tail.y - head.y);
 
     // sharp changes of direction slosh the body
     const ax = head.vx - lastVx;
@@ -546,7 +573,8 @@ export function initFluid(): Fluid | null {
     flood.hole += ((flood.r > 60 ? 7 : 0) - flood.hole) * (1 - Math.exp(-dt * 12));
 
     const moving =
-      Math.abs(head.vx) + Math.abs(head.vy) + Math.abs(tail.vx) + Math.abs(tail.vy) > 1 ||
+      Math.abs(head.vx) + Math.abs(head.vy) + Math.abs(tail.vx) + Math.abs(tail.vy) + Math.abs(midJ.vx) + Math.abs(midJ.vy) > 1 ||
+      Math.hypot(tail.x - head.x, tail.y - head.y) > 0.5 ||
       Math.hypot(tx - head.x, ty - head.y) > 0.3 ||
       Math.abs(size.s - size.target) > 0.002 ||
       Math.abs(wob.w) + Math.abs(wob.v) > 0.002 ||
@@ -562,7 +590,7 @@ export function initFluid(): Fluid | null {
     const s = Math.max(0, size.s);
     // volume-ish: the drop thins as it stretches, and gives itself to the wrap
     const base = (R + (R_WRAP - R) * wrap.p) * s;
-    const r1 = base * (1 - Math.min(len / 120, 0.18));
+    const r1 = base; // the arrow keeps its size while it moves (the trail is extra, not taken from it)
     const r2 = r1 * (1 - 0.45 * Math.min(len / 30, 1));
 
     gl.disable(gl.SCISSOR_TEST);
@@ -598,6 +626,7 @@ export function initFluid(): Fluid | null {
     gl.uniform1f(u.time, time);
     gl.uniform3f(u.head, head.x, head.y, r1);
     gl.uniform3f(u.tail, tail.x, tail.y, Math.max(r2, 0.5));
+    gl.uniform2f(u.mid, midJ.x, midJ.y);
     gl.uniform3f(u.wob, Math.max(-0.35, Math.min(0.35, wob.w)), wob.angle, wob.ripple * s);
     gl.uniform3f(u.move, Math.max(-0.3, Math.min(0.45, move.st)), move.a, move.ball);
     gl.uniform3f(u.mag, mag.x, mag.y, mag.amp * s);
