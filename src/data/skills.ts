@@ -15,6 +15,8 @@ export interface SkillWork {
   images?: SkillImage[];
   /** a clickable Figma prototype, behind a poster of a few of its screens */
   prototype?: SkillPrototype;
+  /** a film, self-hosted: nothing but its poster loads until Play */
+  video?: { src: string; poster: string; width: number; height: number };
   /** not made yet: shown as a dashed "In drafting" sheet, without year or caption */
   pending?: boolean;
 }
@@ -141,7 +143,14 @@ export const skills: Skill[] = [
           },
         ],
       },
-      work('Animation'),
+      {
+        title: 'Traverse',
+        kind: 'Animation',
+        year: 'Year TBD',
+        caption: 'A short film for Akela Studios: LEGO stop-motion, hand-drawn animation and 3D, cut together.',
+        // re-encoded from 155 MB (1080p) to 720p H.264 at 1.5 Mbps with AAC audio, 21 MB
+        video: { src: '/skills/3d-modeling/traverse-720.mp4', poster: '/skills/3d-modeling/traverse-poster.webp', width: 1280, height: 720 },
+      },
       work('Material study'),
     ],
     // an isometric cube: top, left and right faces

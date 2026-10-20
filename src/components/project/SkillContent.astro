@@ -3,6 +3,7 @@ import WireLogo from '../WireLogo.astro';
 import ModelViewer from '../ModelViewer.astro';
 import Gallery from '../Gallery.astro';
 import Prototype from '../Prototype.astro';
+import Film from '../Film.astro';
 import Icon from '../Icon.astro';
 import CameraKit from './CameraKit.astro';
 import type { Skill } from '../../data/skills';
@@ -82,6 +83,8 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
           <div class="sk-stage" data-stage={i} hidden={i !== 0}>
             {w.model ? (
               <ModelViewer model={w.model} title={w.title} />
+            ) : w.video ? (
+              <Film video={w.video} title={w.title} kind={w.kind} />
             ) : w.prototype ? (
               <Prototype prototype={w.prototype} title={w.title} kind={w.kind} />
             ) : w.images?.length ? (

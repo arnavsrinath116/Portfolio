@@ -1,0 +1,72 @@
+---
+import { withBase } from '../lib/url';
+
+interface Props {
+  video: { src: string; poster: string; width: number; height: number };
+  title: string;
+  kind: string;
+}
+const { video, title, kind } = Astro.props;
+---
+
+<!-- a film in the stage's frame: only the poster loads (preload="none") until it's played -->
+<figure class="fm">
+  <div class="fm-stage">
+    <video
+      class="fm-video"
+      src={withBase(video.src)}
+      poster={withBase(video.poster)}
+      width={video.width}
+      height={video.height}
+      preload="none"
+      controls
+      playsinline
+      aria-label={`${title}, a film`}
+      data-film
+    ></video>
+  </div>
+  <figcaption class="fm-bar">
+    <span class="fm-kind">{kind}</span>
+  </figcaption>
+</figure>
+
+<script>
+  // a film stops when its card closes or another work takes the stage
+  const pauseAll = () => document.querySelectorAll<HTMLVideoElement>('[data-film]').forEach((v) => v.pause());
+  document.addEventListener('pm:hidden', pauseAll);
+  document.querySelectorAll<HTMLVideoElement>('[data-film]').forEach((v) => {
+    new IntersectionObserver(([e]) => !e.isIntersecting && v.pause()).observe(v);
+  });
+</script>
+
+<style>
+  .fm {
+    margin: 0;
+  }
+  /* the same frame as the renders: 16:9, rounded, on black */
+  .fm-stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-height: 560px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #050506;
+    border: 1px solid rgb(var(--ink-rgb) / 0.08);
+  }
+  .fm-video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #050506;
+  }
+  .fm-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px 18px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+</style>

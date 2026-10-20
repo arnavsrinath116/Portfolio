@@ -16,6 +16,17 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-20 · Traverse, a short film in 3D modeling
+
+- **New work under 3D modeling:** "Traverse" (an animation), an Akela Studios short mixing LEGO stop-motion, hand-drawn 2D and 3D. It takes the "Animation" placeholder as work 05. 3D modeling now reads "05 works, +1 in drafting".
+- **Compression:** the original is 155 MB (1080p H.264 at 11 Mbps, 1 min 45 s), over GitHub's 100 MB file limit.
+  - Apple's presets were either too big (720p, 61 MB) or too small (480×272), so a small AVFoundation script (`AVAssetWriter`, run with `swift`) re-encodes it to 720p H.264 at 1.5 Mbps with 128 kbps AAC audio.
+  - The moov atom is up front so playback starts while it downloads. Result: 20 MB, close to the original side by side.
+- **`Film.astro`:** the renders' 16:9 frame on black with native controls, `preload="none"`. Before Play, only a 36 KB poster loads (the LEGO close-up at 0:28). It pauses when its card closes or it scrolls away.
+- **Data:** a work can carry `video: { src, poster, width, height }`.
+
+---
+
 ## 2026-10-20 · Nexo and Cooked app prototypes in UI design
 
 - **New work under UI design:** "Nexo app" (a prototype), shown first. It replaces the "Prototype" placeholder. UI design now reads "01 works, +3 in drafting".
