@@ -1,0 +1,203 @@
+---
+import type { SkillImage } from '../data/skills';
+import { withBase } from '../lib/url';
+
+interface Props {
+  images: SkillImage[];
+  title: string;
+  kind: string;
+}
+const { images, title, kind } = Astro.props;
+const pad = (n: number) => String(n).padStart(2, '0');
+const one = images.length < 2;
+// the frame takes the colour of what each image sits on, so its edges never show a seam
+const GROUND = { dark: '#050506', light: '#ffffff' };
+const ground = (im: SkillImage) => (im.ground && im.ground in GROUND ? GROUND[im.ground as keyof typeof GROUND] : (im.ground ?? GROUND.dark));
+---
+
+<!-- renders, one at a time: left and right step through them (wrapping round), as do the arrow keys -->
+<figure class="gl" data-gallery>
+  <div class="gl-stage" style={`--ground: ${images[0] ? ground(images[0]) : GROUND.dark}`} tabindex="0" role="group" aria-roledescription="carousel" aria-label={`${title}: ${images.length} ${images.length === 1 ? 'image' : 'images'}. Use the left and right arrow keys to step through.`}>
+    {
+      images.map((im, i) => (
+        <img
+          class:list={['gl-img', { 'is-on': i === 0, 'is-contain': im.fit === 'contain' }]}
+          src={withBase(im.src)}
+          alt={im.alt}
+          width={im.width}
+          height={im.height}
+          loading="lazy"
+          decoding="async"
+          aria-hidden={i === 0 ? undefined : 'true'}
+          data-ground={ground(im)}
+          data-gl-img
+        />
+      ))
+    }
+    <button type="button" class="gl-btn gl-prev" aria-label="Previous image" disabled={one} data-gl-step="-1">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+    </button>
+    <button type="button" class="gl-btn gl-next" aria-label="Next image" disabled={one} data-gl-step="1">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg>
+    </button>
+  </div>
+  <figcaption class="gl-bar">
+    <span class="gl-count" aria-live="polite"><span data-gl-at>01</span> / {pad(images.length)}</span>
+    <span class="gl-kind">{kind}</span>
+  </figcaption>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((fig) => {
+    const imgs = Array.from(fig.querySelectorAll<HTMLImageElement>('[data-gl-img]'));
+    const at = fig.querySelector<HTMLElement>('[data-gl-at]')!;
+    const stage = fig.querySelector<HTMLElement>('.gl-stage')!;
+    let i = 0;
+    const go = (step: number) => {
+      if (imgs.length < 2) return;
+      i = (i + step + imgs.length) % imgs.length;
+      imgs.forEach((im, k) => {
+        im.classList.toggle('is-on', k === i);
+        if (k === i) im.removeAttribute('aria-hidden');
+        else im.setAttribute('aria-hidden', 'true');
+      });
+      at.textContent = String(i + 1).padStart(2, '0');
+      stage.style.setProperty('--ground', imgs[i].dataset.ground!);
+    };
+    fig.querySelectorAll<HTMLButtonElement>('[data-gl-step]').forEach((b) => b.addEventListener('click', () => go(Number(b.dataset.glStep))));
+    fig.querySelector('.gl-stage')!.addEventListener('keydown', (e) => {
+      const k = (e as KeyboardEvent).key;
+      if (k !== 'ArrowLeft' && k !== 'ArrowRight') return;
+      e.preventDefault();
+      go(k === 'ArrowLeft' ? -1 : 1);
+    });
+  });
+</script>
+
+<style>
+  .gl {
+    margin: 0;
+  }
+  /* the same frame as the 3D viewer: a 16:9 stage, rounded, the render filling it */
+  .gl-stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    max-height: 560px;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    background: var(--ground, #050506); /* what the image sits on: no other frame flashing in as it loads */
+    border: 1px solid rgb(var(--ink-rgb) / 0.08);
+    transition: background-color 500ms ease-out;
+  }
+  .gl-stage:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 3px;
+  }
+  .gl-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 62%; /* renders keep their subject low, under a dark sky */
+    opacity: 0;
+    transition: opacity 500ms ease-out;
+  }
+  .gl-img.is-on {
+    opacity: 1;
+  }
+  /* a page shown whole, centred on its own paper colour */
+  .gl-img.is-contain {
+    object-fit: contain;
+    object-position: 50% 50%;
+  }
+
+  /* left and right, over the render's dark edges */
+  .gl-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-top: -20px;
+    padding: 0;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 50%;
+    background: rgb(0 0 0 / 0.35);
+    color: #f1ece2;
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition:
+      background-color 160ms ease-out,
+      border-color 160ms ease-out,
+      color 160ms ease-out,
+      opacity 160ms ease-out;
+  }
+  .gl-prev {
+    left: 14px;
+  }
+  .gl-next {
+    right: 14px;
+  }
+  .gl-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .gl-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+  .gl-btn:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) {
+    .gl-btn:not(:disabled):hover {
+      background: var(--accent-fill);
+      border-color: var(--accent-fill);
+      color: var(--on-accent);
+    }
+  }
+
+  .gl-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px 18px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+  /* a count: mono, like every number on the sheet */
+  .gl-count {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+  }
+
+  @media (max-width: 600px) {
+    .gl-stage {
+      aspect-ratio: 4 / 3;
+    }
+    .gl-btn {
+      width: 36px;
+      height: 36px;
+      margin-top: -18px;
+    }
+    .gl-prev {
+      left: 8px;
+    }
+    .gl-next {
+      right: 8px;
+    }
+  }
+</style>

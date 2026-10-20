@@ -1,6 +1,8 @@
 ---
 import WireLogo from '../WireLogo.astro';
 import ModelViewer from '../ModelViewer.astro';
+import Gallery from '../Gallery.astro';
+import Prototype from '../Prototype.astro';
 import Icon from '../Icon.astro';
 import CameraKit from './CameraKit.astro';
 import type { Skill } from '../../data/skills';
@@ -80,13 +82,16 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
           <div class="sk-stage" data-stage={i} hidden={i !== 0}>
             {w.model ? (
               <ModelViewer model={w.model} title={w.title} />
+            ) : w.prototype ? (
+              <Prototype prototype={w.prototype} title={w.title} kind={w.kind} />
+            ) : w.images?.length ? (
+              <Gallery images={w.images} title={w.title} kind={w.kind} />
             ) : (
               <div class="sk-draft" role="img" aria-label={`${w.kind}: not drawn yet`}>
                 <span class="sk-draft-k">{w.kind}</span>
                 <span class="sk-draft-s">In drafting</span>
               </div>
             )}
-            {w.caption && <p class="sk-cap">{w.caption}</p>}
           </div>
         ))
       }
@@ -147,13 +152,15 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
 <style>
   .sk {
     position: relative;
-    padding: clamp(28px, 4vw, 64px) clamp(22px, 4vw, 64px) clamp(32px, 5vw, 64px);
+    padding: clamp(28px, 4vw, 64px) clamp(22px, 4vw, 64px) clamp(16px, 2vw, 28px); /* the scroll ends just under the other-sheet links */
   }
   /* the sheet's dimensions (skillDims.ts), drawn over it in px */
   .sk :global(.sk-dims) {
     position: absolute;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 100%;
     z-index: 2;
     overflow: visible;
     pointer-events: none;
@@ -320,12 +327,6 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
   .sk-stage[hidden] {
     display: none;
   }
-  .sk-cap {
-    margin-top: 12px;
-    max-width: 52ch;
-    font-size: 0.9375rem;
-    color: var(--sand-2);
-  }
   /* dashed: not drawn yet */
   .sk-draft {
     position: relative;
@@ -425,18 +426,20 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
   }
 
   /* ---------- next sheets ---------- */
+  /* the other sheets, on one line across the sheet's width */
   .sk-next {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px clamp(20px, 3vw, 40px);
-    margin-top: clamp(48px, 8vh, 80px);
+    justify-content: space-between;
+    gap: 10px clamp(10px, 1.4vw, 32px);
+    margin-top: clamp(24px, 4vh, 40px);
     padding-top: 18px;
     border-top: 1px solid var(--line);
   }
   .sk-next-a {
     display: inline-flex;
     align-items: baseline;
-    gap: 10px;
+    gap: clamp(6px, 0.7vw, 10px);
+    white-space: nowrap;
     padding: 6px 0;
     border: 0;
     background: none;
@@ -454,7 +457,7 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
   .sk-next-n {
     font-stretch: 125%;
     font-weight: 640;
-    font-size: 1rem;
+    font-size: clamp(0.6875rem, 0.95vw, 1rem); /* small enough that five fit on one line */
     letter-spacing: -0.01em;
     text-transform: uppercase;
   }
@@ -480,6 +483,17 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
     }
   }
 
+  /* narrower than five fit: they wrap again, left-aligned */
+  @media (max-width: 1100px) {
+    .sk-next {
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      column-gap: 24px;
+    }
+    .sk-next-n {
+      font-size: 0.875rem;
+    }
+  }
   @media (max-width: 900px) {
     .sk-set {
       grid-template-columns: minmax(0, 1fr);

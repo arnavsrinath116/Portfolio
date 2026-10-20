@@ -91,6 +91,91 @@ export function initModelViewers({ reduce }: { reduce: boolean }) {
   document.addEventListener('visibilitychange', () => !document.hidden && kick());
 }
 
+// ---- the view cube ----
+// an orthographic cube drawn into a small svg, turned each frame by the camera's view of the model.
+// Faces carry their outward normal and their label's right (u) and up (v), in model space (Y up, Z to the front).
+type V3 = [number, number, number];
+const FACES: { name: string; n: V3; u: V3; v: V3; az?: number }[] = [
+  { name: 'FRONT', n: [0, 0, 1], u: [1, 0, 0], v: [0, 1, 0], az: 0 },
+  { name: 'RIGHT', n: [1, 0, 0], u: [0, 0, -1], v: [0, 1, 0], az: Math.PI / 2 },
+  { name: 'BACK', n: [0, 0, -1], u: [-1, 0, 0], v: [0, 1, 0], az: Math.PI },
+  { name: 'LEFT', n: [-1, 0, 0], u: [0, 0, 1], v: [0, 1, 0], az: -Math.PI / 2 },
+  { name: 'TOP', n: [0, 1, 0], u: [1, 0, 0], v: [0, 0, -1] },
+  { name: 'BOTTOM', n: [0, -1, 0], u: [1, 0, 0], v: [0, 0, 1] },
+];
+const AXES: { name: string; d: V3 }[] = [
+  { name: 'x', d: [1, 0, 0] },
+  { name: 'y', d: [0, 1, 0] },
+  { name: 'z', d: [0, 0, 1] },
+];
+const H = 0.5; // half the cube's side, in svg units
+const add = (a: V3, b: V3, k = 1): V3 => [a[0] + b[0] * k, a[1] + b[1] * k, a[2] + b[2] * k];
+const f3 = (n: number) => n.toFixed(3);
+
+function viewCube(svg: SVGSVGElement) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const el = <K extends keyof SVGElementTagNameMap>(tag: K, cls: string, parent: Element) => {
+    const e = document.createElementNS(NS, tag);
+    e.setAttribute('class', cls);
+    parent.append(e);
+    return e;
+  };
+  // the triad sits under the faces: its runs along the hidden edges show faintly through, its tips stand clear
+  const axes = AXES.map((a) => ({
+    ...a,
+    line: el('line', `ax ax-${a.name}`, svg),
+    label: el('text', `ax-l ax-${a.name}`, svg),
+  }));
+  axes.forEach((a) => (a.label.textContent = a.name.toUpperCase()));
+  const faces = FACES.map((f) => {
+    const g = el('g', 'cf', svg);
+    const poly = el('polygon', '', g);
+    const text = el('text', '', g);
+    text.textContent = f.name;
+    if (f.az !== undefined) g.dataset.az = String(f.az);
+    return { ...f, g, poly, text };
+  });
+  const origin: V3 = [-H, -H, -H];
+
+  // rot: model space to view space (x right, y up, z toward the viewer); svg y runs down
+  return (rot: (v: V3) => V3) => {
+    const p = (v: V3) => {
+      const r = rot(v);
+      return [r[0], -r[1]];
+    };
+    for (const a of axes) {
+      const [x1, y1] = p(origin);
+      const [x2, y2] = p(add(origin, a.d, 2 * H + 0.42));
+      const [lx, ly] = p(add(origin, a.d, 2 * H + 0.6));
+      a.line.setAttribute('x1', f3(x1));
+      a.line.setAttribute('y1', f3(y1));
+      a.line.setAttribute('x2', f3(x2));
+      a.line.setAttribute('y2', f3(y2));
+      a.label.setAttribute('x', f3(lx));
+      a.label.setAttribute('y', f3(ly));
+    }
+    for (const f of faces) {
+      // a convex cube: the faces turned toward the viewer never overlap, so no sorting
+      const facing = rot(f.n)[2] > 0.002;
+      f.g.style.display = facing ? '' : 'none';
+      if (!facing) continue;
+      const c: V3 = [f.n[0] * H, f.n[1] * H, f.n[2] * H];
+      const corners = [
+        [-1, -1],
+        [1, -1],
+        [1, 1],
+        [-1, 1],
+      ].map(([i, j]) => p(add(add(c, f.u, i * H), f.v, j * H)));
+      f.poly.setAttribute('points', corners.map(([x, y]) => `${f3(x)},${f3(y)}`).join(' '));
+      // the label lies flat on its face: an orthographic view of a plane is an affine map
+      const [a, b] = p(f.u);
+      const [cx, cy] = p(f.v);
+      const [e, g] = p(c);
+      f.text.setAttribute('transform', `matrix(${f3(a)} ${f3(b)} ${f3(-cx)} ${f3(-cy)} ${f3(e)} ${f3(g)})`);
+    }
+  };
+}
+
 async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
   const stage = fig.querySelector<HTMLElement>('[data-mv-stage]')!;
   const status = fig.querySelector<HTMLElement>('[data-mv-status]')!;
@@ -254,6 +339,7 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
 
   // resting: a slow turntable; touched: stays where it was left, then drifts again after a pause
   let idle = 0;
+  const unlock = () => fig.querySelectorAll('.cf.is-locked').forEach((g) => g.classList.remove('is-locked'));
   controls.addEventListener('start', () => {
     controls.autoRotate = false;
     resetting = false;
@@ -269,15 +355,22 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
     else return;
     e.preventDefault();
     controls.autoRotate = false;
+    turnTo = null;
+    unlock();
     idle = 0.001;
   });
 
   let resetting = false;
-  fig.querySelector('[data-mv-reset]')?.addEventListener('click', () => {
-    resetting = true;
-    controls.autoRotate = false;
-    idle = 0.001;
-  });
+  // the home button by the cube
+  fig.querySelectorAll('[data-mv-reset]').forEach((b) =>
+    b.addEventListener('click', () => {
+      resetting = true;
+      turnTo = null;
+      unlock();
+      controls.autoRotate = false;
+      idle = 0.001;
+    }),
+  );
   const sectionBtn = fig.querySelector<HTMLButtonElement>('[data-mv-section]');
   sectionBtn?.addEventListener('click', () => {
     const on = sectionBtn.getAttribute('aria-pressed') !== 'true';
@@ -285,8 +378,8 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
     planeTarget = on ? 0 : OFF;
   });
 
-  // the hint names the right key for this keyboard
-  if (!/Mac|iPhone|iPad/.test(navigator.platform)) fig.querySelectorAll('[data-mv-key]').forEach((k) => (k.textContent = 'Ctrl'));
+  // the feature buttons call for a click until one has been tried
+  [sectionBtn, fig.querySelector('[data-mv-fade]')].forEach((b) => b?.addEventListener('click', () => fig.classList.add('is-tried')));
 
   const fadeBtn = fig.querySelector<HTMLButtonElement>('[data-mv-fade]');
   fadeBtn?.addEventListener('click', () => {
@@ -294,6 +387,82 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
     fadeBtn.setAttribute('aria-pressed', String(on));
     fadeTarget = on ? 0.18 : 1;
   });
+
+  // the view cube: a side face swings the camera round to look straight at it, TOP goes back home.
+  // Either way the view then holds (no turntable) and its face stays lit, until the model is turned again.
+  let turnTo: number | null = null;
+  const sph = new THREE.Spherical();
+  const offset = new THREE.Vector3();
+  const cubeSvg = fig.querySelector<SVGSVGElement>('[data-mv-cube]');
+  const drawCube = cubeSvg ? viewCube(cubeSvg) : null;
+  const pickFace = (face: SVGGElement) => {
+    const az = face.dataset.az === undefined ? undefined : Number(face.dataset.az);
+    controls.autoRotate = false;
+    idle = 0;
+    unlock();
+    face.classList.add('is-locked');
+    if (az === undefined) {
+      turnTo = null;
+      resetting = true;
+    } else {
+      resetting = false;
+      turnTo = az;
+    }
+  };
+  controls.addEventListener('start', () => {
+    turnTo = null;
+    unlock();
+  });
+  // dragging the cube turns the model round with it: across the cube is half a turn
+  // (pointer capture sends the click to the svg, not the face, so a press that never moved picks here)
+  let cubeDragged = false;
+  if (cubeSvg) {
+    let lastX = 0;
+    let downX = 0;
+    cubeSvg.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0) return;
+      cubeSvg.setPointerCapture(e.pointerId);
+      lastX = downX = e.clientX;
+      cubeDragged = false;
+      cubeSvg.classList.add('is-dragging');
+    });
+    cubeSvg.addEventListener('pointermove', (e) => {
+      if (!cubeSvg.hasPointerCapture(e.pointerId)) return;
+      if (!cubeDragged && Math.abs(e.clientX - downX) < 3) return;
+      if (!cubeDragged) {
+        cubeDragged = true;
+        unlock();
+        controls.autoRotate = false;
+        resetting = false;
+        turnTo = null;
+        idle = 0;
+      }
+      offset.copy(camera.position).sub(controls.target);
+      sph.setFromVector3(offset);
+      sph.theta -= ((e.clientX - lastX) / cubeSvg.clientWidth) * Math.PI;
+      camera.position.copy(controls.target).add(offset.setFromSpherical(sph));
+      lastX = e.clientX;
+    });
+    const release = (e: PointerEvent) => {
+      if (!cubeSvg.hasPointerCapture(e.pointerId)) return;
+      cubeSvg.releasePointerCapture(e.pointerId);
+      cubeSvg.classList.remove('is-dragging');
+      if (cubeDragged) idle = 0.001;
+      else {
+        const face = document.elementFromPoint(e.clientX, e.clientY)?.closest<SVGGElement>('.cf');
+        if (face && cubeSvg.contains(face)) pickFace(face);
+      }
+      cubeDragged = false;
+    };
+    cubeSvg.addEventListener('pointerup', release);
+    cubeSvg.addEventListener('pointercancel', release);
+  }
+  const view = new THREE.Quaternion();
+  const tmp = new THREE.Vector3();
+  const rot = (v: V3): V3 => {
+    tmp.set(v[0], v[1], v[2]).applyQuaternion(view);
+    return [tmp.x, tmp.y, tmp.z];
+  };
 
   // reveal: the canvas fades up as the camera settles in, and the section sweeps through
   stage.classList.add('is-ready');
@@ -331,8 +500,26 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
         fadeSolid.depthWrite = fade > 0.98; // see-through parts mustn't hide what's behind them
         fadeEdge.opacity = 0.55 * Math.max(fade, 0.45);
       }
+      if (turnTo !== null) {
+        // round the model on the locked tilt, never through it; the arrow keys' turn unwinds alongside
+        const k = 1 - Math.exp(-dt * (reduce ? 60 : 6));
+        offset.copy(camera.position).sub(controls.target);
+        sph.setFromVector3(offset);
+        let d = (turnTo - sph.theta) % (Math.PI * 2);
+        if (d > Math.PI) d -= Math.PI * 2;
+        if (d < -Math.PI) d += Math.PI * 2;
+        sph.theta += d * k;
+        camera.position.copy(controls.target).add(offset.setFromSpherical(sph));
+        model.rotation.y += (0 - model.rotation.y) * k;
+        if (Math.abs(d) < 0.001 && Math.abs(model.rotation.y) < 0.001) turnTo = null;
+      }
       controls.update(dt);
       renderer.render(scene, camera);
+      if (drawCube) {
+        // the model as the camera sees it: undo the camera's turn, keep the model's own
+        view.copy(camera.quaternion).invert().multiply(model.quaternion);
+        drawCube(rot);
+      }
     },
   };
 }

@@ -16,12 +16,104 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-20 · Nexo and Cooked app prototypes in UI design
+
+- **New work under UI design:** "Nexo app" (a prototype), shown first. It replaces the "Prototype" placeholder. UI design now reads "01 works, +3 in drafting".
+- **`Prototype.astro`, a stage for a Figma prototype:**
+  - Before Play: a poster of three screens as phones (welcome, connect, connected), exported from the Figma file through the Figma MCP. Saved as `public/skills/ui-design/nexo-*.webp`, 13–26 KB each.
+  - **Play prototype** swaps in the live Figma embed (`embed.figma.com/proto/…`, starting at Flow 1, scaled down, Figma UI hidden). The embed is heavy, so it never loads unless asked for.
+  - "Open in Figma" links to the full prototype. On phones the frame turns 3:4, so the prototype isn't a stamp.
+- **Needs the file shared:** the Figma file is private, so the embed shows Figma's log-in wall. Setting the file to "Anyone with the link can view" makes the embed work for everyone, with no code change.
+- **Data:** a work can carry `prototype: { embed, link, screens, aspect?, corner? }`.
+- **Cooked app prototype:** work 02 in UI design, from the "UI Kit Food" file.
+  - The embed starts at Flow 3 (`563:4552`, the splash), which leads into onboarding.
+  - Poster: onboarding ("Expert Chefs"), the home screen, and the chef sign-up's cuisine step, saved as `cooked-*.webp`, 28–59 KB each.
+  - The screens are 402×874 with rounded corners baked in on Figma's dark canvas. The poster clips them to their own radius (`corner: '12.8% / 5.9%'`, `aspect: '402 / 874'`), so no dark corners show.
+  - UI design now reads "02 works, +3 in drafting".
+- **Bigger, and a clean cursor (later the same day):**
+  - The prototype's frame is tall now: `clamp(560px, 82vh, 860px)`, or `clamp(520px, 78vh, 700px)` on phones. The embedded phone takes most of the screen height.
+  - The poster phones are sized by width so three always fit. Phones show just the middle one, large.
+  - **Whole phone in view:** the embed asks Figma to fit (`scaling=contain`) instead of only shrinking the screen (`scale-down`). Figma draws its device bezel round the screen, so with `scale-down` the iPhone ran off the bottom of the stage.
+  - Cursor (`ferrofluid.ts`): a cross-origin iframe swallows pointer events and sends none on the way in, so the drop froze at the embed's edge with Figma's cursor beside it. When moves stop within 12 px of an embed, the drop now fades out and the embed's own cursor takes over. It re-forms on the next move outside.
+
+---
+
+## 2026-10-20 · Debrecen Drive, the first photographs
+
+- **New work under Photography:** "Debrecen Drive" (motorsport), shown first. Three panned drift shots: a white E36, a yellow E36 and a blue S14. Photography now reads "01 works, +3 in drafting".
+- **Prep:** cropped off the thin dark frame each screenshot carried. Upscaled to 2000 px wide (from about 950–1170 px) with a Lanczos resample and a light unsharp mask, then saved as webp at about 120 KB each in `public/skills/photography/`.
+  - I tried an ML upscale (Pixelmator Pro's Super Resolution, scripted). The app wouldn't open documents from a script, so this is a classic resample: smoother and larger, but it can't invent detail. For a true 3× ML upscale, run them through Super Resolution and drop the exports over these files.
+
+---
+
+## 2026-10-20 · Product sketches: hand mixer, flight seat handle, steering HMI
+
+- **New work under Product sketching:** "Hand mixer" (a marker render), shown first. It replaces the "Marker render" placeholder. The image is at `public/skills/product-sketching/hand-mixer-01.webp`. Then "Flight seat handle" (another marker render) as work 02: `flight-seat-handle-01.webp`. The skill now reads "02 works, +3 in drafting".
+- **Steering HMI:** work 03, four concept sheets: indicators, media controls, wipers and cruise control (the drawn sheets 2 to 5, in order).
+  - Each sheet ranks the wheel's controls by importance, then sketches them as gestures.
+  - The sheets were reduced from 2000 px to 1400 px webp, about 145 KB each, at `steering-hmi-0N-<name>.webp`.
+- **Gallery `fit` and coloured grounds:** an image can be shown whole (`fit: 'contain'`) instead of filling the wide frame. The square sheets need this so nothing is cropped.
+  - `ground` can be a colour too. The sheets sit on `#d8cfc0`, sampled from their paper, so they read as a page on its own paper with no seam.
+- **Gallery ground:** an image can say what it sits on (`ground: 'light'` for a sketch on white paper). The stage then turns white under it, so no dark hairline shows round its rounded corners. It switches per image as you step through.
+
+---
+
+## 2026-10-20 · Aston Martin lighting study, and an image gallery for skill work
+
+- **New work under 3D modeling:** "Aston Martin lighting study" (a render). It takes the old "Render" placeholder slot as work 04. Its images are `aston-martin-01.webp` (three-quarter front) and `-02.webp` (close on the headlight and wheel), in `public/skills/3d-modeling/`.
+- **`Gallery.astro`, the stage for image work:**
+  - The same 16:9 rounded frame as the 3D viewer, on black so a render never flashes a light frame while it loads.
+  - Left and right buttons sit over the image's edges. A counter (`01 / 01`) and the work's kind sit underneath. The arrow keys step through too, and it wraps round.
+  - With one image the buttons show but are dimmed. They come alive once there's a second image.
+- **Data:** a work can now carry `images: [{ src, alt, width, height }]`. To add more renders, drop them in the same folder and add entries to that work's `images` list.
+
+---
+
+## 2026-10-20 · Two new skills: Product sketching and Sketching
+
+- **Where they sit:** S-04 and S-05, between Graphic design and Photography. Photography is now S-06.
+- **Product sketching:** fineliner and markers. Works: ideation, form study, marker render, exploded view. Icon: a sketch pad with a cylinder drawn on it.
+- **Sketching:** pencil and sketchbook. Works: observation, perspective, sketchbook. Icon: a tipped pencil.
+- **Dimensions:** each sheet has its own fixed dimension spots (`skillDims.ts`).
+- **Skills index fix:** with six rows, the square drawing viewport grew taller and so wider than its column. It ran under the S-01… numbers and hid its right-hand registration crosses.
+  - It now stays in its column (`min-width: 0`, no forced square) and takes the index's height.
+  - The numbers stand off it by about the gap between a number and its icon: 44 px and 42 px at 1440 wide.
+- **Placeholders:** every work is "In drafting", and the tools and one-liners are placeholders to swap for the real ones.
+- **Skill cards end sooner:** the padding under the other-sheet links dropped from up to 64 px to 28 px.
+  - The real culprit was the dimension overlay (`skillDims.ts`). Its height was set from the sheet's `scrollHeight`, which counted the overlay itself, so it only ever grew. A taller stage, an earlier padding, or the rise-in could leave it holding the card's scroll open well past the end.
+  - The overlay is now sized by CSS to the sheet (`width/height: 100%`), so the scroll ends just under the links.
+- **Other skills, one line:** the links to the other five sheets at the foot of a skill card now sit on one line, spread across its width. The names scale down a touch to fit. Below 1100 px wide they wrap again, left-aligned.
+
+---
+
+## 2026-10-20 · View cube, viewer cleanup, light-mode start
+
+- **View cube on every 3D viewer:** a Fusion-style ViewCube in the stage's top-right corner (92 px, 64 px on phones).
+  - What it shows: six labelled faces and an X/Y/Z triad (red, green, blue) from the back-bottom-left corner. It turns with the camera and with the arrow-key turn.
+  - How it's drawn (`modelViewer.ts`): an orthographic cube in an SVG, redrawn each frame from the camera's view of the model. Only the faces turned toward the viewer are drawn. Each label is laid flat on its face with an affine `matrix()`.
+  - Dragging the cube turns the model with it: a drag across the cube is half a turn. The tilt stays locked, the same as dragging the model.
+  - Clicking a side face swings the camera round the model on the locked tilt to look straight at that face. TOP goes back to the home view.
+    A drag never counts as a click.
+  - A bare home icon sits in the cube's top-right corner and resets the view. It replaces the Reset view button in the bar, which is gone.
+  - A picked view locks: the turntable stays off and the face stays lit in the accent. Dragging, the arrow keys or the home icon unlock it.
+  - Faces are slightly see-through, so the triad shows faintly behind them. They take the accent on hover and follow the light and dark themes.
+- **Section and Opacity on the stage:** both buttons moved off the bar into the viewport's bottom-right corner. When off, they sit on a wash of the page so they read over the model. The bar under the viewer is now just size and part count.
+- **Section and Opacity buttons:** they now read as the viewer's main controls. They have an accent outline and a soft pulse until either one is tried.
+- **Viewer cleanup:** removed the hint under the viewer and the work captions. The skills footer moved up.
+- **Theme:** the site always opens in light mode, and the toggle no longer remembers a choice.
+
+---
+
 ## 2026-10-20 · Progressive blur at the screen edges
 
 - **The effect:** content softens as it slides under the top of the screen and off the bottom.
 - **How (`src/components/EdgeBlur.astro`, on both pages):** fixed bands, 96 px at the top and 72 px at the bottom. Each is five stacked `backdrop-filter` layers (1, 2, 4, 8, 16 px), each masked to a thinner band nearer the edge, so the blur builds up with no hard line.
 - **Layering:** it sits above the page but under the header and under an open case-study card, and never takes the pointer.
 - **Touch screens:** three layers and shorter bands, since backdrop blur is costly on a phone's GPU.
+- **Softened (later the same day):** the first pass was too harsh.
+  - The blur now tops out at 6 px instead of 16 px, in gentler steps (0.5, 1, 2, 3.5, 6 px).
+  - Each layer fades in over an overlapping ramp, so no step shows.
+  - The bands are taller, so the haze builds slowly: 120 px at the top and 90 px at the bottom.
 
 ---
 

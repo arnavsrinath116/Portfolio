@@ -91,11 +91,6 @@ const tabs = [
   const apply = (light: boolean) => {
     if (light) root.dataset.theme = 'light';
     else delete root.dataset.theme;
-    try {
-      localStorage.setItem('as-theme', light ? 'light' : 'dark');
-    } catch {
-      /* not remembered, but it still switches */
-    }
     reflect();
     document.dispatchEvent(new CustomEvent('themechange', { detail: { light } }));
   };

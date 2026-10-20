@@ -1,0 +1,208 @@
+---
+import type { SkillPrototype } from '../data/skills';
+import { withBase } from '../lib/url';
+
+interface Props {
+  prototype: SkillPrototype;
+  title: string;
+  kind: string;
+}
+const { prototype, title, kind } = Astro.props;
+---
+
+<!-- a Figma prototype: a poster of its screens until Play is pressed, then the live prototype in place.
+     The embed is heavy, so it never loads unless asked for -->
+<figure
+  class="pt"
+  data-proto={prototype.embed}
+  data-title={`${title} prototype`}
+  style={`--pt-aspect: ${prototype.aspect ?? '440 / 956'}; --pt-r: ${prototype.corner ?? '14px'}`}
+>
+  <div class="pt-stage">
+    <div class="pt-poster" data-pt-poster>
+      {
+        prototype.screens.map((s) => (
+          <img class="pt-phone" src={withBase(s.src)} alt={s.alt} loading="lazy" decoding="async" />
+        ))
+      }
+      <button type="button" class="pt-play" data-pt-play>
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3.2v9.6L12.6 8z" /></svg>
+        Play prototype
+      </button>
+    </div>
+  </div>
+  <figcaption class="pt-bar">
+    <span class="pt-kind">{kind}</span>
+    <a class="pt-open" href={prototype.link} target="_blank" rel="noopener">
+      Open in Figma
+      <svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" /></svg>
+    </a>
+  </figcaption>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-proto]').forEach((fig) => {
+    const play = fig.querySelector<HTMLButtonElement>('[data-pt-play]')!;
+    play.addEventListener('click', () => {
+      const stage = fig.querySelector<HTMLElement>('.pt-stage')!;
+      const frame = document.createElement('iframe');
+      frame.className = 'pt-frame';
+      frame.src = fig.dataset.proto!;
+      frame.title = fig.dataset.title!;
+      frame.allow = 'fullscreen';
+      frame.addEventListener('load', () => stage.classList.add('is-live'), { once: true });
+      stage.classList.add('is-loading');
+      stage.append(frame);
+      frame.focus();
+    });
+  });
+</script>
+
+<style>
+  .pt {
+    margin: 0;
+  }
+  /* the 3D viewer's frame, but tall: the prototype is a phone, and its size comes from the height */
+  .pt-stage {
+    position: relative;
+    height: clamp(560px, 82vh, 860px);
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid rgb(var(--ink-rgb) / 0.08);
+    background:
+      radial-gradient(120% 90% at 50% 40%, rgb(var(--ink-rgb) / 0.05), transparent 60%),
+      rgb(var(--bg-rgb) / 0.55);
+  }
+
+  /* poster: three phones in a row, the middle one forward */
+  .pt-poster {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4%;
+    padding: 3% 0 10%; /* room under the phones for the Play button */
+    transition: opacity 400ms ease-out;
+  }
+  /* sized by width, so three always fit across; the tall frame leaves them room */
+  .pt-phone {
+    width: 24%;
+    height: auto;
+    aspect-ratio: var(--pt-aspect);
+    object-fit: cover;
+    border-radius: var(--pt-r); /* clips any rounded corners baked into the export, too */
+    box-shadow:
+      0 0 0 1px rgb(var(--ink-rgb) / 0.12),
+      0 18px 40px -18px rgb(0 0 0 / 0.45);
+  }
+  .pt-phone:nth-of-type(2) {
+    width: 28%;
+  }
+  .pt-play {
+    position: absolute;
+    left: 50%;
+    bottom: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px 10px 14px;
+    transform: translateX(-50%);
+    border: 0;
+    border-radius: 999px;
+    background: var(--accent-fill);
+    color: var(--on-accent);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 10px 24px -10px rgb(0 0 0 / 0.45);
+    transition: transform 200ms ease-out;
+  }
+  .pt-play svg {
+    width: 14px;
+    height: 14px;
+    fill: currentColor;
+  }
+  .pt-play:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .pt-play:hover {
+      transform: translateX(-50%) scale(1.04);
+    }
+  }
+
+  /* live: the prototype fades in over the poster once Figma has loaded */
+  .pt-stage :global(.pt-frame) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    opacity: 0;
+    transition: opacity 500ms ease-out;
+  }
+  .pt-stage.is-loading .pt-play {
+    pointer-events: none;
+    opacity: 0.6;
+  }
+  .pt-stage.is-live :global(.pt-frame) {
+    opacity: 1;
+  }
+  .pt-stage.is-live .pt-poster {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .pt-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px 18px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: var(--sand-3);
+  }
+  .pt-open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .pt-open svg {
+    width: 11px;
+    height: 11px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.4;
+  }
+  @media (hover: hover) {
+    .pt-open:hover {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+
+  /* phones: a taller frame, so the prototype's phone isn't shrunk to a stamp */
+  @media (max-width: 600px) {
+    .pt-stage {
+      height: clamp(520px, 78vh, 700px);
+    }
+    .pt-poster {
+      gap: 3%;
+      padding: 0 0 14%;
+    }
+    /* one phone, large: three side by side would each be a stamp */
+    .pt-phone {
+      display: none;
+    }
+    .pt-phone:nth-of-type(2) {
+      display: block;
+      width: 58%;
+    }
+  }
+</style>

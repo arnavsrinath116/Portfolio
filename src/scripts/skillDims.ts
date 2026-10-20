@@ -29,6 +29,8 @@ const SHEETS: Record<string, { desk: Spot[]; phone: Spot[] }> = {
   '3d-modeling': { desk: ['title-w', 'list-h'], phone: ['stage-w'] },
   'ui-design': { desk: ['view-h', 'stage-w'], phone: ['summary-w'] },
   'graphic-design': { desk: ['summary-w'], phone: ['summary-w', 'stage-w'] },
+  'product-sketching': { desk: ['title-w', 'view-h'], phone: ['summary-w'] },
+  sketching: { desk: ['list-h', 'summary-w'], phone: ['stage-w'] },
   photography: { desk: ['view-w', 'tb-h'], phone: ['stage-w'] },
 };
 
@@ -60,8 +62,8 @@ export function initSkillDims({ reduce }: { reduce: boolean }) {
     }
     svg.replaceChildren();
     const a = art.getBoundingClientRect();
-    svg.setAttribute('width', String(a.width));
-    svg.setAttribute('height', String(art.scrollHeight));
+    // sized by CSS to the sheet itself: measuring scrollHeight would count this svg too, so it could
+    // only ever grow, and hold the card's scroll open past its end
     const narrow = a.width < 700;
 
     const sheet = SHEETS[art.dataset.project!.replace('skill-', '')];

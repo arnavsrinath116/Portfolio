@@ -391,6 +391,23 @@ export function initFluid(): Fluid | null {
 
   // ---------------- input (mouse / pen only) ----------------
   if (fine) {
+    // over an embedded page (a Figma prototype) this page gets no more pointer events, and a cross-origin
+    // frame sends none on the way in, so the drop would freeze at its edge. When moves stop right at an
+    // embed's edge, the pointer has gone in: let the drop go (the embed shows its own cursor). It
+    // re-forms on the next move out here.
+    let still = 0;
+    const intoEmbed = () => {
+      for (const f of document.querySelectorAll('iframe')) {
+        const r = f.getBoundingClientRect();
+        const m = 12; // a fast move can leave the last report a few px short of the edge
+        if (mouse.x > r.left - m && mouse.x < r.right + m && mouse.y > r.top - m && mouse.y < r.bottom + m) {
+          mouse.inside = false;
+          size.target = 0;
+          kick();
+          return;
+        }
+      }
+    };
     window.addEventListener(
       'pointermove',
       (e) => {
@@ -406,6 +423,8 @@ export function initFluid(): Fluid | null {
         }
         size.target = 1;
         kick();
+        clearTimeout(still);
+        still = window.setTimeout(intoEmbed, 120);
       },
       { passive: true },
     );

@@ -128,8 +128,8 @@ const built = (s: (typeof skills)[number]) => s.works.filter((w) => !w.pending).
     position: relative;
     display: grid;
     place-items: center;
-    min-height: 100%;
-    aspect-ratio: 1;
+    min-width: 0; /* stays in its column: it takes the index's height, never grows wider to stay square */
+    min-height: 360px;
     border-right: 1px solid var(--line-faint);
     background:
       linear-gradient(var(--line-faint) 1px, transparent 1px) 0 0 / 24px 24px,
@@ -201,7 +201,8 @@ const built = (s: (typeof skills)[number]) => s.works.filter((w) => !w.pending).
     display: grid;
     align-content: center;
     margin: 0;
-    padding: clamp(8px, 1.5vw, 20px) clamp(16px, 2.4vw, 36px);
+    /* the numbers stand off the viewport by about the gap between number and icon */
+    padding: clamp(8px, 1.5vw, 20px) clamp(16px, 2.4vw, 36px) clamp(8px, 1.5vw, 20px) clamp(20px, 2.8vw, 40px);
     list-style: none;
   }
   .index li + li {
