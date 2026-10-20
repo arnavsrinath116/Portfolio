@@ -790,6 +790,7 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     align-items: center;
     gap: 12px;
     padding: 5px 0 5px 10px;
+    min-height: 29px;
     text-decoration: none;
     color: var(--sand);
   }
@@ -1897,10 +1898,17 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     }
     .tk-callout {
       padding: 4px 7px;
-      font-size: 0.5625rem;
+      font-size: 0.6875rem;
     }
     .tk-rail-tag {
       display: none;
+    }
+  }
+  /* touch: each chapter LED is a full-size target */
+  @media (pointer: coarse) {
+    .tk-rail a {
+      min-height: 40px;
+      padding-left: 16px;
     }
   }
   @media (prefers-reduced-motion: reduce) {

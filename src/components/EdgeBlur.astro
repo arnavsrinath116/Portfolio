@@ -1,0 +1,58 @@
+---
+// Progressive blur at the top and bottom of the screen: content softens as it slides under the
+// header and off the foot of the sheet. Stacked layers, each a stronger blur masked to a thinner
+// band nearer the edge, so the blur builds up smoothly instead of starting at a hard line.
+const layers = [1, 2, 4, 8, 16];
+---
+
+<div class="edge-blur edge-top" aria-hidden="true">
+  {layers.map((b, i) => <span style={`--b:${b}px;--i:${i}`} />)}
+</div>
+<div class="edge-blur edge-bottom" aria-hidden="true">
+  {layers.map((b, i) => <span style={`--b:${b}px;--i:${i}`} />)}
+</div>
+
+<style>
+  .edge-blur {
+    position: fixed;
+    left: 0;
+    right: 0;
+    z-index: 8300; /* over the page, under the open case-study card (8400) and the header (8600) */
+    height: var(--h);
+    pointer-events: none;
+  }
+  .edge-top {
+    --h: 96px;
+    top: 0;
+  }
+  .edge-bottom {
+    --h: 72px;
+    bottom: 0;
+  }
+  .edge-blur span {
+    position: absolute;
+    inset: 0;
+    -webkit-backdrop-filter: blur(var(--b));
+    backdrop-filter: blur(var(--b));
+  }
+  .edge-top span {
+    -webkit-mask-image: linear-gradient(to top, transparent calc(var(--i) * 20%), #000 calc(var(--i) * 20% + 20%));
+    mask-image: linear-gradient(to top, transparent calc(var(--i) * 20%), #000 calc(var(--i) * 20% + 20%));
+  }
+  .edge-bottom span {
+    -webkit-mask-image: linear-gradient(to bottom, transparent calc(var(--i) * 20%), #000 calc(var(--i) * 20% + 20%));
+    mask-image: linear-gradient(to bottom, transparent calc(var(--i) * 20%), #000 calc(var(--i) * 20% + 20%));
+  }
+  /* phones: fewer, lighter layers (backdrop blur is costly on a small GPU) */
+  @media (pointer: coarse) {
+    .edge-blur span:nth-child(n + 4) {
+      display: none;
+    }
+    .edge-top {
+      --h: 76px;
+    }
+    .edge-bottom {
+      --h: 56px;
+    }
+  }
+</style>

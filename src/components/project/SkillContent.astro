@@ -517,4 +517,16 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
       border-top: 1px solid var(--line);
     }
   }
+  /* phones: the sheet's small labels read a notch larger, and its links are proper touch targets */
+  @media (max-width: 600px) {
+    .sk-tb dt,
+    .sk-list-head,
+    .sk-pick-k,
+    .sk-view-no {
+      font-size: 0.6875rem;
+    }
+    .sk-link {
+      padding: 8px 0;
+    }
+  }
 </style>

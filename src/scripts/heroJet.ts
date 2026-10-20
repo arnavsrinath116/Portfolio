@@ -57,7 +57,8 @@ async function start(canvas: HTMLCanvasElement, reduce: boolean) {
   draco.dispose();
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  // phones draw at 1.5× (sharp enough for line art, far less work for a small GPU)
+  renderer.setPixelRatio(Math.min(devicePixelRatio, window.matchMedia('(pointer: coarse)').matches ? 1.5 : 2));
   renderer.autoClear = false; // the casings can take a pass of their own over the internals
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -20, 20);

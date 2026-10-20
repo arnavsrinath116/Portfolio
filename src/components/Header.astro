@@ -393,6 +393,21 @@ const tabs = [
   .theme-switch:focus-visible {
     outline: none;
   }
+  /* touch: an invisible, larger hit area round the small controls */
+  @media (pointer: coarse) {
+    .theme-switch,
+    .resume-btn,
+    .back-btn {
+      position: relative;
+    }
+    .theme-switch::before,
+    .resume-btn::before,
+    .back-btn::before {
+      content: '';
+      position: absolute;
+      inset: -8px -4px;
+    }
+  }
   .theme-switch:focus-visible .ts-track {
     outline: 1px solid var(--accent);
     outline-offset: 3px;
@@ -426,7 +441,7 @@ const tabs = [
   /* phones: everything still fits on one line; the résumé keeps its label, drops the icon */
   @media (max-width: 520px) {
     .hdr-nav a {
-      padding: 0.55em 0.4em;
+      padding: 14px 0.4em; /* a 40 px tall touch target, the same look */
       font-size: 0.6875rem;
       letter-spacing: 0;
     }

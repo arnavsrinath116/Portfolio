@@ -262,10 +262,11 @@ const spring = (x: number, v: number, target: number, k: number, zeta: number, d
 };
 
 export function initFluid(): Fluid | null {
-  // The flood (menu) runs on every device; the cursor itself only with a mouse.
+  // The cursor needs a mouse: on touch screens there's nothing to draw, so no canvas, no WebGL
+  // context and no render loop at all (phones save the battery and the GPU)
   const fine = window.matchMedia('(pointer: fine)').matches;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduce) return null;
+  if (reduce || !fine) return null;
 
   const canvas = document.createElement('canvas');
   canvas.className = 'fluid-canvas';

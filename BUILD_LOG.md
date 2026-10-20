@@ -16,6 +16,32 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-10-20 · Progressive blur at the screen edges
+
+- **The effect:** content softens as it slides under the top of the screen and off the bottom.
+- **How (`src/components/EdgeBlur.astro`, on both pages):** fixed bands, 96 px at the top and 72 px at the bottom. Each is five stacked `backdrop-filter` layers (1, 2, 4, 8, 16 px), each masked to a thinner band nearer the edge, so the blur builds up with no hard line.
+- **Layering:** it sits above the page but under the header and under an open case-study card, and never takes the pointer.
+- **Touch screens:** three layers and shorter bands, since backdrop blur is costly on a phone's GPU.
+
+---
+
+## 2026-10-20 · Mobile pass
+
+Audited at 390 px across the homepage, both case studies, a skill sheet and All projects. There was no horizontal overflow anywhere; the fixes are touch targets, small type, and work phones don't need to do.
+
+- **Performance:**
+  - On touch screens the liquid cursor isn't created at all: no canvas, no WebGL context, no render loop. The menu flood it also served is gone.
+  - The hero jet renders at up to 1.5× device pixels on touch screens (was 2×).
+- **Touch targets:**
+  - Header tabs are 40 px tall on phones.
+  - Résumé, the theme switch and Home get invisible enlarged hit areas on coarse pointers.
+  - The Cooked course dots and the tracker chapter LEDs become full 40 px targets on touch.
+  - The skill sheet's "Used in" links are taller.
+- **Small type:** the tracker hero callouts go up from 9 to 11 px on phones, and the skill sheet's labels (Sheet, Tools, Works, list heads, kinds) up from 10 to 11 px.
+- **Reading:** on screens 600 px and narrower, the homepage guide line drops to 45% opacity, since it runs closer to the text there.
+
+---
+
 ## 2026-10-18 · Cursor keeps its size while moving
 
 - **Size:** the arrow no longer shrinks when it moves. Its size used to drop by up to 18% as the trail grew (volume borrowed for the trail); the trail is now extra, not taken from the arrow.

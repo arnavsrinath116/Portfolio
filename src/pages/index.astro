@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import SheetFrame from '../components/SheetFrame.astro';
+import EdgeBlur from '../components/EdgeBlur.astro';
 import Header from '../components/Header.astro';
 import Hero from '../components/Hero.astro';
 import Work from '../components/Work.astro';
@@ -15,6 +16,7 @@ import { site } from '../data/site';
   description={`${site.name}, designer working across product, UX and HMI: the objects and the interfaces that control them.`}
 >
   <SheetFrame />
+  <EdgeBlur />
   <Header />
   <ProjectModal />
   <span id="top"></span>
@@ -42,6 +44,12 @@ import { site } from '../data/site';
     z-index: 0;
     overflow: visible;
     pointer-events: none;
+  }
+  /* phones: the line runs closer to the text, so it steps back to keep the reading clean */
+  @media (max-width: 600px) {
+    .guide {
+      opacity: 0.45;
+    }
   }
   .dims {
     position: absolute;
