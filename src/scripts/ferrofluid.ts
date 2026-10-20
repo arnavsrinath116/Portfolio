@@ -232,20 +232,24 @@ void main() {
   float d = scene(p);
 
   // flat, comic line art: a bold ink outline round a flat fill, and a crisp offset shadow.
-  // No shading, no reflections. Dark sheet: sand fill, near-black ink. Light sheet: white fill.
-  vec3 fill = mix(vec3(0.902, 0.863, 0.784), vec3(1.0), uInk);
-  vec3 ink = mix(vec3(0.035, 0.04, 0.05), vec3(0.078, 0.09, 0.102), uInk);
+  // No shading, no reflections.
+  // dark sheet: a sand arrow outlined in ink; light sheet: the reverse, an ink arrow outlined in white
+  vec3 fill = mix(vec3(0.902, 0.863, 0.784), vec3(0.078, 0.09, 0.102), uInk);
+  vec3 ink = mix(vec3(0.035, 0.04, 0.05), vec3(1.0), uInk);
   float px = 1.0 / uDpr;                 // one device pixel, for anti-aliasing
   float W = 1.8;                         // outline weight, in CSS px
 
   float sd = scene(p - vec2(2.5, 3.0));
-  float shadow = clamp(0.5 - sd / px, 0.0, 1.0) * 0.22;
+  // the offset shadow is the sheet's opposite: dark on the light sheet, a faint sand echo on the
+  // dark one (a black shadow vanishes there), so the comic pop reads the same in both
+  vec3 shCol = mix(vec3(0.902, 0.863, 0.784), vec3(0.0), uInk);
+  float shadow = clamp(0.5 - sd / px, 0.0, 1.0) * mix(0.3, 0.22, uInk);
 
   float inside = clamp(0.5 - d / px, 0.0, 1.0);          // the whole shape, outline included
   float core = clamp(0.5 - (d + W) / px, 0.0, 1.0);      // the fill, inside the outline
   vec3 col = mix(ink, fill, core);
-  float a = inside + shadow * (1.0 - inside);
-  gl_FragColor = vec4(col * inside, a);
+  float sa = shadow * (1.0 - inside);
+  gl_FragColor = vec4(col * inside + shCol * sa, inside + sa);
 }
 
 `;
