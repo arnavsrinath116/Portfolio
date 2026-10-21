@@ -7,12 +7,31 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 | | |
 |---|---|
+| **Time spent** | **~19 h 50 min** of active build time over 9 days (2026-10-12 → 2026-10-21), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
+| **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-21 09:36 UTC): **21%** of the current 5-hour limit and **20%** of this week's limit |
+| **Tokens** | About **1.84 M** tokens written by Claude, and about **1.17 B** tokens of context re-read from the prompt cache, across about 230 messages from you |
+| **Commits** | 33 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Site size** | About **31 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), code 1.4 MB, 3D models 1.3 MB |
+
+*Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
+
+---|---|
 | **Time spent** | ~6 h 10 min of build time (one Claude Code session, 2026-10-12 13:00 → 19:11 UTC) |
 | **Usage** | Claude Pro plan, no extra paid usage. About **49% of one 5-hour limit** and **17% of the weekly limit** used as of 2026-10-12 19:11 UTC |
 | **Context** | ~900k tokens of conversation in the session |
 | **Commits** | 3 (`ad09e6f`, `0405d8d`, `cc7234b`) plus this update |
 
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
+
+---
+
+## 2026-10-21 · Write-ups for every work, a renamed skill, tidier galleries
+
+- **Write-ups:** picking a work in a skill card now drops open a short write-up under it, with an accent rule down the side. The first work's write-up starts open.
+  - Every finished work has one: 45–64 words, first person, plain English. Works still in drafting have none.
+  - A work's `about` field holds the text. Without it, a faded placeholder shows.
+- **Renamed:** "3D modeling" is now **3D modeling & animation**. The slug is unchanged, so links still work. The other-sheet links at the foot of a card now wrap below 1240 px, since the longer name makes the row wider.
+- **Galleries:** a work with a single image no longer shows the left/right arrows or the `01 / 01` counter.
 
 ---
 

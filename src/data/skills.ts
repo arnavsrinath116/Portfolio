@@ -17,6 +17,8 @@ export interface SkillWork {
   prototype?: SkillPrototype;
   /** a film, self-hosted: nothing but its poster loads until Play */
   video?: { src: string; poster: string; width: number; height: number };
+  /** the write-up that drops open under the work when it's picked; a placeholder shows until it's written */
+  about?: string;
   /** not made yet: shown as a dashed "In drafting" sheet, without year or caption */
   pending?: boolean;
 }
@@ -95,7 +97,7 @@ const work = (kind: string): SkillWork => ({ title: kind, kind, year: '', captio
 export const skills: Skill[] = [
   {
     slug: '3d-modeling',
-    name: '3D modeling',
+    name: '3D modeling & animation',
     tools: ['Fusion 360', 'Blender'],
     use: 'CAD parts, assemblies and renders',
     summary: 'Parametric CAD, from a first sketch to parts that *print and fit*.',
@@ -104,6 +106,8 @@ export const skills: Skill[] = [
     works: [
       {
         title: 'Turbojet engine',
+        about:
+          'I’ve always wanted to know what really happens inside a jet engine, so I built one, part by part. I modelled the fan, the compressor, the combustion chamber, the turbine and the nozzle, 38 parts in all, at real scale. Cutting it in half was the best part. You can see how the air comes in, gets squeezed, burns and shoots out the back.',
         kind: 'Assembly',
         year: 'Year TBD',
         caption: 'Modelled part by part, intake to exhaust; shown in section.',
@@ -111,6 +115,8 @@ export const skills: Skill[] = [
       },
       {
         title: 'Piston and connecting rod',
+        about:
+          'A small one, but I learned a lot from it. I modelled a piston, a connecting rod and the pin that joins them, and made them actually fit together. Getting the gaps right so the parts could move was harder than I expected. It taught me to think about how real parts connect, not just how they look.',
         kind: 'Assembly',
         year: 'Year TBD',
         caption: 'Piston, rod and gudgeon pin, modelled to fit together.',
@@ -118,6 +124,8 @@ export const skills: Skill[] = [
       },
       {
         title: 'BlackBox casing',
+        about:
+          'I designed this case to hold the electronics for a small device, and I 3D printed it. It’s six parts: a shell, a lid, a holder for the screen and mounts inside to keep everything in place. I kept changing the walls and the way the parts sit so they would print well and close neatly. Turn down the opacity to see what’s inside.',
         kind: 'Enclosure',
         year: 'Year TBD',
         caption: 'A printed enclosure with a display holder and mounts inside.',
@@ -125,6 +133,8 @@ export const skills: Skill[] = [
       },
       {
         title: 'Aston Martin lighting study',
+        about:
+          'Here I wanted to play with light, not the car itself. I lit the car so that a cool teal light runs over the bonnet and a warm orange light falls down the side, with the headlights glowing in a dark room. It showed me how much the mood of an image can change just by moving the lights.',
         kind: 'Render',
         year: 'Year TBD',
         caption: 'One car, lit for mood: a cool key on the bonnet, a warm wash down the flank.',
@@ -145,6 +155,8 @@ export const skills: Skill[] = [
       },
       {
         title: 'Traverse',
+        about:
+          'Traverse is a short film I worked on for Akela Studios. It jumps between LEGO stop-motion, hand-drawn animation and 3D, all in one story. The fun and the challenge was making each jump between styles feel like part of the journey instead of a cut.',
         kind: 'Animation',
         year: 'Year TBD',
         caption: 'A short film for Akela Studios: LEGO stop-motion, hand-drawn animation and 3D, cut together.',
@@ -166,6 +178,8 @@ export const skills: Skill[] = [
     works: [
       {
         title: 'Nexo app',
+        about:
+          'Nexo is a smart device for dogs, and this is the app that goes with it. I designed the whole first-time experience: the welcome screens, turning on Bluetooth, finding and pairing the device, giving permissions, signing up and making a profile for your dog. I also planned what happens when pairing fails, so nobody gets stuck.',
         kind: 'Prototype',
         year: 'Year TBD',
         caption: 'The companion app for Nexo, a dog wearable: onboarding, pairing over Bluetooth, and the dashboard.',
@@ -182,6 +196,8 @@ export const skills: Skill[] = [
       },
       {
         title: 'Cooked app',
+        about:
+          'Cooked lets you book a home chef. I designed both sides of the app. People can browse chefs and dishes, search by cuisine and order a past meal again. Chefs sign up in five simple steps, adding their best dishes, the recipes they cook and the cuisines they know. I kept it warm and friendly, with lots of food photos.',
         kind: 'Prototype',
         year: 'Year TBD',
         caption: 'Book a home chef: onboarding, browsing chefs and dishes, and a chef’s own sign-up.',
@@ -231,6 +247,8 @@ export const skills: Skill[] = [
     works: [
       {
         title: 'Hand mixer',
+        about:
+          'Two quick ideas for a hand mixer. One is orange and white with an open, sharp handle. The other is a tall green shape you hold from the sides. I wanted to see how the handle, the motor and the whisk could work together, and how colour can give a simple kitchen tool some personality.',
         kind: 'Marker render',
         year: 'Year TBD',
         caption: 'Two takes on a hand mixer, rendered over bold marker swashes.',
@@ -246,6 +264,8 @@ export const skills: Skill[] = [
       },
       {
         title: 'Flight seat handle',
+        about:
+          'An idea for the handle on a plane seat. I drew it as one smooth loop, so it feels like a single shape that’s easy to find and hold. The grey body flows into a blue top, and I used the same colours in the background strokes.',
         kind: 'Marker render',
         year: 'Year TBD',
         caption: 'An aircraft seat handle as one looping stroke, in blue and grey.',
@@ -261,6 +281,8 @@ export const skills: Skill[] = [
       },
       {
         title: 'Steering HMI',
+        about:
+          'I wanted to rethink the buttons on a steering wheel. First I ranked every control by how often you need it, from must-haves like indicators and the horn down to things like calls and heating. Then I sketched new ways to use them: a single press for indicators, a roller for volume, a wheel for the wipers and a dial for cruise control.',
         kind: 'Concept sheets',
         year: 'Year TBD',
         caption: 'Every control on the wheel, ranked by how often it is needed, then sketched as a gesture.',
@@ -336,6 +358,8 @@ export const skills: Skill[] = [
     works: [
       {
         title: 'Debrecen Drive',
+        about:
+          'I shot these at a drift event in Debrecen. I moved the camera along with each car and used a slow shutter, so the car stays sharp and the background turns into streaks. In one photo I turned the background black and white to make the car’s colours pop.',
         kind: 'Motorsport',
         year: 'Year TBD',
         caption: 'Drift cars in Debrecen, panned slow so the car stays sharp and the world streaks.',

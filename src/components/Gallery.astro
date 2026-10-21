@@ -34,15 +34,25 @@ const ground = (im: SkillImage) => (im.ground && im.ground in GROUND ? GROUND[im
         />
       ))
     }
-    <button type="button" class="gl-btn gl-prev" aria-label="Previous image" disabled={one} data-gl-step="-1">
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
-    </button>
-    <button type="button" class="gl-btn gl-next" aria-label="Next image" disabled={one} data-gl-step="1">
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg>
-    </button>
+    {
+      !one && (
+        <>
+        <button type="button" class="gl-btn gl-prev" aria-label="Previous image" data-gl-step="-1">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+        </button>
+        <button type="button" class="gl-btn gl-next" aria-label="Next image" data-gl-step="1">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="m6 3 5 5-5 5" /></svg>
+        </button>
+        </>
+      )
+    }
   </div>
   <figcaption class="gl-bar">
-    <span class="gl-count" aria-live="polite"><span data-gl-at>01</span> / {pad(images.length)}</span>
+    {!one && (
+      <span class="gl-count" aria-live="polite">
+        <span data-gl-at>01</span> / {pad(images.length)}
+      </span>
+    )}
     <span class="gl-kind">{kind}</span>
   </figcaption>
 </figure>

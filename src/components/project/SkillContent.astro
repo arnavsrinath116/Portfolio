@@ -113,6 +113,13 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
                 <span class="sk-pick-t">{w.title}</span>
                 <span class="sk-pick-k">{w.pending ? 'In drafting' : w.kind}</span>
               </button>
+              {!w.pending && (
+                <div class:list={['sk-about', { 'is-open': i === 0 }]} data-about={i}>
+                  <div>
+                    <p class:list={{ 'is-placeholder': !w.about }}>{w.about ?? 'About this project: write-up coming soon.'}</p>
+                  </div>
+                </div>
+              )}
             </li>
           ))
         }
@@ -147,6 +154,8 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
           p.setAttribute('aria-pressed', String(on));
         });
         stages.forEach((s) => (s.hidden = s.dataset.stage !== i));
+        // the picked work's write-up drops open under it; the others fold away
+        set.querySelectorAll<HTMLElement>('[data-about]').forEach((a) => a.classList.toggle('is-open', a.dataset.about === i));
       }),
     );
   });
@@ -424,6 +433,37 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
   .sk-pick.is-on .sk-pick-t {
     transform: translateX(4px);
   }
+  /* the write-up under a picked work: folds open by animating its row from 0fr to 1fr */
+  .sk-about {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .sk-about > div {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .sk-about.is-open {
+    grid-template-rows: 1fr;
+  }
+  .sk-about p {
+    margin: 0 0 14px 46px;
+    padding: 12px 14px;
+    border-left: 2px solid var(--accent);
+    background: rgb(var(--ink-rgb) / 0.03);
+    color: var(--sand-2);
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+  .sk-about p.is-placeholder {
+    color: var(--sand-3);
+    font-style: italic;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sk-about {
+      transition: none;
+    }
+  }
   .sk-pick:focus-visible {
     outline-offset: 2px;
   }
@@ -487,7 +527,7 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
   }
 
   /* narrower than five fit: they wrap again, left-aligned */
-  @media (max-width: 1100px) {
+  @media (max-width: 1240px) {
     .sk-next {
       flex-wrap: wrap;
       justify-content: flex-start;
