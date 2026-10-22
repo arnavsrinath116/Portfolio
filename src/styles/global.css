@@ -44,7 +44,7 @@ body::after {
   inset: 0;
   z-index: 60;
   pointer-events: none;
-  background: url('/textures/grain.webp') repeat;
+  background: var(--grain) repeat; /* set on <html> with the site's base path (Base.astro) */
   background-size: 256px 256px;
   opacity: 0.045;
 }
@@ -86,6 +86,21 @@ body::after {
 }
 .hl-block.is-armed.is-in::before {
   transform: none;
+}
+
+/* a block that follows the scroll (wordReveal.ts sets --hl, 0 → 1): no timed wipe of its own */
+.hl-block.is-armed.is-scrub::before,
+.hl-block.is-armed.is-scrub.is-in::before {
+  transform: scaleX(var(--hl, 0));
+  transition: none;
+}
+.hl-block.is-scrub {
+  transition-delay: 0s;
+}
+
+/* a heading's words, brought into focus one at a time (wordReveal.ts) */
+[data-words] .w {
+  display: inline-block;
 }
 
 ::selection {

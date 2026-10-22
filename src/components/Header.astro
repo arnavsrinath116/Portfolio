@@ -12,6 +12,7 @@ const { back = false } = Astro.props;
 const tabs = [
   { label: 'Work', href: withBase('/#work') },
   { label: 'Skills', href: withBase('/#skills') },
+  { label: 'About', href: withBase('/#about') },
   { label: 'Contact', href: '#contact' }, // every page ends on the contact slab
 ];
 ---
@@ -454,6 +455,22 @@ const tabs = [
     }
     /* with Home in the bar, Contact (the foot of the page) gives up its room */
     .site-header[data-pinned] .hdr-nav li:last-child {
+      display: none;
+    }
+  }
+  /* small phones: four tabs, the résumé and the switch only just fit, so the tabs close up */
+  @media (max-width: 420px) {
+    .hdr-nav a {
+      padding-inline: 0.3em;
+      font-size: 0.625rem;
+    }
+    .hdr-left {
+      gap: 8px;
+    }
+  }
+  /* the narrowest phones: Contact (the foot of the page, a scroll away) gives up its room */
+  @media (max-width: 379px) {
+    .hdr-nav li:last-child {
       display: none;
     }
   }

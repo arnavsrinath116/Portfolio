@@ -20,6 +20,9 @@ import { initNav } from './nav';
 import { initHeader } from './header';
 import { initFrame } from './frame';
 import { initClock } from './clock';
+import { initWordReveal } from './wordReveal';
+import { initAbout } from './about';
+import { initMusicRoom } from './musicRoom';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -27,7 +30,8 @@ const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let lenis: Lenis | null = null;
 if (!reduce) {
-  lenis = new Lenis({ lerp: 0.11, anchors: true });
+  // a heavier glide: each wheel tick travels a little less and settles a little longer
+  lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 0.85, anchors: true });
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => lenis!.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
@@ -44,10 +48,13 @@ initNav({ lenis });
 initHighlights({ reduce });
 
 document.fonts.ready.then(() => {
+  initAbout({ reduce });
+  initMusicRoom({ reduce }); // loads three.js and the physics only when the Music tab opens
   initHeroAnnotations({ reduce });
   initHeroJet({ reduce });
   initGuide({ reduce });
   initDims({ reduce });
+  initWordReveal({ reduce }); // after the dimensions measure the lettering
   initWire({ reduce });
   initModelViewers({ reduce });
   initCookedCase({ reduce });

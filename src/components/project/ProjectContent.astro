@@ -15,7 +15,7 @@ const id = (s: string) => `${project.slug}-${s}`;
 <article class="pc" data-project={project.slug} aria-labelledby={id('title')} hidden>
   <header class="pc-hero" data-pc-rise>
     <p class="pc-discipline">{project.discipline}</p>
-    <h2 class="pc-title" id={id('title')}>{project.title}</h2>
+    <h2 class="pc-title" id={id('title')} data-words="open">{project.title}</h2>
     <div class="pc-hero-grid">
       <p class="pc-summary">{project.summary}</p>
       <dl class="pc-meta">

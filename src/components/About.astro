@@ -1,0 +1,1184 @@
+---
+import fs from 'node:fs';
+import path from 'node:path';
+import Icon from './Icon.astro';
+import { site } from '../data/site';
+import { withBase } from '../lib/url';
+
+// About: one window, its tabs turned over by the scroll (about.ts), after the browser idea in
+// references/sections/about/samay.md, drawn in this site's own hand: mono labels, hairlines,
+// drafting grid, a title block and registers. PLACEHOLDER values are marked.
+
+// the portrait: public/about/arnav.webp once supplied; until then, a marked slot
+const photo = fs.existsSync(path.join(process.cwd(), 'public/about/arnav.webp'));
+
+// each chapter's tab carries its own icon, drawn as a 16 px line glyph
+const chapters = [
+  // a person
+  { key: 'about', tab: 'About me', url: 'about', icon: 'M8 2.8a2.6 2.6 0 1 1 0 5.2 2.6 2.6 0 0 1 0-5.2ZM2.8 13.6c.5-2.6 2.6-4 5.2-4s4.7 1.4 5.2 4' },
+  // a briefcase
+  { key: 'log', tab: 'Work log', url: 'work-log', icon: 'M2.5 5.2h11v7.6h-11ZM5.8 5.2V3.6h4.4v1.6M2.5 8.6h11' },
+  // a drafting compass
+  { key: 'kit', tab: 'The kit', url: 'kit', icon: 'M8 2v1.6M8 3.6a1.3 1.3 0 1 1 0 2.6 1.3 1.3 0 0 1 0-2.6ZM7.2 6 4 14M8.8 6l3.2 8M5.2 11h5.6' },
+  // a plane, from above
+  { key: 'off', tab: 'Off the clock', url: 'off-the-clock', icon: 'M8 1.8c.6 0 1 .6 1 1.4v3.3l4.6 2.8v1.3L9 9.2v2.7l1.6 1.2v1.1L8 13.5l-2.6.7v-1.1L7 11.9V9.2l-4.6 1.4V9.3L7 6.5V3.2c0-.8.4-1.4 1-1.4Z' },
+  // headphones
+  { key: 'music', tab: 'Music', url: 'music', icon: 'M2.8 10.5V8.2a5.2 5.2 0 0 1 10.4 0v2.3M2.8 10.2h2.1v3.6H2.8ZM11.1 10.2h2.1v3.6h-2.1Z' },
+];
+
+const facts = [
+  { dt: 'Name', dd: site.name },
+  { dt: 'Studying', dd: 'FLAME University' }, // PLACEHOLDER: confirm
+  { dt: 'Based in', dd: site.city },
+  { dt: 'Works in', dd: site.disciplines.join(' · ') },
+];
+// PLACEHOLDER: where I've worked and studied
+const record = [
+  { no: 'R-01', name: 'FLAME University', role: 'Design', state: 'Now' },
+  { no: 'R-02', name: 'Akela Studios', role: 'Animation · Traverse', state: 'Before' },
+  { no: 'R-03', name: 'Your studio', role: 'Product · UX · HMI', state: 'Next' },
+];
+const tools = [
+  { no: 'T-01', name: 'Fusion 360', use: 'Parts that print and fit' },
+  { no: 'T-02', name: 'Blender', use: 'Renders and motion' },
+  { no: 'T-03', name: 'Figma', use: 'Screens and prototypes' },
+  { no: 'T-04', name: 'Illustrator', use: 'Posters, icons, diagrams' },
+];
+const shots = [
+  { src: '/skills/photography/debrecen-02-yellow-e36.webp', alt: 'A yellow BMW E36 drifting, panned' },
+  { src: '/skills/photography/debrecen-03-blue-s14.webp', alt: 'A blue and lime Nissan drift car, panned' },
+];
+const interests = [
+  { no: 'O-01', name: 'Cars', note: 'and the engines inside them' },
+  { no: 'O-02', name: 'Planes', note: 'I still look up at every one' },
+  { no: 'O-03', name: 'Graphic design', note: 'posters and type' },
+  { no: 'O-04', name: 'Motion', note: 'what makes a thing feel alive' },
+  { no: 'O-05', name: 'Photography', note: 'mostly cars, at speed' },
+];
+---
+
+<section class="ab" id="about" aria-labelledby="about-title" data-about-me>
+  <div class="ab-head">
+    <h2 id="about-title" class="ab-title" data-words>About <span class="hl-block">me</span></h2>
+    <p class="ab-note">Five tabs, always open: who I am, where I’ve been, what I <span class="hl">work with</span>, what I do off the clock, and what’s playing.</p>
+  </div>
+
+  <div class="ab-pin" data-about-pin>
+    <div class="ab-win" data-about-slab>
+      <!-- the tab strip: window buttons, then the About tabs, as a tab group -->
+      <div class="ab-tabs" role="tablist" aria-label="About me">
+        <span class="ab-lights" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="ab-group" aria-hidden="true">Arnav</span>
+        {
+          chapters.map((c, i) => (
+            <button
+              type="button"
+              class:list={['ab-tab', 'is-grouped', { 'is-on': i === 0 }]}
+              role="tab"
+              aria-selected={i === 0 ? 'true' : 'false'}
+              aria-controls={`ab-${c.key}`}
+              data-about-tab={i}
+            >
+              <svg class="ab-fav ab-ico" viewBox="0 0 16 16" aria-hidden="true">
+                <path d={c.icon} />
+              </svg>
+              <span class="ab-tt">{c.tab}</span>
+              <span class="ab-close" aria-hidden="true">×</span>
+            </button>
+          ))
+        }
+      </div>
+      <!-- the toolbar: back, forward, reload, the address, the profile and the menu -->
+      <div class="ab-bar" aria-hidden="true">
+        <span class="ab-btns">
+          <svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5" /></svg>
+          <svg viewBox="0 0 16 16" class="is-off"><path d="m6 3 5 5-5 5" /></svg>
+          <svg viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5v3h-3" /></svg>
+        </span>
+        <span class="ab-omni">
+          <svg class="ab-lock" viewBox="0 0 16 16"><path d="M4.5 7.5h7v6h-7ZM6 7.5V5.5a2 2 0 0 1 4 0v2" /></svg>
+          <span class="ab-addr"><span class="ab-host">arnavsrinath.com</span><span class="ab-path">/<span data-about-url>{chapters[0].url}</span></span></span>
+          <svg class="ab-star" viewBox="0 0 16 16"><path d="m8 2.2 1.8 3.7 4 .6-2.9 2.8.7 4L8 11.4l-3.6 1.9.7-4L2.2 6.5l4-.6Z" /></svg>
+        </span>
+        <span class="ab-me">A</span>
+        <span class="ab-menu"><i></i><i></i><i></i></span>
+      </div>
+
+      <div class="ab-view">
+        <!-- 01 · about me -->
+        <article class="ab-chap is-on" id="ab-about" role="tabpanel" data-about-chap="0">
+          <div class="ab-split">
+            <figure class="ab-fig">
+              <span class="ab-x ab-x-tl"></span><span class="ab-x ab-x-tr"></span>
+              <span class="ab-x ab-x-bl"></span><span class="ab-x ab-x-br"></span>
+              <span class="ab-frame">
+                {
+                  photo ? (
+                    <img src={withBase('/about/arnav.webp')} alt={site.name} width="800" height="1000" loading="lazy" decoding="async" />
+                  ) : (
+                    <span class="ab-slot" aria-hidden="true">
+                      <span class="ab-plus"></span>
+                      Photo
+                    </span>
+                  )
+                }
+              </span>
+              <figcaption class="ab-cap">Fig. 1 · {site.name}</figcaption>
+            </figure>
+            <div class="ab-col">
+              <p class="ab-kick">01 · About me</p>
+              <p class="ab-lead">I’m Arnav, a designer who works across the <span class="hl">physical</span> and the <span class="hl">digital</span>.</p>
+              <p class="ab-text">
+                I model the object in CAD, wire up its electronics, and design the screen you control it with. Most of what I make
+                starts with something I love: cars and the engines inside them, planes, and the graphics and motion that make a
+                thing feel alive.
+              </p>
+              <dl class="ab-tb">
+                {
+                  facts.map((f) => (
+                    <div>
+                      <dt>{f.dt}</dt>
+                      <dd>{f.dd}</dd>
+                    </div>
+                  ))
+                }
+              </dl>
+            </div>
+          </div>
+        </article>
+
+        <!-- 02 · work log -->
+        <article class="ab-chap" id="ab-log" role="tabpanel" data-about-chap="1">
+          <div class="ab-two">
+            <div>
+              <p class="ab-kick">02 · Work log</p>
+              <h3 class="ab-h">Where I’ve <span class="hl">been building</span></h3>
+              <p class="ab-text">Study, studio work, and the next sheet in the set.</p>
+            </div>
+            <div class="ab-reg">
+              <p class="ab-reg-head"><span>No.</span><span>Record</span></p>
+              <ol>
+                {
+                  record.map((r) => (
+                    <li>
+                      <span class="ab-no">{r.no}</span>
+                      <span class="ab-org">{r.name}</span>
+                      <span class="ab-role">{r.role}</span>
+                      <span class:list={['ab-state', `is-${r.state.toLowerCase()}`]}>{r.state}</span>
+                    </li>
+                  ))
+                }
+              </ol>
+              <p class="ab-links">
+                <a class="ab-link" href={withBase(site.resume)} download>
+                  Résumé
+                  <Icon name="arrow-down" />
+                </a>
+              </p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 03 · the kit -->
+        <article class="ab-chap" id="ab-kit" role="tabpanel" data-about-chap="2">
+          <div class="ab-two">
+            <div>
+              <p class="ab-kick">03 · The kit</p>
+              <h3 class="ab-h">The tools I <span class="hl">think with</span></h3>
+              <div class="ab-reg">
+                <ol>
+                  {
+                    tools.map((t) => (
+                      <li class="is-short">
+                        <span class="ab-no">{t.no}</span>
+                        <span class="ab-org">{t.name}</span>
+                        <span class="ab-role">{t.use}</span>
+                      </li>
+                    ))
+                  }
+                </ol>
+              </div>
+            </div>
+            <div class="ab-shots">
+              {
+                shots.map((s, i) => (
+                  <figure class="ab-shot">
+                    <img src={withBase(s.src)} alt={s.alt} loading="lazy" decoding="async" />
+                    <figcaption>Fig. {i + 2} · Debrecen</figcaption>
+                  </figure>
+                ))
+              }
+              <p class="ab-shots-note">Shot on a Canon EOS 500D and an iPhone 15</p>
+            </div>
+          </div>
+        </article>
+
+        <!-- 04 · off the clock -->
+        <article class="ab-chap" id="ab-off" role="tabpanel" data-about-chap="3">
+          <div class="ab-two">
+            <div>
+              <p class="ab-kick">04 · Off the clock</p>
+              <h3 class="ab-h">What I do <span class="hl">off the clock</span></h3>
+              <p class="ab-text">Most of my projects start here.</p>
+              <p class="ab-links">
+                <a class="ab-link" href={`mailto:${site.email}`}>
+                  {site.email}
+                  <Icon name="arrow-up-right" />
+                </a>
+              </p>
+            </div>
+            <div class="ab-reg">
+              <p class="ab-reg-head"><span>No.</span><span>Interest</span></p>
+              <ol>
+                {
+                  interests.map((o) => (
+                    <li class="is-short">
+                      <span class="ab-no">{o.no}</span>
+                      <span class="ab-org">{o.name}</span>
+                      <span class="ab-role">{o.note}</span>
+                    </li>
+                  ))
+                }
+              </ol>
+            </div>
+          </div>
+        </article>
+        <!-- 05 · music: a room to play in (musicRoom.ts) -->
+        <article class="ab-chap ab-chap-room" id="ab-music" role="tabpanel" data-about-chap="4">
+          <div class="ab-room" data-room>
+            <canvas class="ab-room-canvas" data-room-canvas aria-label="A 3D room with a record player and a rack of records. Drag a record onto the player, or click one, to play it."></canvas>
+            <div class="ab-room-head">
+              <p class="ab-kick">05 · Music</p>
+              <h3 class="ab-h">What’s playing <span class="hl">while I draw</span></h3>
+              <p class="ab-room-tip"><span class="ab-tip-fine">Drag a record onto the player, or click one. Throw anything.</span><span class="ab-tip-touch">Tap a record to play it.</span></p>
+            </div>
+            <div class="ab-room-bar">
+              <span class="ab-eq" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="ab-room-now" data-room-now aria-live="polite">Pick a record</span>
+              <button type="button" class="ab-room-btn" data-room-toggle disabled>Play</button>
+              <button type="button" class="ab-room-btn" data-room-tidy>Tidy up</button>
+            </div>
+            <!-- a record with a Spotify link plays in Spotify's own (smallest) player, shown here while it's on -->
+            <div class="ab-room-sp" data-room-spotify hidden><div data-room-spotify-player></div></div>
+            <p class="ab-room-status" data-room-status>Setting up the room…</p>
+          </div>
+        </article>
+      </div>
+
+      <!-- what's next -->
+      <button type="button" class="ab-next" data-about-next>Next · {chapters[1].tab} →</button>
+    </div>
+    <div class="ab-dashes">{chapters.map((c, i) => <button type="button" class:list={{ 'is-on': i === 0 }} aria-label={c.tab} data-about-dash={i}></button>)}</div>
+  </div>
+</section>
+
+<style>
+  .ab {
+    position: relative;
+    padding: clamp(20px, 4vh, 48px) calc(var(--frame) + var(--gutter)) clamp(90px, 14vh, 160px);
+  }
+  .ab-head {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+    gap: 24px clamp(32px, 6vw, 96px);
+    align-items: end;
+    margin-bottom: clamp(32px, 6vh, 60px);
+  }
+  .ab-title {
+    margin: 0;
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(2rem, 4.4vw, 3.75rem);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .ab-note {
+    max-width: 40ch;
+    margin: 0;
+    color: var(--sand-2);
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+
+  /* ---------- the window: a slab with a tab strip and an address bar ---------- */
+  .ab-pin {
+    position: relative;
+    z-index: 1; /* the guiding line passes behind */
+  }
+  .ab-win {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: min(78vh, 740px);
+    border-radius: var(--radius-slab);
+    overflow: hidden;
+    background: var(--slate-2);
+    border-top: 1px solid var(--slate-edge);
+    box-shadow: var(--slab-shadow);
+  }
+  /* ---------- the browser: tab strip and toolbar ---------- */
+  /* the browser's own frame is dark in either theme, as a dark-mode browser is; the page stays the site's */
+  .ab-win {
+    --chrome-strip: #1b1c1f;
+    --chrome-bar: #2a2c30;
+    --chrome-ink: #eceae4;
+    --chrome-ink-2: rgb(236 234 228 / 0.66);
+    --chrome-ink-3: rgb(236 234 228 / 0.42);
+    --chrome-line: rgb(255 255 255 / 0.1);
+  }
+  .ab-tabs {
+    display: flex;
+    align-items: flex-end;
+    min-height: 44px;
+    padding: 8px 10px 0;
+    background: var(--chrome-strip);
+    overflow: hidden;
+  }
+  .ab-lights {
+    display: inline-flex;
+    flex: none;
+    gap: 8px;
+    align-self: center;
+    margin: -6px 18px 0 6px;
+  }
+  .ab-lights i {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #ff5f57;
+    box-shadow: inset 0 0 0 0.5px rgb(0 0 0 / 0.12);
+  }
+  .ab-lights i:nth-child(2) {
+    background: #febc2e;
+  }
+  .ab-lights i:nth-child(3) {
+    background: #28c840;
+  }
+  /* a tab: favicon, title, close; tabs shrink together as the strip fills, like a browser's */
+  .ab-tab {
+    position: relative;
+    display: flex;
+    flex: 0 1 196px;
+    align-items: center;
+    gap: 8px;
+    min-width: 58px;
+    height: 34px;
+    padding: 0 10px 0 12px;
+    border: 0;
+    border-radius: 9px 9px 0 0;
+    background: linear-gradient(var(--chrome-line), var(--chrome-line)) right 50% / 1px 16px no-repeat;
+    color: var(--chrome-ink-2);
+    font: inherit;
+    font-size: 0.75rem;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+  .ab-fav {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: var(--fav, transparent);
+    color: #fff;
+    font-size: 0.5625rem;
+    font-weight: 700;
+  }
+  /* the About tabs' own icons: line glyphs in the accent, one per chapter */
+  .ab-ico {
+    fill: none;
+    stroke: var(--accent-fill);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ab-tt {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    /* long titles fade out at the edge, as tab titles do */
+    -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 18px), transparent);
+    mask-image: linear-gradient(90deg, #000 calc(100% - 18px), transparent);
+  }
+  .ab-close {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    color: var(--chrome-ink-3);
+    font-size: 0.875rem;
+    line-height: 1;
+  }
+  /* a tab group, as browsers draw it: a coloured label, and a line under its tabs */
+  .ab-group {
+    flex: none;
+    align-self: center;
+    margin: -6px 4px 0 10px;
+    padding: 2px 8px;
+    border-radius: 5px;
+    background: var(--accent-fill);
+    color: var(--on-accent);
+    font-size: 0.6875rem;
+    font-weight: 600;
+  }
+  .ab-tab.is-grouped {
+    box-shadow: inset 0 -2px 0 var(--accent-fill);
+  }
+  @media (hover: hover) {
+    .ab-tab:not(.is-on):hover {
+      background-color: rgb(255 255 255 / 0.05);
+    }
+  }
+  /* the open tab is the toolbar's colour and flares into it at both bottom corners */
+  .ab-tab.is-on {
+    z-index: 1;
+    background: var(--chrome-bar);
+    color: var(--chrome-ink);
+    box-shadow: none;
+  }
+  .ab-tab.is-on::before,
+  .ab-tab.is-on::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+  }
+  .ab-tab.is-on::before {
+    left: -10px;
+    background: radial-gradient(circle at 0 0, transparent 9.5px, var(--chrome-bar) 10px);
+  }
+  .ab-tab.is-on::after {
+    right: -10px;
+    background: radial-gradient(circle at 100% 0, transparent 9.5px, var(--chrome-bar) 10px);
+  }
+  /* the tab before the open one loses its divider */
+  .ab-tab:has(+ .ab-tab.is-on) {
+    background-image: none;
+  }
+  .ab-tab:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: -3px;
+  }
+
+  .ab-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 10px 7px;
+    border-bottom: 1px solid rgb(0 0 0 / 0.35);
+    background: var(--chrome-bar);
+  }
+  .ab-btns {
+    display: inline-flex;
+    gap: 4px;
+  }
+  .ab-btns svg,
+  .ab-lock,
+  .ab-star {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: var(--chrome-ink-2);
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ab-btns svg {
+    box-sizing: content-box;
+    padding: 6px;
+  }
+  .ab-btns svg.is-off {
+    opacity: 0.35;
+  }
+  .ab-omni {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    height: 32px;
+    padding: 0 12px 0 14px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.28);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+  .ab-lock {
+    width: 13px;
+    height: 13px;
+    stroke: var(--chrome-ink-3);
+  }
+  .ab-addr {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .ab-host {
+    color: var(--chrome-ink);
+  }
+  .ab-path {
+    color: var(--chrome-ink-3);
+  }
+  .ab-star {
+    width: 15px;
+    height: 15px;
+    stroke: var(--chrome-ink-3);
+  }
+  .ab-me {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent-fill);
+    color: var(--on-accent);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .ab-menu {
+    display: grid;
+    gap: 3px;
+    padding: 4px 6px;
+  }
+  .ab-menu i {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--chrome-ink-2);
+  }
+  /* the page in the window: one chapter at a time, brought into focus as its tab opens */
+  .ab-view {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+  }
+  .ab-chap {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    align-content: center;
+    padding: clamp(24px, 3.4vw, 52px) clamp(24px, 4vw, 60px) 64px;
+    opacity: 0;
+    visibility: hidden;
+    filter: blur(6px);
+    transform: translateY(14px);
+    transition:
+      opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      filter 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s 0.45s;
+  }
+  .ab-chap.is-on {
+    opacity: 1;
+    visibility: visible;
+    filter: none;
+    transform: none;
+    transition-delay: 0.08s, 0.08s, 0.08s, 0s;
+  }
+
+  .ab-split {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+  }
+  .ab-two {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: clamp(28px, 5vw, 80px);
+    align-items: center;
+  }
+  .ab-kick,
+  .ab-tb dt,
+  .ab-reg-head {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .ab-kick {
+    margin-bottom: 14px;
+  }
+  .ab-h {
+    margin: 0;
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .ab-lead {
+    max-width: 30ch;
+    margin: 0;
+    font-stretch: 112%;
+    font-weight: 560;
+    font-size: clamp(1.25rem, 2vw, 1.7rem);
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+  }
+  .ab-text {
+    max-width: 58ch;
+    margin: 14px 0 0;
+    color: var(--sand-2);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+  }
+
+  /* 01 · the figure: a portrait on a patch of drafting grid */
+  .ab-fig {
+    position: relative;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 34px 26px 44px;
+    border: 1px solid var(--line-faint);
+    background:
+      linear-gradient(var(--line-faint) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(90deg, var(--line-faint) 1px, transparent 1px) 0 0 / 24px 24px,
+      rgb(var(--bg-rgb) / 0.35);
+  }
+  .ab-x {
+    position: absolute;
+    width: 11px;
+    height: 11px;
+    background:
+      linear-gradient(var(--sand-3), var(--sand-3)) 50% 0 / 1px 100% no-repeat,
+      linear-gradient(var(--sand-3), var(--sand-3)) 0 50% / 100% 1px no-repeat;
+  }
+  .ab-x-tl {
+    top: -6px;
+    left: -6px;
+  }
+  .ab-x-tr {
+    top: -6px;
+    right: -6px;
+  }
+  .ab-x-bl {
+    bottom: -6px;
+    left: -6px;
+  }
+  .ab-x-br {
+    bottom: -6px;
+    right: -6px;
+  }
+  .ab-frame {
+    display: block;
+    width: min(100%, 260px);
+    max-height: 44vh;
+    aspect-ratio: 4 / 5;
+    border: 1px solid var(--line);
+    background: var(--slate-2);
+  }
+  .ab-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  /* no photo yet: an empty frame, crossed corner to corner as on a drawing */
+  .ab-slot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding-top: 56px;
+    background:
+      linear-gradient(to top right, transparent calc(50% - 0.5px), rgb(var(--ink-rgb) / 0.1) 50%, transparent calc(50% + 0.5px)),
+      linear-gradient(to bottom right, transparent calc(50% - 0.5px), rgb(var(--ink-rgb) / 0.1) 50%, transparent calc(50% + 0.5px));
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .ab-plus {
+    position: absolute;
+    top: calc(50% - 11px);
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    margin-left: -11px;
+    background:
+      linear-gradient(var(--sand-3), var(--sand-3)) 50% 0 / 1px 100% no-repeat,
+      linear-gradient(var(--sand-3), var(--sand-3)) 0 50% / 100% 1px no-repeat;
+  }
+  .ab-cap {
+    position: absolute;
+    left: 14px;
+    bottom: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+
+  /* title block: cells, as on a drawing */
+  .ab-tb {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: clamp(20px, 3vh, 28px) 0 0;
+    border: 1px solid var(--line);
+  }
+  .ab-tb > div {
+    padding: 10px 14px 12px;
+  }
+  .ab-tb > div:nth-child(even) {
+    border-left: 1px solid var(--line);
+  }
+  .ab-tb > div:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+  .ab-tb dd {
+    margin: 6px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* registers: numbered rows, like the skills index */
+  .ab-reg-head {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .ab-reg ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ab-h + .ab-reg {
+    margin-top: 22px;
+  }
+  .ab-reg li {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto auto;
+    align-items: baseline;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-faint);
+  }
+  .ab-reg li.is-short {
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    padding: 11px 0;
+  }
+  .ab-no {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    color: var(--sand-3);
+  }
+  .ab-org {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(0.95rem, 1.3vw, 1.125rem);
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .ab-role {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+    text-align: right;
+  }
+  .ab-state {
+    min-width: 56px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-align: right;
+    text-transform: uppercase;
+    color: var(--sand-2);
+  }
+  .ab-state.is-now {
+    color: var(--accent);
+  }
+  /* dashed means not yet drawn, as on the skills index */
+  .ab-state.is-next {
+    justify-self: end;
+    min-width: 0;
+    padding-bottom: 2px;
+    border-bottom: 1px dashed var(--sand-3);
+    color: var(--sand-3);
+  }
+
+  /* 03 · the kit: two frames from the photography sheet */
+  .ab-shots {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .ab-shot {
+    margin: 0;
+  }
+  .ab-shot img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .ab-shot figcaption,
+  .ab-shots-note {
+    margin: 8px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .ab-shots-note {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--line-faint);
+  }
+
+  .ab-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 28px;
+    margin: 22px 0 0;
+  }
+  .ab-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--sand);
+    font-size: 0.9375rem;
+    text-decoration: none;
+    transition: color var(--dur-base) var(--ease-out);
+  }
+  .ab-link :global(.icon) {
+    color: var(--sand-3);
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .ab-link:hover {
+      color: var(--accent);
+    }
+    .ab-link:hover :global(.icon) {
+      color: var(--accent);
+      transform: translate(2px, -2px);
+    }
+  }
+
+  /* 05 · music: the room fills the page in the window; its title and controls sit over it */
+  .ab-chap-room {
+    padding: 0;
+    align-content: stretch;
+  }
+  .ab-room {
+    position: relative;
+    height: 100%;
+    min-height: 420px;
+    overflow: hidden;
+    background: #e9e3d8;
+    touch-action: pan-y; /* phones: a vertical swipe still scrolls; a tap plays */
+  }
+  .ab-room-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
+  }
+  .ab-room:global(.is-ready) .ab-room-canvas {
+    opacity: 1;
+  }
+  .ab-room:global(.is-over) .ab-room-canvas {
+    cursor: grab;
+  }
+  .ab-room:global(.is-grabbing) .ab-room-canvas {
+    cursor: grabbing;
+  }
+  /* the room is its own warm, light place in either theme, so its type is set dark */
+  .ab-room-head {
+    position: absolute;
+    top: clamp(14px, 2vw, 24px);
+    left: clamp(14px, 2vw, 24px);
+    max-width: 31ch;
+    padding: 14px 18px 16px;
+    border: 1px solid rgb(20 23 26 / 0.1);
+    border-radius: 12px;
+    background: rgb(244 240 232 / 0.84);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    pointer-events: none;
+    color: #14171a;
+  }
+  .ab-room-head .ab-kick {
+    margin-bottom: 8px;
+  }
+  .ab-room-head .ab-kick {
+    color: rgb(20 23 26 / 0.55);
+  }
+  .ab-room-head .ab-h {
+    font-size: clamp(1.05rem, 1.7vw, 1.45rem);
+  }
+  .ab-room-head .hl {
+    color: #2f6f8a;
+  }
+  .ab-room-tip {
+    margin: 10px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(20 23 26 / 0.55);
+  }
+  .ab-tip-touch {
+    display: none;
+  }
+  @media (pointer: coarse) {
+    .ab-tip-fine {
+      display: none;
+    }
+    .ab-tip-touch {
+      display: inline;
+    }
+  }
+  .ab-room-bar {
+    position: absolute;
+    left: clamp(20px, 3vw, 40px);
+    bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 6px 6px 14px;
+    border: 1px solid rgb(20 23 26 / 0.12);
+    border-radius: 999px;
+    background: rgb(244 240 232 / 0.86);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: #14171a;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .ab-room-now {
+    min-width: 13ch;
+  }
+  .ab-room-btn {
+    padding: 6px 12px;
+    border: 1px solid rgb(20 23 26 / 0.18);
+    border-radius: 999px;
+    background: none;
+    color: #14171a;
+    font: inherit;
+    cursor: pointer;
+    transition:
+      background-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
+  }
+  .ab-room-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  @media (hover: hover) {
+    .ab-room-btn:not(:disabled):hover {
+      background: #14171a;
+      color: #f4f0e8;
+    }
+  }
+  /* Spotify's smallest player (80 px), top right of the room */
+  .ab-room-sp {
+    position: absolute;
+    top: clamp(12px, 1.6vw, 20px);
+    right: clamp(12px, 1.6vw, 20px);
+    width: min(260px, calc(100% - 24px));
+    height: 80px;
+    overflow: hidden;
+    border-radius: 12px;
+    box-shadow: 0 10px 24px -12px rgb(0 0 0 / 0.5);
+  }
+  .ab-room-sp[hidden] {
+    display: none;
+  }
+  .ab-room-sp :global(iframe) {
+    display: block;
+    width: 100%;
+    height: 80px;
+    border: 0;
+  }
+  .ab-room-status {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: rgb(20 23 26 / 0.5);
+    pointer-events: none;
+  }
+  /* the level meter moves only while a record plays */
+  .ab-eq {
+    display: inline-flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 12px;
+  }
+  .ab-eq i {
+    width: 2px;
+    height: 100%;
+    background: #2f6f8a;
+    transform: scaleY(0.3);
+    transform-origin: bottom;
+  }
+  .ab-room:global(.is-playing) .ab-eq i {
+    animation: ab-eq 0.9s ease-in-out infinite alternate;
+  }
+  .ab-eq i:nth-child(2) {
+    animation-delay: -0.3s;
+  }
+  .ab-eq i:nth-child(3) {
+    animation-delay: -0.6s;
+  }
+  @keyframes ab-eq {
+    from {
+      transform: scaleY(0.25);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ab-room:global(.is-playing) .ab-eq i {
+      animation: none;
+      transform: scaleY(0.7);
+    }
+  }
+  .ab:global(.is-flat) .ab-room {
+    height: 520px;
+  }
+
+  /* what's next, and how far through */
+  .ab-next {
+    position: absolute;
+    right: 18px;
+    bottom: 16px;
+    margin: 0;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--slate-2);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-2);
+    cursor: pointer;
+    transition:
+      color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .ab-next:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+  }
+  .ab-dashes {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 14px;
+  }
+  /* each dash is a way in: a 24 × 2 mark on a taller hit area */
+  .ab-dashes button {
+    width: 24px;
+    height: 14px;
+    padding: 0;
+    border: 0;
+    background: linear-gradient(rgb(var(--ink-rgb) / 0.16), rgb(var(--ink-rgb) / 0.16)) center / 100% 2px no-repeat;
+    cursor: pointer;
+  }
+  .ab-dashes button.is-on {
+    background-image: linear-gradient(var(--accent), var(--accent));
+  }
+
+  /* phones and reduced motion: every chapter in a column inside the window */
+  .ab:global(.is-flat) .ab-win {
+    height: auto;
+  }
+  .ab:global(.is-flat) .ab-chap {
+    position: relative;
+    inset: auto;
+    opacity: 1;
+    visibility: visible;
+    filter: none;
+    transform: none;
+    padding-bottom: clamp(32px, 6vw, 56px);
+    border-bottom: 1px solid var(--line-faint);
+  }
+  .ab:global(.is-flat) .ab-next,
+  .ab:global(.is-flat) .ab-dashes {
+    display: none;
+  }
+
+  @media (max-width: 860px) {
+    .ab-head,
+    .ab-split,
+    .ab-two {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .ab-group {
+      display: none;
+    }
+    .ab-frame {
+      width: min(100%, 220px);
+    }
+  }
+  @media (max-width: 600px) {
+    .ab-reg li,
+    .ab-reg li.is-short {
+      grid-template-columns: 44px minmax(0, 1fr) auto;
+      gap: 4px 12px;
+    }
+    .ab-reg-head {
+      grid-template-columns: 44px 1fr;
+    }
+    .ab-reg li .ab-role {
+      grid-column: 2;
+      grid-row: 2;
+      text-align: left;
+    }
+    .ab-state {
+      grid-column: 3;
+      grid-row: 1;
+    }
+    .ab-btns svg:nth-child(2),
+    .ab-star,
+    .ab-menu {
+      display: none;
+    }
+  }
+</style>

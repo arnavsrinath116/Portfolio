@@ -29,7 +29,7 @@ const summary = skill.summary.split(/\*([^*]+)\*/);
 <article class="sk" data-project={key} aria-labelledby={`${key}-title`} hidden data-sk>
   <header class="sk-head" data-pc-rise data-wire-host>
     <div class="sk-intro">
-      <h2 class="sk-title" id={`${key}-title`}>{skill.name}</h2>
+      <h2 class="sk-title" id={`${key}-title`} data-words="open">{skill.name}</h2>
       <p class="sk-summary">{summary.map((part, i) => (i % 2 ? <span class="hl">{part}</span> : part))}</p>
     </div>
     <div class="sk-view" aria-hidden="true">

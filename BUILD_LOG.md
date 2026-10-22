@@ -7,11 +7,11 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 | | |
 |---|---|
-| **Time spent** | **~19 h 50 min** of active build time over 9 days (2026-10-12 → 2026-10-21), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
-| **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-21 09:36 UTC): **21%** of the current 5-hour limit and **20%** of this week's limit |
-| **Tokens** | About **1.84 M** tokens written by Claude, and about **1.17 B** tokens of context re-read from the prompt cache, across about 230 messages from you |
-| **Commits** | 33 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
-| **Site size** | About **31 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), code 1.4 MB, 3D models 1.3 MB |
+| **Time spent** | **~22 h 40 min** of active build time over 11 days (2026-10-12 → 2026-10-22), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
+| **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-22 15:20 UTC): **65%** of the current 5-hour limit and **43%** of this week's limit |
+| **Tokens** | About **2.17 M** tokens written by Claude, and about **1.39 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
+| **Commits** | 34 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
 
@@ -22,6 +22,125 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Commits** | 3 (`ad09e6f`, `0405d8d`, `cc7234b`) plus this update |
 
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
+
+---
+
+## 2026-10-22 · Portrait in About; the footer says "Let's get in touch"
+- About → About me now shows Arnav's photo (`public/about/arnav.webp`). It was turned 1.5° clockwise to level it (measured off the column and mural edges), then cropped in about 1.25× to the frame's 4:5, at 960×1200 and 149 KB.
+- Footer heading changed from "If you've scrolled this far, we should probably talk." to "Let's get in touch.", with "touch." keeping the blue highlight.
+
+## 2026-10-22 · About scrolls freely; only real tabs
+
+- **No more pinning:** the About window scrolls past like any section and opens on **About me**. The other chapters are there to choose, never forced.
+  - Clicking a tab turns the window to that chapter in place, with no scroll.
+  - The "Next · … →" pill is now a button that steps to the next tab and wraps back to About me.
+  - The progress dashes are clickable too, and the arrow keys move between tabs.
+  - Phones still stack the chapters, with tabs that jump to them. (`about.ts` no longer uses ScrollTrigger or Lenis.)
+- **Only clickable tabs:** removed the three decorative "work" tabs (Jet V1, Nexo, Aston) and the + new-tab button. The strip is now the window buttons, the Arnav group label and the five chapter tabs.
+
+---
+
+## 2026-10-22 · The Music room, rebuilt in Blender at sunset
+
+After a reference photo: a record player on an oak table under a big sash window, records leaning on the wall, a full record shelf, a trailing plant. Now at sunset.
+
+- **Modelled and baked in Blender (`tools/room/build_room.py`, Blender 5.2, run headless):**
+  - **The room:** plaster walls, an oak strip floor and a double sash window (3 × 2 top panes, two lower) with a deep sill.
+  - **On the table:** a walnut-on-black record player body, records leaning on the wall, a flat pile and a stack of books.
+  - **On the wall:** a "SIDE A" drawing-sheet poster and two framed photos.
+  - **The shelf:** a walnut bookcase of record spines, a brass lamp, and a plant whose vines trail down the side.
+  - **Light:** a low warm sun aimed so the window's panes fall across the tabletop and floor, soft window light, a warm lamp and a dim dusk sky. Baked with Cycles on the Metal GPU into five textures (about 2 min). Static objects are merged into five meshes and exported as a Draco GLB with JPEG bakes, at `public/room/room.glb`, 1.0 MB.
+  - **Textures (`tools/room/make_textures.py`, all original, painted in Python):** a sunset sky with tree silhouettes, a neighbour's house and the sun (an emissive card behind the window that doesn't block the sun); wood, plaster, record spines, books, the five album covers, the label, the poster and photos.
+- **In the browser (`musicRoom.ts`):** the GLB loads (three.js GLTFLoader with Draco) when the Music tab first opens. The baked surfaces show unlit and un-tonemapped, exactly as baked.
+  - **Live parts:** the platter, record, tonearm and a smoked, hinged-open dust cover sit on the baked plinth. The five playable records are on two wall ledges left of the window. A ball sits on the table, and blocks and an oak offcut on the floor.
+  - **Lighting the live parts:** a warm sun matching the bake's direction, a hemisphere fill and the lamp. Their shadows fall on invisible shadow catchers over the floor and table.
+  - **Physics:** colliders follow the table, legs, record player, piles, sill, shelf and ledges, and the window acts as glazed.
+- **Unchanged:** drag a record onto the player (the ring lights), click to play, throw things, tidy up, tap to play on phones.
+- **Camera:** the preview's viewpoint, keeping a 62° horizontal view. Wide frames fit the room; phones crop the sides so the table stays large. The title now sits on a frosted panel so it reads over the scene.
+- **Not in git:** the bake intermediates and `.blend` (regenerated by the script).
+- **Fixes after the first look (same day):**
+  - **Physics feel:** the camera now sits higher and tips down, so there's open floor in front of the table. Carried things move on a plane facing the camera, so they follow the pointer one to one (a level plane seen edge-on had thrown them around). They're held with a firmer grip and damped against spinning.
+  - **Toy blocks removed,** then the ball too. The camera moved in close (from (0.1, 1.55, 1.8), looking at (0.1, 1.12, −1.5), 66° wide) so the table, window, record ledges and shelf fill the frame, with no empty floor. Phones keep the wider view so the records stay in reach.
+  - **Tonearm:** it swung out to the right, away from the record. It now rests pointing to the front (0.05 rad) and swings left onto the record (−0.56 rad), so the needle lands 0.12 m from the spindle, in the grooves.
+  - **Records play through Spotify** (YouTube was tried first and dropped: its video started playing in the room, which felt odd).
+    - A record carries `spotify: '<open.spotify.com/track link>'`. Putting it on loads Spotify's Embed iFrame API (once, on first use) and plays the track in Spotify's smallest player: 80 px tall, 260 px wide, top right, with no extra frame (the player itself links to Spotify).
+    - Pause/Play and swapping drive the same player (`loadUri`/`pause`/`resume`).
+    - Visitors signed in to Spotify in that browser hear the whole song; everyone else gets Spotify's 30-second preview.
+    - Tracks: *Sailor Song* (Gigi Perez, the 2024 single), *Experience – Reimagined* (Ludovico Einaudi, *In A Time Lapse (Reimagined)*, 2024), *The Winner Is* (DeVotchKa & Mychael Danna, *Little Miss Sunshine*) and *Purpose Is Glorious* (Natalie Holt, *Loki* S2). Each was confirmed through Spotify's oEmbed.
+  - **Window joints:** the frame, mullion, rails and bars now butt together at different depths. Overlapping coplanar boxes had flickered and baked dark speckles at every joint.
+  - **A right wall** closes the room for the higher view.
+  - **No impossible shadows:** the wall ledges, resting records and the record player's live parts no longer cast shadows (the sun can't reach the ledges, and the baked table can't stop the platter's shadow reaching the floor). Records cast shadows once they're picked up.
+
+---
+
+## 2026-10-22 · The Music tab is a room you can play in
+
+- **The room (`musicRoom.ts`, three.js + cannon-es):** the About window's fifth tab is now a small modern 3D room, seen from its open corner.
+  - **Furniture:** warm walls, a light floor and a sand-blue rug. A walnut sideboard holds a new turntable (oak plinth, aluminium platter, a tonearm that swings in) between two speakers.
+  - **Decoration:** a drawing-sheet poster ("A-000 · SIDE A") and a plant.
+  - **The catalogue:** five sleeves on three ledges on the left wall, each with art drawn in the browser.
+- **Play:**
+  - **Click a sleeve,** or **drag one onto the record player**. While a record is carried over the player it hovers above the platter and a sand-blue ring lights. The sleeve flies to a stand beside the player, the vinyl drops on and spins at 33⅓, the arm swings over and it plays. The previous sleeve goes back to its slot.
+  - **Physics:** the ball, two blocks, a plank and any sleeve can be grabbed and thrown; they bounce off the walls and furniture. A record is carried at a level height so it follows the pointer across the room.
+  - **The bar:** "Now playing", Pause/Play, and **Tidy up**, which flies everything home.
+  - **Phones:** tap to play (no dragging, so the page still scrolls), with the hint swapped to say so.
+- **The music:** each record is an original loop generated live with Web Audio (pads, bass, soft drums, the odd melody note and vinyl crackle through a low-pass), so there are no audio files and no licences. Each record has a `src` slot for an audio file Arnav owns. The music stops when the About section leaves the screen.
+- **Cost:** three.js and cannon-es (≈120 KB) load only when the Music tab first opens. The room renders only while its tab is open and on screen. The pixel ratio is capped at 2, with soft shadows at 2048 px. The about script announces the open chapter (`about:chapter`).
+- **Skills installed** for this work (from github.com/freshtechbro/claudedesignskills, single SKILL.md files, read before installing): `web3d-integration-patterns`, `threejs-webgl` and `react-three-fiber`, in `~/.claude/skills/`.
+- **PLACEHOLDERS:** the five record titles ("Loop 01–05").
+
+---
+
+## 2026-10-22 · About: the browser window, in this site's own style
+
+Placed between Skills and Contact, with an About tab in the header.
+
+- **How it got here:**
+  1. A close copy of the Samay reference (a dark browser, handwritten asides, polaroids, a record): rejected as too copied.
+  2. A plain slab: rejected for losing the browser idea.
+  3. **Now:** Samay's **browser-window mechanism** (tabs turned over by the scroll, an address bar, "next" pill, progress dashes), drawn entirely in this site's language. No handwriting; the Caveat font is removed.
+- **Real browser chrome (later the same day):** the window now looks and behaves like an actual browser. The contents are unchanged. (A bookmarks bar was tried and removed.)
+  - **Dark frame:** the tab strip and toolbar are dark in both themes, like a dark-mode browser (`--chrome-*` tokens on the window). The page inside stays the site's own colours.
+  - **Traffic lights,** then tabs shaped like a browser's: a favicon, a title that fades at the edge, and a ×. Tabs shrink together as the strip fills; on phones they shrink to their favicons.
+  - **Open tabs:** the three "work" tabs carry app-coloured favicons. The four About tabs sit in an **Arnav** tab group, with a group line under them, and each has its own accent line icon: a person (About me), a briefcase (Work log), a drafting compass (The kit) and a plane (Off the clock). They replace the site favicon that was on every tab.
+  - **The open tab** is the toolbar's colour and flares into it at both bottom corners. There's a + new-tab button.
+  - **Toolbar:** back, forward (greyed) and reload buttons, and an address pill with a lock, `arnavsrinath.com/about` (the path follows the chapter) and a bookmark star. Then a profile avatar and a ⋮ menu.
+- **The window (first version of this chrome):** a slab whose tab strip sits on a pale band with a hairline under it.
+  - Three drafted circles for the window buttons, then three open "work" tabs in faded mono (Jet V1 · Fusion 360, Nexo · Figma, Aston · Blender) and an accent **ARNAV** group label.
+  - The four numbered chapter tabs follow. The open one joins the page and carries an accent rule.
+  - The address bar is a hairline pill (`arnavsrinath / about`) with a `01 / 04` counter.
+- **Scroll (`about.ts`):** the window pins in the middle of the screen, and each chapter gets about 70% of a screen of scroll. Chapters turn over with the same blur-to-focus as the headings.
+  - The tab, address, counter, dashes and a mono "Next · Work log ↓" pill all follow.
+  - Clicking a tab glides to its chapter.
+- **The chapters, built from the site's own parts:**
+  1. **About me:** a portrait on drafting grid with registration crosses and a "Fig. 1" label (an empty, crossed frame until `public/about/arnav.webp` exists). Beside it, a lead line with accent words, the bio, and a mono title block.
+  2. **Work log:** a numbered register (R-01…). NOW is in the accent, NEXT is dashed. Plus a Résumé link.
+  3. **The kit:** a tools register (T-01…) beside two Debrecen frames with Fig. captions.
+  4. **Off the clock:** an interests register (O-01…) and the email.
+  5. **Music** (added later the same day, with a headphones icon): *what's playing while I draw*. An "On repeat" register (M-01…) whose first row is in the accent with a small three-bar level meter (still under reduced motion). The pin's length grows with the number of chapters.
+- **Phones and reduced motion:** no pin. The chapters stack inside the window, and the tabs jump to them.
+- **Header:** the four tabs close up a little below 420 px. Below 380 px, Contact gives up its room so the theme switch fits.
+- **Guide line:** it runs behind the window on its way to Contact.
+- **PLACEHOLDERS:** the photo, FLAME University (guessed from the git email), the register rows and the city.
+
+---
+
+## 2026-10-22 · Headings come into focus, a heavier scroll
+
+From the Samay Maurya reference ([notes](references/motion/samay.md)).
+
+- **Blur-to-focus headings (`wordReveal.ts`):** headings come in a word at a time. Each word starts faint (opacity 0.14), blurred (6 px) and a little low, then sharpens into place.
+  - **On the page** (Selected Work, Skills, the footer line), it's tied to the scroll: the reveal runs as the heading rises from the bottom of the screen to just above the middle, and scrolling back reverses it. The range is clamped, so the footer line still finishes at the very end of the page.
+  - **At the top of All projects,** it plays once on load.
+  - **Card titles** (skill and project cards) play in each time the card opens.
+  - A heading's accent block (WORK, PROJECTS, talk.) now wipes in as its words land, instead of earlier on its own.
+  - **On the page the block follows the scroll too:** it fills left to right over the last stretch of the reveal (a `--hl` 0 → 1 scale), empties again as you scroll back up, and refills on the way down. Its word flips to the on-accent colour once the block is half across.
+  - Words are wrapped in spans that keep the existing highlight spans, so the dimension that measures the Selected Work lettering still reads true. The hero name keeps its own intro.
+  - Off under reduced motion.
+- **Heavier smooth scroll:** Lenis `lerp` 0.11 → 0.08 and `wheelMultiplier` 0.85. Each wheel tick travels a little less and settles a little longer, so the page glides more calmly.
+- **Also noted:** both sites already share the same main easing curve, `cubic-bezier(.22, 1, .36, 1)`.
+- **Removed:** the "Three on the wall. The rest are in the drawers." line under Selected Work.
+- **Fixed:** the paper grain's URL now carries the site's base path in dev too, through a `--grain` variable set on `<html>`.
 
 ---
 

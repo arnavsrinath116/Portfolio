@@ -83,6 +83,7 @@ export function initGuide({ reduce }: { reduce: boolean }) {
   const ux = document.querySelector<HTMLElement>('[data-slot="b"]');
   const hmi = document.querySelector<HTMLElement>('[data-slot="c"]');
   const skills = document.querySelector<HTMLElement>('[data-skills]');
+  const about = document.querySelector<HTMLElement>('[data-about-slab]');
   const contact = document.querySelector<HTMLElement>('[data-contact]');
   if (!flow || !svg || !head || !product || !ux || !hmi || !contact) return;
 
@@ -119,6 +120,7 @@ export function initGuide({ reduce }: { reduce: boolean }) {
     const hm = rel(hmi);
     const c = rel(contact);
     const sk = skills ? rel(skills) : null;
+    const ab = about ? rel(about) : null;
     const margin = Math.max(14, hd.l * 0.45);
 
     const pts: P[] = [
@@ -131,7 +133,13 @@ export function initGuide({ reduce }: { reduce: boolean }) {
         ? [
             { x: margin, y: (Math.max(pr.b, hm.b) + sk.t) / 2 }, // across the gap, left margin
             { x: sk.l + sk.w * 0.58, y: sk.t + sk.h * 0.45 }, // behind the skill tiles
-            { x: W - margin, y: (sk.b + c.t) / 2 }, // out in the right margin
+            ...(ab
+              ? [
+                  { x: W - margin, y: (sk.b + ab.t) / 2 }, // out in the right margin
+                  { x: ab.l + ab.w * 0.42, y: ab.t + ab.h * 0.5 }, // behind the About slab
+                  { x: margin, y: (ab.b + c.t) / 2 }, // back out, left margin
+                ]
+              : [{ x: W - margin, y: (sk.b + c.t) / 2 }]), // out in the right margin
           ]
         : [{ x: margin, y: (Math.max(pr.b, hm.b) + c.t) / 2 }]),
       { x: c.l + c.w * 0.6, y: c.t }, // plugs into the contact slab

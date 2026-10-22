@@ -7,3 +7,7 @@
 .env.*
 dist/
 node_modules/
+# the room's bake intermediates (tools/room/build_room.py regenerates them)
+tools/room/baked/
+tools/room/*.blend
+tools/room/*.blend1
