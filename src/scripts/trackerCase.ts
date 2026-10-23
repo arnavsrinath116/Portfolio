@@ -367,6 +367,36 @@ export function initTrackerCase({ reduce }: { reduce: boolean }) {
         ST(article.querySelector('.tk-hero')!, { start: 'top -35%', end: () => `+=${sc.scrollHeight}`, toggleClass: { targets: rail, className: 'is-on' } }),
       );
 
+    // it rests folded to its LEDs, and opens with every chapter's name while a chapter's
+    // header is on screen; past the header, it folds again
+    const panel = rail?.querySelector<HTMLElement>('.tk-rail');
+    if (panel) {
+      // the pill beside the rail carries the current name, lined up with its row
+      const now = panel.querySelector<HTMLElement>('[data-rail-now]');
+      const sync = () => {
+        const a = panel.querySelector<HTMLElement>('a.is-active');
+        if (!a || !now) return;
+        now.textContent = a.querySelector('.tk-rail-tag b')?.textContent ?? '';
+        panel.style.setProperty('--now-y', `${a.offsetTop + a.offsetHeight / 2}px`);
+      };
+      sync();
+      new MutationObserver(sync).observe(panel, { subtree: true, attributes: true, attributeFilter: ['class'] });
+      const open = new Set<number>();
+      article.querySelectorAll<HTMLElement>('.tk-chead').forEach((h, i) =>
+        ScrollTrigger.create(
+          ST(h, {
+            start: 'top 85%',
+            end: 'bottom 15%',
+            onToggle: (self) => {
+              if (self.isActive) open.add(i);
+              else open.delete(i);
+              panel.classList.toggle('is-open', open.size > 0);
+            },
+          }),
+        ),
+      );
+    }
+
     if (reduce) return;
 
     article.querySelectorAll<HTMLElement>('[data-a]').forEach((el) => {

@@ -210,7 +210,7 @@ export const skills: Skill[] = [
           screens: [
             { src: '/skills/ui-design/cooked-onboarding.webp', alt: 'Cooked onboarding: “Expert Chefs with 5 star reviews” over a chef plating a dish' },
             { src: '/skills/ui-design/cooked-home.webp', alt: 'Cooked home: a search bar, Find Chefs and Search Dishes, and recent meals to repeat' },
-            { src: '/skills/ui-design/cooked-cuisine.webp', alt: 'Cooked chef sign-up, step 3 of 5: select the cuisines you specialise in' },
+            { src: '/skills/ui-design/cooked-customise.webp', alt: 'Cooked customise dish: spice level from mild to extra hot, and the cooking oil' },
           ],
         },
       },

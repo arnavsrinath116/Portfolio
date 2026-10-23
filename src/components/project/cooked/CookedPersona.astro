@@ -1,0 +1,476 @@
+---
+import { withBase } from '../../../lib/url';
+
+/**
+ * The full persona from the FigJam board, under the persona card: who she is
+ * and the key insight stay in view; the long lists (goals, motivations, pain
+ * points, behaviours) sit behind tabs, so the chapter doesn't grow by a page.
+ */
+const facts = [
+  ['32', 'M6 20h12M7 20v-7h10v7M9 13V9M12 13V8M15 13V9M9 6.5v.01M12 5.5v.01M15 6.5v.01'],
+  ['Mumbai', 'M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z'],
+  ['Marketing executive', 'M4 8h16v11H4zM9 8V5.5h6V8M4 13h16'],
+  ['No full-time cook', 'M7 13.5a3.5 3.5 0 0 1-.4-7 4.5 4.5 0 0 1 8.8-.9 3.5 3.5 0 0 1 2 6.9V19H7zM7 16h10'],
+  ['Busy schedule', 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2'],
+  ['Husband + 1 child', 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z'],
+];
+
+const parts = [
+  {
+    key: 'goals',
+    label: 'Goals',
+    groups: [
+      {
+        h: 'Personal goals',
+        items: [
+          'Ensure the family eats safe, hygienic, home-like food',
+          'Keep a sense of care and responsibility despite a busy schedule',
+          'Balance work life and family nourishment without burning out',
+          'Provide consistent, culturally familiar meals for the household',
+        ],
+      },
+      {
+        h: 'Food goals',
+        items: [
+          'Depend less on unhealthy takeout',
+          'Save time and mental effort around meals',
+          'Find reliable food that feels like home cooking',
+          'Build a trusted circle of cooks and services',
+          'Cut decision fatigue around “what to order today”',
+          'Get predictable quality and taste every time',
+        ],
+      },
+    ],
+  },
+  {
+    key: 'motivations',
+    label: 'Motivations',
+    groups: [
+      {
+        items: [
+          'Authentic ghar ka khana at home, without too much time and energy',
+          'A desire to eat clean and fresh',
+          'Convenience without compromise',
+          'Food as an expression of love, care and responsibility',
+          'Staying in control of what the family eats',
+          'Avoiding health risks and long-term guilt',
+          'A sense of routine and stability through meals',
+        ],
+      },
+    ],
+  },
+  {
+    key: 'pains',
+    label: 'Pain points',
+    groups: [
+      {
+        items: [
+          'Outside food is often too oily or unhealthy',
+          'Decision fatigue while ordering',
+          'No personalisation in food apps',
+          'No time or energy to cook daily',
+          'No transparency in ingredients and preparation',
+          'No control over oil, spice levels or hygiene',
+          'Inconsistent quality across orders',
+          'Guilt about relying on outside food for the family',
+          'Limited trust in cloud kitchens and restaurants',
+        ],
+      },
+    ],
+  },
+  {
+    key: 'behaviours',
+    label: 'Behaviours',
+    groups: [
+      {
+        items: [
+          'Orders food 3–5 times a week',
+          'Rotates between a small set of trusted vendors',
+          'Cooks occasionally, when time allows',
+          'Overthinks food decisions because of health concerns',
+          'Prefers familiar dishes over experimenting',
+        ],
+      },
+    ],
+    brands: ['Swiggy', 'Zomato', 'Dunzo', 'Box8'],
+  },
+];
+---
+
+<div class="pf" data-pf>
+  <div class="pf-who" data-a="up">
+    <p class="pf-kicker">The full persona</p>
+    <div class="pf-head">
+      <img class="pf-photo" src={withBase('/projects/cooked/persona-ananya.webp')} alt="Ananya, the persona: a woman in her early thirties in a cream sweater, at home in the evening" width="480" height="480" loading="lazy" />
+      <h4 class="pf-name">Ananya Mehta <span>The home manager</span></h4>
+    </div>
+    <ul class="pf-facts">
+      {
+        facts.map(([t, d]) => (
+          <li>
+            <span class="pf-ico">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d={d} />
+              </svg>
+            </span>
+            {t}
+          </li>
+        ))
+      }
+    </ul>
+    <p class="pf-bio">
+      Ananya is a working professional with long, unpredictable days. She values good food but doesn’t always have the time or energy to cook. She often orders in, but feels let down by unhealthy, repetitive or impersonal meals. She misses the comfort of ghar ka khana, and also enjoys trying new cuisines now and then.
+    </p>
+    <blockquote class="pf-insight">
+      <p class="pf-insight-k">Key insight</p>
+      <p>“Daily I just want simple, trustworthy home food, but sometimes I feel like eating something different, without the hassle of cooking or worrying about how it’s made.”</p>
+    </blockquote>
+  </div>
+
+  <div class="pf-more" data-a="up">
+    <div class="pf-tabs" role="tablist" aria-label="Ananya’s goals, motivations, pain points and behaviours" data-pf-tabs>
+      <span class="pf-tabs-pill" aria-hidden="true"></span>
+      {
+        parts.map((p, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`pf-tab-${p.key}`}
+            aria-controls={`pf-panel-${p.key}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            class:list={['pf-tab', { 'is-on': i === 0 }]}
+            data-pf-tab
+          >
+            {p.label}
+          </button>
+        ))
+      }
+    </div>
+    {
+      parts.map((p, i) => (
+        <section class="pf-panel" role="tabpanel" id={`pf-panel-${p.key}`} aria-labelledby={`pf-tab-${p.key}`} hidden={i !== 0} data-pf-panel>
+          {p.groups.map((g) => (
+            <div class="pf-group">
+              {g.h && <p class="pf-group-h">{g.h}</p>}
+              <ul class:list={['pf-list', { 'is-long': g.items.length > 7 }]}>
+                {g.items.map((t, k) => (
+                  <li style={`--i:${k}`}>{t}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          {p.brands && (
+            <div class="pf-group">
+              <p class="pf-group-h">Apps she uses today</p>
+              <ul class="pf-brands">
+                {p.brands.map((b, k) => (
+                  <li style={`--i:${k}`}>{b}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  // tabs: the ink pill slides to the open list; arrow keys move between them
+  document.querySelectorAll<HTMLElement>('[data-pf]').forEach((pf) => {
+    const bar = pf.querySelector<HTMLElement>('[data-pf-tabs]')!;
+    const tabs = Array.from(pf.querySelectorAll<HTMLButtonElement>('[data-pf-tab]'));
+    const panels = Array.from(pf.querySelectorAll<HTMLElement>('[data-pf-panel]'));
+    let cur = 0;
+    const place = () => {
+      const t = tabs[cur];
+      bar.style.setProperty('--pw', `${t.offsetWidth}px`);
+      bar.style.setProperty('--ph', `${t.offsetHeight}px`);
+      bar.style.setProperty('--px', `${t.offsetLeft}px`);
+      bar.style.setProperty('--py', `${t.offsetTop}px`);
+      // the first real placement lands in place; only later moves slide
+      if (!bar.dataset.set && t.offsetWidth) requestAnimationFrame(() => (bar.dataset.set = ''));
+    };
+    const open = (i: number) => {
+      if (i === cur) return;
+      cur = i;
+      tabs.forEach((t, k) => {
+        t.classList.toggle('is-on', k === i);
+        t.setAttribute('aria-selected', String(k === i));
+        t.tabIndex = k === i ? 0 : -1;
+      });
+      panels.forEach((p, k) => (p.hidden = k !== i));
+      place();
+    };
+    tabs.forEach((t, i) => t.addEventListener('click', () => open(i)));
+    bar.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      e.preventDefault();
+      const i = (cur + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length;
+      open(i);
+      tabs[i].focus();
+    });
+    new ResizeObserver(place).observe(bar);
+  });
+</script>
+
+<style>
+  .pf {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(16px, 2vw, 28px);
+    align-items: start;
+  }
+  .pf-who,
+  .pf-more {
+    padding: clamp(22px, 3vw, 40px);
+    border-radius: 28px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+
+  /* who she is */
+  .pf-kicker {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ck-green);
+  }
+  .pf-head {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 16px;
+  }
+  .pf-photo {
+    flex: none;
+    width: clamp(76px, 7vw, 96px);
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow:
+      0 0 0 4px #fff,
+      0 0 0 5px var(--ck-rule),
+      0 14px 28px -16px rgb(20 23 26 / 0.5);
+  }
+  .pf-name {
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+    font-weight: 900;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  .pf-name span {
+    display: block;
+    margin-top: 6px;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--ck-green);
+  }
+  .pf-facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+    margin-top: 24px;
+  }
+  .pf-facts li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .pf-ico {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--ck-green-soft);
+  }
+  .pf-ico svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: var(--ck-green);
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .pf-bio {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--ck-rule);
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--ck-ink-2);
+  }
+  .pf-insight {
+    margin: 22px 0 0;
+    padding: 18px 20px;
+    border-radius: 16px;
+    background: var(--ck-turmeric-tint);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.45;
+  }
+  .pf-insight-k {
+    margin-bottom: 6px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ck-turmeric-deep);
+  }
+
+  /* the lists, behind tabs */
+  .pf-tabs {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    width: fit-content;
+    max-width: 100%;
+    padding: 5px;
+    border-radius: 26px;
+    background: var(--ck-bg);
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .pf-tabs-pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--pw, 0px);
+    height: var(--ph, 0px);
+    border-radius: 99px;
+    background: var(--ck-ink);
+    transform: translate(var(--px, 0px), var(--py, 0px));
+  }
+  .pf-tabs[data-set] .pf-tabs-pill {
+    transition:
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .pf-tab {
+    position: relative;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 99px;
+    background: none;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    color: var(--ck-ink);
+    cursor: pointer;
+    transition: color 0.3s ease-out;
+  }
+  .pf-tab:global(.is-on) {
+    color: #fff;
+  }
+  .pf-tab:focus-visible {
+    outline: 2px solid var(--ck-green);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) {
+    .pf-tab:not(:global(.is-on)):hover {
+      color: var(--ck-green);
+    }
+  }
+  .pf-panel {
+    display: grid;
+    gap: 22px;
+    margin-top: 24px;
+  }
+  .pf-panel[hidden] {
+    display: none;
+  }
+  .pf-group-h {
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ck-ink-3);
+  }
+  .pf-list {
+    display: grid;
+    gap: 2px;
+  }
+  /* nine pain points read better in two columns, where there's the width */
+  @media (min-width: 1200px) {
+    .pf-list.is-long {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 24px;
+    }
+  }
+  .pf-list li,
+  .pf-brands li {
+    animation: pf-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+  .pf-list li {
+    position: relative;
+    padding: 9px 0 9px 26px;
+    border-bottom: 1px solid var(--ck-rule);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .pf-list li::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    left: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ck-turmeric);
+  }
+  .pf-brands {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .pf-brands li {
+    padding: 8px 14px;
+    border-radius: 99px;
+    background: var(--ck-bg);
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  @keyframes pf-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pf-list li,
+    .pf-brands li {
+      animation: none;
+    }
+    .pf-tabs[data-set] .pf-tabs-pill {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .pf {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 480px) {
+    .pf-facts {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .pf-tab {
+      padding: 9px 13px;
+      font-size: 0.875rem;
+    }
+  }
+</style>

@@ -1,0 +1,332 @@
+---
+/**
+ * A journey map of Ananya ordering dinner on a work night, as things are
+ * today: six steps, each with what happens, where it happens, and its high
+ * and low points. A mood line runs under the steps. Everything in it comes
+ * from the research: the interviews, the pain points and the persona.
+ */
+const steps = [
+  {
+    t: 'The day ends',
+    d: 'She gets home late after a long, unpredictable day. Cooking for the family tonight isn’t going to happen.',
+    touch: ['Commute home', 'The fridge', 'Family asking about dinner'],
+    high: 'Relief at not having to cook',
+    low: 'Guilt about feeding the family outside food again',
+    mood: 3,
+  },
+  {
+    t: 'Deciding what to eat',
+    d: 'What she wants depends on her mood and who she’s eating with. She scrolls through apps looking for something that feels right.',
+    touch: ['Swiggy', 'Zomato', 'Box8'],
+    high: 'Her few trusted places make it quicker',
+    low: 'Decision fatigue: lots of options, none like home',
+    mood: 1.9,
+  },
+  {
+    t: 'Ordering',
+    d: 'She picks a dish and tries to make it her way, with less oil and milder spice, through whatever the menu allows.',
+    touch: ['Restaurant menu', 'Add-ons', 'Cooking instructions note'],
+    high: 'Checkout takes a minute',
+    low: '“Most apps aren’t accommodating of specific requests”',
+    mood: 2.4,
+  },
+  {
+    t: 'Waiting',
+    d: 'The app tracks the rider, but not the kitchen. She has no idea how the food is being made.',
+    touch: ['Order tracking', 'Notifications', 'Rider’s call'],
+    high: 'It arrives fast',
+    low: 'No look into the kitchen: oil, spice and hygiene stay unknown',
+    mood: 2,
+  },
+  {
+    t: 'Eating',
+    d: 'Dinner is on the table and everyone is fed. But it rarely tastes like ghar ka khana.',
+    touch: ['The packaging', 'The meal'],
+    high: 'Hunger solved, no dishes to wash',
+    low: 'Too oily, and the taste changes from order to order',
+    mood: 3.4,
+  },
+  {
+    t: 'After the meal',
+    d: 'She rates it, or reorders a dish that worked last time, because that’s the only way she can trust the next one.',
+    touch: ['Rating prompt', 'Previous orders'],
+    high: 'Reordering a dish she already trusts',
+    low: 'A rating doesn’t change how it’s made, so the guilt stays',
+    mood: 1.6,
+  },
+];
+
+// the mood line: one point per step, mood 1 (low) to 4 (high), as a smooth curve
+// drawn at about the band's on-screen proportions, so stretching it to fit barely distorts it
+const W = 1200;
+const H = 100;
+const pts = steps.map((s, i) => [((i + 0.5) / steps.length) * W, H - ((s.mood - 1) / 3) * (H - 16) - 8]);
+let d = `M${pts[0][0]} ${pts[0][1]}`;
+for (let i = 0; i < pts.length - 1; i++) {
+  const [p0, p1, p2, p3] = [pts[i - 1] ?? pts[i], pts[i], pts[i + 1], pts[i + 2] ?? pts[i + 1]];
+  const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+  const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+  d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+}
+---
+
+<div class="jm" data-a="up">
+  <div class="jm-scroll">
+    <ol class="jm-grid" style={`--n:${steps.length}`}>
+      {
+        steps.map((s, i) => (
+          <li class="jm-step" style={`--c:${i + 1}`}>
+            <p class="jm-no">{String(i + 1).padStart(2, '0')}</p>
+            <h4 class="jm-t">{s.t}</h4>
+            <p class="jm-d">{s.d}</p>
+            <p class="jm-label">Touchpoints</p>
+            <ul class="jm-touch">
+              {s.touch.map((t) => (
+                <li>{t}</li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+
+      <!-- the mood line, under all six steps -->
+      <li class="jm-mood" aria-hidden="true">
+        <span class="jm-mood-k jm-mood-hi">High</span>
+        <span class="jm-mood-k jm-mood-lo">Low</span>
+        <div class="jm-mood-in">
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" data-a="draw">
+            <path class="jm-mood-line" d={d} />
+          </svg>
+          {
+            pts.map(([x, y], i) => (
+              <span class:list={['jm-dot', { 'is-low': steps[i].mood < 2.2, 'is-high': steps[i].mood > 3.1 }]} style={`left:${(x / W) * 100}%;top:${(y / H) * 100}%`} data-a="pop" />
+            ))
+          }
+        </div>
+      </li>
+
+      {
+        steps.map((s, i) => (
+          <li class="jm-hl" style={`--c:${i + 1}`}>
+            <p class="jm-high">
+              <span aria-hidden="true">+</span>
+              <span class="jm-sr">High: </span>
+              {s.high}
+            </p>
+            <p class="jm-low">
+              <span aria-hidden="true">−</span>
+              <span class="jm-sr">Low: </span>
+              {s.low}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+  <p class="jm-hint" aria-hidden="true">Scroll sideways for every step →</p>
+</div>
+
+<style>
+  .jm {
+    --jm-col: minmax(170px, 1fr);
+  }
+  .jm-scroll {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 6px;
+    scrollbar-width: thin;
+  }
+  .jm-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--n), var(--jm-col));
+    grid-auto-flow: dense;
+    column-gap: 14px;
+    min-width: 1040px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* the steps: one white card each, along the top row */
+  .jm-step {
+    grid-row: 1;
+    grid-column: var(--c);
+    display: flex;
+    flex-direction: column;
+    padding: 18px 18px 20px;
+    border-radius: 22px 22px 0 0;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .jm-no {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--ck-green);
+  }
+  .jm-t {
+    margin-top: 6px;
+    font-size: 1.125rem;
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+  }
+  .jm-d {
+    margin-top: 8px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--ck-ink-2);
+  }
+  .jm-label {
+    margin-top: auto;
+    padding-top: 16px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ck-ink-3);
+  }
+  .jm-touch {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .jm-touch li {
+    padding: 5px 10px;
+    border-radius: 99px;
+    background: var(--ck-bg);
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  /* the mood line: a band across every column, high at the top, low at the bottom */
+  .jm-mood {
+    position: relative;
+    grid-row: 2;
+    grid-column: 1 / -1;
+    height: 130px;
+    border-radius: 0;
+    background:
+      linear-gradient(to bottom, rgb(51 113 64 / 0.08), transparent 45%, transparent 55%, rgb(244 182 63 / 0.16)),
+      #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  /* the line and its dots share one box, so each dot sits on the line */
+  .jm-mood-in {
+    position: absolute;
+    inset: 14px 0;
+  }
+  .jm-mood svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .jm-mood-line {
+    fill: none;
+    stroke: var(--ck-ink);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+  .jm-dot {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    background: var(--ck-ink);
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .jm-dot.is-high {
+    background: var(--ck-green);
+  }
+  .jm-dot.is-low {
+    background: var(--ck-turmeric-deep);
+  }
+  .jm-mood-k {
+    position: absolute;
+    left: 12px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .jm-mood-hi {
+    top: 10px;
+    color: var(--ck-green);
+  }
+  .jm-mood-lo {
+    bottom: 10px;
+    color: var(--ck-turmeric-deep);
+  }
+
+  /* highs and lows, under each step */
+  .jm-hl {
+    grid-row: 3;
+    grid-column: var(--c);
+    display: grid;
+    align-content: start;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 0 0 22px 22px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .jm-high,
+  .jm-low {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+  .jm-high {
+    background: var(--ck-green-soft);
+  }
+  .jm-low {
+    background: var(--ck-turmeric-tint);
+  }
+  .jm-high > span:first-child,
+  .jm-low > span:first-child {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-weight: 900;
+    color: #fff;
+  }
+  .jm-high > span:first-child {
+    background: var(--ck-green);
+  }
+  .jm-low > span:first-child {
+    background: var(--ck-turmeric-deep);
+  }
+  .jm-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .jm-hint {
+    display: none;
+    margin-top: 10px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    color: var(--ck-ink-3);
+  }
+  @media (max-width: 1120px) {
+    .jm-hint {
+      display: block;
+    }
+  }
+</style>

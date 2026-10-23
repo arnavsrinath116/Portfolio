@@ -1,38 +1,101 @@
 ---
 /**
- * The Cooked UI kit, distilled: type as real headlines, the button set, the
- * key components (live), and the contrast checks that matter. The palette is
- * already shown just above, so it isn't repeated here.
+ * The Cooked UI kit, rebuilt live from the Figma kit: colour tokens, contrast
+ * checks (computed, not copied), the type scale, buttons and components.
+ * Everything is real HTML, so it stays sharp and the components respond.
+ * Each part sits behind a tab, so the whole kit is there without the scroll:
+ * the tab bar is itself a Cooked bottom nav, its pill sliding to the open part.
  */
-const type = [
-  ['Display', '48 / 52 · Bold', 'Book a chef', 'kt-display'],
-  ['Heading', '24 / 32 · Semibold', 'Your food, your way', 'kt-heading'],
-  ['Title', '20 / 28 · Medium', 'Customise your dish', 'kt-title'],
-  ['Body', '16 / 24 · Regular', 'Choose spice, oil and ingredients, then a chef who cooks it your way.', 'kt-body'],
-  ['Caption', '12 / 16 · Regular', 'Estimated response time: 5–15 minutes', 'kt-caption'],
+
+// ---- colour tokens (values from the Figma kit) ----
+const columns = [
+  {
+    title: 'Light surfaces',
+    note: 'pure white world',
+    tokens: [
+      ['bg-base', '#F9F9F9', 'page', true],
+      ['bg-surface', '#FFFFFF', 'card background'],
+      ['bg-raised', '#F5F5F5', 'nav · input background', true],
+      ['bg-overlay', '#EEEEEE', 'hover'],
+      ['border-subtle', '#EBEBEB', 'dividers'],
+      ['border-default', '#E0E0E0', 'inputs', true],
+    ],
+  },
+  {
+    title: 'Green',
+    note: 'interactive elements only',
+    tokens: [
+      ['green-50', '#EBF7F0', 'tint · focus ring'],
+      ['green-100', '#C6E8D4', 'tag bg · active nav'],
+      ['green-300', '#45A96E', 'borders · icons'],
+      ['green-500', '#0D733B', 'buttons · nav', true],
+      ['green-700', '#085228', 'hover state'],
+      ['green-900', '#042E16', 'text on green'],
+    ],
+  },
+  {
+    title: 'Amber & text',
+    note: 'accent and the text scale',
+    tokens: [
+      ['amber-500', '#FFB300', 'CTA · accent', true],
+      ['amber-300', '#FFC933', 'icons · tags'],
+      ['amber-50', '#FFF8E1', 'tint surface'],
+      ['tx-primary', '#1A1A1A', 'headings', true],
+      ['tx-secondary', '#4A4A4A', 'body'],
+      ['tx-muted', '#888888', 'labels · hints'],
+    ],
+  },
 ] as const;
 
-// contrast, calculated with the WCAG 2.1 formula from the kit's token values
+// ---- contrast: computed with the WCAG 2.1 formula ----
 const lum = (hex: string) => {
-  const [r, g, b] = [1, 3, 5].map((i) => {
-    const v = parseInt(hex.slice(i, i + 2), 16) / 255;
-    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
-  });
+  const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const [r, g, b] = c.map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 };
-const ratio = (a: string, b: string) => {
-  const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
-  return (x + 0.05) / (y + 0.05);
+const ratio = (fg: string, bg: string) => {
+  const a = lum(fg);
+  const b = lum(bg);
+  return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 };
-const checks = [
-  ['Text', '#1A1A1A', '#FFFFFF'],
-  ['Body', '#4A4A4A', '#FFFFFF'],
-  ['Buttons', '#FFFFFF', '#0D733B'],
-  ['Hints', '#888888', '#FFFFFF'],
-].map(([name, fg, bg]) => {
+const grade = (r: number) => (r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : r >= 3 ? 'AA large' : 'Fail');
+// amber-900 / amber-700 aren't in the kit's swatches: these are the browns its labels use
+const AMBER_900 = '#5C3B00';
+const AMBER_700 = '#8A5A00';
+const pairs = [
+  ['tx-primary on white', '#1A1A1A', '#FFFFFF', 'headings, titles'],
+  ['tx-secondary on white', '#4A4A4A', '#FFFFFF', 'body copy'],
+  ['green-500 on white', '#0D733B', '#FFFFFF', 'links, labels'],
+  ['white on green-500', '#FFFFFF', '#0D733B', 'button labels, nav'],
+  ['amber-900 on amber-500', AMBER_900, '#FFB300', 'CTA button labels'],
+  ['green-700 on green-50', '#085228', '#EBF7F0', 'tint cards, alerts'],
+  ['tx-muted on white', '#888888', '#FFFFFF', 'hints, captions'],
+  ['amber-700 on amber-50', AMBER_700, '#FFF8E1', 'warning alerts'],
+].map(([name, fg, bg, use]) => {
   const r = ratio(fg, bg);
-  return { name, fg, bg, r: r.toFixed(1), g: r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : 'Large text only' };
+  return { name, fg, bg, use, r: Math.round(r * 10) / 10, g: grade(r) };
 });
+
+// ---- type scale: each step set in a real Cooked line ----
+const type = [
+  ['Display', 'display-2xl', 60, 68, 700, 'Hero · splash', 'Book a chef'],
+  ['', 'display-xl', 48, 52, 700, 'Display heading', 'Book a chef'],
+  ['', 'display-lg', 40, 48, 700, 'Screen title', 'Your food, your way'],
+  ['Heading', 'heading-md', 32, 40, 600, 'Section heading', 'Your food, your way'],
+  ['', 'heading-sm', 24, 32, 600, 'Card title', 'Customise your dish'],
+  ['', 'title', 20, 28, 500, 'List title · label', 'Customise your dish'],
+  ['Body', 'body-lg', 16, 24, 400, 'Primary body', 'Choose spice, oil and ingredients, then a chef who cooks it your way.'],
+  ['', 'body-md', 12, 20, 400, 'Secondary body', 'Choose spice, oil and ingredients, then a chef who cooks it your way.'],
+  ['', 'caption', 12, 16, 400, 'Caption · meta', 'Estimated response time: 5–15 minutes'],
+  ['Utility', 'label', 8, 12, 500, 'Badge · chip · overline', 'VEGETARIAN'],
+] as const;
+
+// ---- buttons ----
+const sizes = [
+  { k: 'LG', items: [['primary', 'Add to basket'], ['cta', 'Order now'], ['outline', 'View details'], ['tint', 'Browse'], ['disabled', 'Unavailable']] },
+  { k: 'MD', items: [['primary', 'Add to basket'], ['cta', 'Order now'], ['outline', 'View details'], ['tint', 'Browse']] },
+  { k: 'SM', items: [['primary', 'Add'], ['cta', 'Order'], ['outline', 'Details'], ['tint', 'Browse'], ['danger', 'Remove']] },
+] as const;
 
 const icon = {
   home: 'M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z',
@@ -40,210 +103,587 @@ const icon = {
   user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0',
   leaf: 'M5 19c0-8 5-13 14-14 0 9-5 14-13 14M5 19l7-7',
   meat: 'M15 4a5 5 0 0 1 0 10l-3 0-5 5a2 2 0 1 1-3-3l5-5 0-3a5 5 0 0 1 6-4z',
+  mail: 'M3 6h18v12H3zM3 6l9 7 9-7',
+  phone: 'M5 3h4l2 5-3 2a12 12 0 0 0 6 6l2-3 5 2v4a2 2 0 0 1-2 2A18 18 0 0 1 3 5a2 2 0 0 1 2-2z',
 };
+const navs = [
+  { label: 'Diner', tabs: [['home', 'Home'], ['clock', 'Orders'], ['user', 'Profile']] },
+  { label: 'Chef', tabs: [['home', 'Home'], ['clock', 'Requests'], ['user', 'Earnings']] },
+] as const;
+
+const parts = [
+  { key: 'colour', label: 'Colour', note: 'White surfaces · green for interaction only · amber accent' },
+  { key: 'contrast', label: 'Contrast', note: 'WCAG 2.1 · AA ≥ 4.5 · AAA ≥ 7 · calculated from the token values' },
+  { key: 'type', label: 'Type', note: 'Satoshi · 10 steps' },
+  { key: 'buttons', label: 'Buttons', note: '5 variants · 3 sizes · disabled and danger states' },
+  { key: 'components', label: 'Components', note: 'Tap them' },
+];
 ---
 
 <div class="kit" data-kit>
-  <!-- type -->
-  <div class="kit-card kit-type" data-a="up">
-    <p class="kit-label">Type · Satoshi</p>
-    <ul>
-      {
-        type.map(([name, spec, sample, cls]) => (
-          <li>
-            <span class="kt-meta">
-              <b>{name}</b>
-              {spec}
-            </span>
-            <span class={`kt-sample ${cls}`}>{sample}</span>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
-
-  <div class="kit-side">
-    <!-- buttons -->
-    <div class="kit-card" data-a="up">
-      <p class="kit-label">Buttons</p>
-      <div class="kit-btns" data-a="stagger">
-        <button type="button" class="kb kb-primary" tabindex="-1">Add to basket</button>
-        <button type="button" class="kb kb-cta" tabindex="-1">Order now</button>
-        <button type="button" class="kb kb-outline" tabindex="-1">View details</button>
-        <button type="button" class="kb kb-tint" tabindex="-1">Browse</button>
-        <button type="button" class="kb kb-off" disabled tabindex="-1">Unavailable</button>
-      </div>
-    </div>
-
-    <!-- components -->
-    <div class="kit-card" data-a="up">
-      <p class="kit-label">Components <span>tap them</span></p>
-      <div class="kit-choices">
-        {
-          [
-            ['leaf', 'Vegetarian', 'Plant-based only'],
-            ['meat', 'Non-veg', 'All meals'],
-          ].map(([ic, t, d]) => (
-            <button type="button" class="kch" aria-pressed="false" data-kit-choice tabindex="-1">
-              <span class="kch-ico">
-                <svg viewBox="0 0 24 24" aria-hidden="true">
-                  <path d={icon[ic as keyof typeof icon]} />
-                </svg>
-              </span>
-              <span>
-                <b>{t}</b>
-                <small>{d}</small>
-              </span>
-            </button>
-          ))
-        }
-      </div>
-      <button type="button" class="kc" disabled data-kit-continue tabindex="-1">Continue</button>
-      <div class="knav" data-kit-nav>
-        <span class="knav-pill" aria-hidden="true"></span>
-        {
-          [
-            ['home', 'Home'],
-            ['clock', 'Orders'],
-            ['user', 'Profile'],
-          ].map(([ic, t], i) => (
-            <button type="button" class:list={['knav-tab', { 'is-on': i === 0 }]} tabindex="-1">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d={icon[ic as keyof typeof icon]} />
-              </svg>
-              <span>{t}</span>
-            </button>
-          ))
-        }
-      </div>
-    </div>
-  </div>
-
-  <!-- contrast -->
-  <ul class="kit-checks" data-a="stagger" aria-label="Contrast checks (WCAG 2.1)">
+  <div class="kit-tabs" role="tablist" aria-label="UI kit" data-kit-tabs data-a="up">
+    <span class="kit-tabs-pill" aria-hidden="true"></span>
     {
-      checks.map((c) => (
-        <li>
-          <span class="kc-dot" style={`--fg:${c.fg};--bg:${c.bg}`}>Aa</span>
-          <span>
-            <b>{c.name}</b> {c.r}:1 · {c.g}
-          </span>
-        </li>
+      parts.map((p, i) => (
+        <button
+          type="button"
+          role="tab"
+          id={`kit-tab-${p.key}`}
+          aria-controls={`kit-panel-${p.key}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+          class:list={['kit-tab', { 'is-on': i === 0 }]}
+          data-kit-tab
+        >
+          <span>{String(i + 1).padStart(2, '0')}</span>
+          {p.label}
+        </button>
       ))
     }
-  </ul>
+  </div>
+
+  <div class="kit-stage" data-kit-stage data-a="up">
+    <!-- 1 · colour -->
+    <section class="kit-panel" role="tabpanel" id="kit-panel-colour" aria-labelledby="kit-tab-colour" data-kit-panel>
+      <p class="kit-note">{parts[0].note}</p>
+      <div class="kit-cols">
+        {
+          columns.map((c, i) => (
+            <div class="kit-col" style={`--i:${i}`} data-in>
+              <p class="kit-col-head">
+                {c.title} <span>{c.note}</span>
+              </p>
+              <ul>
+                {c.tokens.map(([name, hex, role, key]) => (
+                  <li class="kit-tok">
+                    <span class="kit-chip" style={`--c:${hex}`} />
+                    <span class="kit-tok-name">
+                      {name}
+                      {key && <b title="Key token">★</b>}
+                    </span>
+                    <span class="kit-tok-hex">{hex}</span>
+                    <span class="kit-tok-role">{role}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 2 · contrast -->
+    <section class="kit-panel" role="tabpanel" id="kit-panel-contrast" aria-labelledby="kit-tab-contrast" data-kit-panel hidden>
+      <p class="kit-note">{parts[1].note}</p>
+      <ul class="kit-ratios">
+        {
+          pairs.map((p, i) => (
+            <li class="kit-ratio" style={`--fg:${p.fg};--bg:${p.bg};--i:${i}`} data-in>
+              <div class="kit-ratio-top">
+                <span class="kit-ratio-name">{p.name}</span>
+                <b>
+                  <span data-kit-num={p.r}>{p.r.toFixed(1)}</span>
+                  <small>:1</small>
+                </b>
+              </div>
+              <p>
+                <span class:list={['kit-badge', `is-${p.g.split(' ')[0].toLowerCase()}`]}>{p.g}</span>
+                {p.use}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <!-- 3 · type -->
+    <section class="kit-panel" role="tabpanel" id="kit-panel-type" aria-labelledby="kit-tab-type" data-kit-panel hidden>
+      <p class="kit-note">{parts[2].note}</p>
+      <div class="kit-type" role="table" aria-label="Type scale">
+        <div class="kit-type-row kit-type-headrow" role="row">
+          <span role="columnheader">Token</span><span role="columnheader">Size / line</span><span role="columnheader">Weight</span><span role="columnheader">Usage</span><span role="columnheader">Sample</span>
+        </div>
+        {
+          type.map(([group, tok, size, lh, w, use, sample], i) => (
+            <>
+              {group && <p class="kit-type-group">{group}</p>}
+              <div class="kit-type-row" role="row" style={`--i:${i}`} data-in>
+                <span role="cell" class="kit-type-tok">{tok}</span>
+                <span role="cell">
+                  {size}/{lh}
+                </span>
+                <span role="cell">{w}</span>
+                <span role="cell" class="kit-type-use">{use}</span>
+                <span role="cell" class="kit-type-sample" style={`--fs:${size}px;font-size:${size}px;line-height:${lh}px;font-weight:${w}`}>
+                  {sample}
+                </span>
+              </div>
+            </>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 4 · buttons -->
+    <section class="kit-panel" role="tabpanel" id="kit-panel-buttons" aria-labelledby="kit-tab-buttons" data-kit-panel hidden>
+      <p class="kit-note">{parts[3].note}</p>
+      <div class="kit-btns">
+        {
+          sizes.map((s, i) => (
+            <div class="kit-btn-row" style={`--i:${i}`} data-in>
+              <span class="kit-btn-size">{s.k}</span>
+              <div>
+                {s.items.map(([v, t]) => (
+                  <button type="button" class={`kb kb-${v} kb-${s.k.toLowerCase()}`} disabled={v === 'disabled'} tabindex="-1">
+                    {t}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 5 · components -->
+    <section class="kit-panel" role="tabpanel" id="kit-panel-components" aria-labelledby="kit-tab-components" data-kit-panel hidden>
+      <p class="kit-note">{parts[4].note}</p>
+      <div class="kit-comp">
+        <div class="kit-card kit-press" style="--i:0" data-in>
+          <p class="kit-card-label">Pressable</p>
+          <div class="kit-press-row">
+            <button type="button" class="k3 k3-amber" tabindex="-1" data-kit-press>Button</button>
+            <button type="button" class="k3 k3-green" tabindex="-1" data-kit-press>Button</button>
+          </div>
+          <div class="kit-dots" aria-hidden="true" data-kit-dots><i class="is-on"></i><i></i><i></i></div>
+          <p class="kit-card-note">Each press moves the step dots on</p>
+        </div>
+
+        <div class="kit-card" style="--i:1" data-in>
+          <p class="kit-card-label">Continue</p>
+          <div class="kit-continue">
+            <button type="button" class="kc" disabled data-kit-continue tabindex="-1">Continue</button>
+            <button type="button" class="kc kc-green" tabindex="-1">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icon.mail}></path></svg>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={icon.phone}></path></svg>
+              Continue
+            </button>
+          </div>
+          <p class="kit-card-note">Turns amber once a choice is made</p>
+        </div>
+
+        <div class="kit-card kit-choices" style="--i:2" data-in>
+          <p class="kit-card-label">Choice cards</p>
+          {
+            [
+              ['leaf', 'Vegetarian', 'Plant-based meals only'],
+              ['meat', 'Non-vegetarian', 'All types of meals'],
+            ].map(([ic, t, d]) => (
+              <button type="button" class="kch" aria-pressed="false" data-kit-choice tabindex="-1">
+                <span class="kch-ico">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d={icon[ic as keyof typeof icon]} />
+                  </svg>
+                </span>
+                <span>
+                  <b>{t}</b>
+                  <small>{d}</small>
+                </span>
+              </button>
+            ))
+          }
+        </div>
+
+        <div class="kit-card kit-navs" style="--i:3" data-in>
+          <p class="kit-card-label">Bottom navigation</p>
+          {
+            navs.map((n) => (
+              <div class="knav-wrap">
+                <span class="knav-who">{n.label}</span>
+                <div class="knav" data-kit-nav>
+                  <span class="knav-pill" aria-hidden="true" />
+                  {n.tabs.map(([ic, t], i) => (
+                    <button type="button" class:list={['knav-tab', { 'is-on': i === 0 }]} tabindex="-1">
+                      <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d={icon[ic as keyof typeof icon]} />
+                      </svg>
+                      <span>{t}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+  </div>
 </div>
 
 <style>
-  /* the kit speaks the case study's language: Satoshi, soft white cards, pills, green + turmeric */
   .kit {
     --k-green: #0d733b;
+    --k-green-700: #085228;
+    --k-green-50: #ebf7f0;
     --k-amber: #ffb300;
+    --k-amber-900: #5c3b00;
+    --k-ink: #1a1a1a;
+    --k-ink-2: #4a4a4a;
+    --k-line: #e0e0e0;
     display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
-    gap: 16px;
+    gap: 20px;
     margin-top: clamp(24px, 4vh, 40px);
   }
-  .kit-card {
-    display: grid;
-    align-content: start;
-    gap: 16px;
-    padding: clamp(18px, 2.4vw, 28px);
-    border-radius: 22px;
+
+  /* ---- tabs: a Cooked bottom nav, the ink pill sliding to the open part ---- */
+  /* on a phone the tabs wrap to a second row, and the pill follows across rows */
+  .kit-tabs {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-self: start;
+    max-width: 100%;
+    padding: 5px;
+    border-radius: 26px;
     background: #fff;
-    box-shadow: 0 0 0 1px var(--ck-rule);
+    box-shadow: 0 10px 22px -14px rgb(20 23 26 / 0.4), 0 0 0 1px #ececec;
   }
-  .kit-side {
-    display: grid;
-    gap: 16px;
+  .kit-tabs-pill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--pw, 0px);
+    height: var(--ph, 0px);
+    border-radius: 99px;
+    background: var(--k-ink);
+    transform: translate(var(--px, 0px), var(--py, 0px));
   }
-  .kit-label {
-    font-size: 0.8125rem;
+  .kit-tabs[data-set] .kit-tabs-pill {
+    transition:
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .kit-tab {
+    position: relative;
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 99px;
+    background: none;
+    font: inherit;
+    font-size: 0.9375rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--ck-green);
+    color: var(--k-ink);
+    cursor: pointer;
+    transition: color 0.3s ease-out;
   }
-  .kit-label span {
-    margin-left: 6px;
-    letter-spacing: 0;
-    text-transform: none;
-    font-weight: 600;
-    color: var(--ck-ink-3);
+  .kit-tab span {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--ck-green);
+    transition: color 0.3s ease-out;
+  }
+  .kit-tab:global(.is-on) {
+    color: #fff;
+  }
+  .kit-tab:global(.is-on) span {
+    color: var(--k-amber);
+  }
+  .kit-tab:focus-visible {
+    outline: 2px solid var(--ck-green);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) {
+    .kit-tab:not(:global(.is-on)):hover {
+      color: var(--ck-green);
+    }
   }
 
-  /* type: real Cooked lines, biggest to smallest */
-  .kit-type ul {
+  /* ---- the open part ---- */
+  /* clips only while its height eases; no rounding, so text at its edge isn't cut */
+  .kit-stage {
+    overflow: hidden;
+  }
+  .kit-panel {
     display: grid;
+    gap: 16px;
   }
-  .kit-type li {
-    display: grid;
-    gap: 4px;
-    padding: 14px 0;
-    border-top: 1px solid var(--ck-rule);
+  .kit-panel[hidden] {
+    display: none;
   }
-  .kit-type li:first-child {
-    border-top: 0;
-    padding-top: 0;
-  }
-  .kt-meta {
-    font-size: 0.8125rem;
+  .kit-note {
+    font-size: 0.875rem;
+    font-weight: 600;
     color: var(--ck-ink-3);
   }
-  .kt-meta b {
-    margin-right: 8px;
-    color: var(--ck-ink);
-    font-weight: 700;
+  /* the open part's pieces arrive in turn, each time its tab is chosen */
+  .kit-panel [data-in] {
+    animation: kit-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(var(--i, 0) * 45ms);
   }
-  .kt-sample {
-    color: var(--ck-ink);
-    letter-spacing: -0.01em;
+  @keyframes kit-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+    }
   }
-  .kt-display {
-    font-size: clamp(2rem, 3.6vw, 3rem);
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
+  @media (prefers-reduced-motion: reduce) {
+    .kit-panel [data-in] {
+      animation: none;
+    }
+    .kit-tabs[data-set] .kit-tabs-pill {
+      transition: none;
+    }
   }
-  .kt-heading {
-    font-size: 1.5rem;
+
+  /* ---- colour ---- */
+  .kit-cols {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .kit-col {
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    overflow: hidden;
+  }
+  .kit-col-head {
+    padding: 14px 18px;
+    background: #fafafa;
+    border-bottom: 1px solid var(--ck-rule);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .kit-col-head span {
+    margin-left: 6px;
     font-weight: 600;
-    line-height: 1.3;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ck-ink-3);
   }
-  .kt-title {
-    font-size: 1.25rem;
-    font-weight: 500;
+  .kit-tok {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 14px;
+    align-items: center;
+    padding: 12px 18px;
+    border-bottom: 1px solid #f1f1f1;
   }
-  .kt-body {
-    font-size: 1rem;
-    line-height: 1.5;
+  .kit-tok:last-child {
+    border-bottom: 0;
+  }
+  .kit-chip {
+    grid-row: span 2;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: var(--c);
+    box-shadow: inset 0 0 0 1px rgb(20 23 26 / 0.1);
+  }
+  .kit-tok-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+  .kit-tok-name b {
+    margin-left: 4px;
+    color: var(--ck-green);
+    font-size: 0.75rem;
+  }
+  .kit-tok-hex {
+    grid-column: 2;
+    font-family: ui-monospace, 'SF Mono', monospace;
+    font-size: 0.8125rem;
+    font-weight: 600;
     color: var(--ck-ink-2);
   }
-  .kt-caption {
+  .kit-tok-role {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
     font-size: 0.75rem;
     color: var(--ck-ink-3);
   }
 
-  /* buttons */
+  /* ---- contrast ---- */
+  .kit-ratios {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .kit-ratio {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .kit-ratio-top {
+    display: grid;
+    gap: 6px;
+    padding: 16px 18px 18px;
+    background: var(--bg);
+    color: var(--fg);
+  }
+  .kit-ratio-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .kit-ratio b {
+    font-size: clamp(1.9rem, 3vw, 2.6rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .kit-ratio small {
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+  .kit-ratio > p {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-top: 1px solid #f1f1f1;
+    font-size: 0.8125rem;
+    color: var(--ck-ink-2);
+  }
+  .kit-badge {
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    color: #fff;
+  }
+  .kit-badge.is-aaa {
+    background: var(--k-green);
+  }
+  .kit-badge.is-aa {
+    background: var(--k-ink);
+  }
+  .kit-badge.is-fail {
+    background: #b42318;
+  }
+
+  /* ---- type ---- */
+  .kit-type {
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    overflow: hidden;
+  }
+  .kit-type-row {
+    display: grid;
+    grid-template-columns: 130px 100px 70px 170px minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-top: 1px solid #f1f1f1;
+    font-size: 0.8125rem;
+    color: var(--ck-ink-2);
+  }
+  .kit-type-headrow {
+    border-top: 0;
+    background: #fafafa;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+    color: var(--ck-ink-3);
+  }
+  .kit-type-group {
+    padding: 14px 20px 4px;
+    border-top: 1px solid #f1f1f1;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ck-green);
+  }
+  .kit-type-tok {
+    font-family: ui-monospace, 'SF Mono', monospace;
+    font-weight: 600;
+    color: var(--k-green);
+  }
+  .kit-type-use {
+    justify-self: start;
+    padding: 3px 10px;
+    border-radius: 99px;
+    background: #f5f5f5;
+    font-weight: 600;
+  }
+  .kit-type-sample {
+    color: var(--k-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---- buttons ---- */
   .kit-btns {
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+    padding: 6px 22px;
+  }
+  .kit-btn-row {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 0;
+    border-top: 1px solid #f1f1f1;
+  }
+  .kit-btn-row:first-child {
+    border-top: 0;
+  }
+  .kit-btn-row > div {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 12px;
+  }
+  .kit-btn-size {
+    font-family: ui-monospace, 'SF Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--ck-ink-3);
   }
   .kb {
-    padding: 11px 20px;
     border: 0;
-    border-radius: 99px;
-    font: inherit;
-    font-size: 0.9375rem;
+    border-radius: 10px;
+    font-family: inherit;
     font-weight: 700;
     cursor: pointer;
     transition:
       transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
-      filter 0.2s ease-out;
+      background-color 0.2s ease-out,
+      box-shadow 0.2s ease-out;
   }
   .kb:active:not(:disabled) {
-    transform: scale(0.95);
+    transform: scale(0.96);
+  }
+  .kb-lg {
+    padding: 14px 26px;
+    font-size: 1.0625rem;
+  }
+  .kb-md {
+    padding: 11px 22px;
+    font-size: 0.9375rem;
+  }
+  .kb-sm {
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-size: 0.8125rem;
   }
   .kb-primary {
     background: var(--k-green);
@@ -251,7 +691,7 @@ const icon = {
   }
   .kb-cta {
     background: var(--k-amber);
-    color: #5c3b00;
+    color: var(--k-amber-900);
   }
   .kb-outline {
     background: #fff;
@@ -259,38 +699,168 @@ const icon = {
     box-shadow: inset 0 0 0 2px var(--k-green);
   }
   .kb-tint {
-    background: #ebf7f0;
+    background: var(--k-green-50);
     color: var(--k-green);
   }
-  .kb-off {
+  .kb-disabled {
     background: #eeeeee;
     color: #9a9a9a;
     cursor: not-allowed;
   }
+  .kb-danger {
+    background: #c4320a;
+    color: #fff;
+  }
   @media (hover: hover) {
-    .kb:hover:not(:disabled) {
-      filter: brightness(0.94);
+    .kb-primary:hover {
+      background: var(--k-green-700);
+    }
+    .kb-cta:hover {
+      background: #f2a900;
+    }
+    .kb-outline:hover,
+    .kb-tint:hover {
+      background: #dff1e7;
     }
   }
 
-  /* components */
-  .kit-choices {
+  /* ---- components ---- */
+  .kit-comp {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
   }
+  .kit-card {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+    padding: 22px;
+    border-radius: 18px;
+    background: #fafafa;
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .kit-card-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ck-ink-3);
+  }
+  .kit-card-note {
+    font-size: 0.8125rem;
+    color: var(--ck-ink-3);
+  }
+  /* pressable: a solid base that the face sinks into */
+  .kit-press-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .k3 {
+    padding: 14px 34px;
+    border: 0;
+    border-radius: 99px;
+    font: inherit;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    cursor: pointer;
+    transform: translateY(0);
+    transition:
+      transform 0.12s ease-out,
+      box-shadow 0.12s ease-out;
+  }
+  .k3-amber {
+    background: #f4b63f;
+    color: #6b4500;
+    box-shadow: 0 6px 0 #8a5a00;
+  }
+  .k3-green {
+    background: #1e5a2c;
+    color: #fff;
+    box-shadow: 0 6px 0 #0d331a;
+  }
+  .k3:active {
+    transform: translateY(5px);
+  }
+  .k3-amber:active {
+    box-shadow: 0 1px 0 #8a5a00;
+  }
+  .k3-green:active {
+    box-shadow: 0 1px 0 #0d331a;
+  }
+  /* step dots: the active one stretches */
+  .kit-dots {
+    display: flex;
+    gap: 8px;
+  }
+  .kit-dots i {
+    width: 10px;
+    height: 10px;
+    border-radius: 99px;
+    background: #c9c9c9;
+    transition:
+      width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 0.3s ease-out;
+  }
+  .kit-dots i:global(.is-on) {
+    width: 40px;
+    background: var(--k-ink);
+  }
+  /* continue */
+  .kit-continue {
+    display: grid;
+    gap: 12px;
+  }
+  .kc {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px;
+    border: 0;
+    border-radius: 99px;
+    font: inherit;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: #5c3b00;
+    background: linear-gradient(90deg, #f4b63f, #e2a630);
+    box-shadow: 0 10px 20px -12px rgb(92 59 0 / 0.5);
+    transition:
+      background 0.4s ease-out,
+      color 0.4s ease-out,
+      box-shadow 0.4s ease-out;
+  }
+  .kc:disabled {
+    background: #e2e2e2;
+    color: #8a8a8a;
+    box-shadow: none;
+  }
+  .kc-green {
+    color: #fff;
+    background: linear-gradient(90deg, #4fb064, #2e7140);
+    box-shadow: 0 10px 20px -12px rgb(13 51 26 / 0.6);
+  }
+  .kc svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linejoin: round;
+  }
+  /* choice cards */
   .kch {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px;
+    gap: 16px;
+    padding: 16px 18px;
     border: 0;
-    border-radius: 16px;
+    border-radius: 18px;
     background: #fff;
     box-shadow: inset 0 0 0 1.5px #dcdcdc;
     font: inherit;
     text-align: left;
-    color: var(--ck-ink);
+    color: var(--k-ink);
     cursor: pointer;
     transition:
       box-shadow 0.25s ease-out,
@@ -298,29 +868,29 @@ const icon = {
       transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .kch:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
   .kch b {
     display: block;
-    font-size: 0.9375rem;
+    font-size: 1.0625rem;
   }
   .kch small {
-    font-size: 0.75rem;
-    color: var(--ck-ink-3);
+    font-size: 0.875rem;
+    color: var(--ck-ink-2);
   }
   .kch-ico {
     display: grid;
     place-items: center;
     flex: none;
-    width: 36px;
-    height: 36px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
-    background: var(--ck-ink);
+    background: var(--k-ink);
     transition: background-color 0.25s ease-out;
   }
   .kch-ico svg {
-    width: 19px;
-    height: 19px;
+    width: 24px;
+    height: 24px;
     fill: none;
     stroke: #fff;
     stroke-width: 1.8;
@@ -328,46 +898,42 @@ const icon = {
     stroke-linejoin: round;
   }
   .kch:global(.is-on) {
-    box-shadow: inset 0 0 0 2px var(--ck-green);
-    color: var(--ck-green);
+    box-shadow: inset 0 0 0 2px #2e7140;
+    color: #2e7140;
+  }
+  .kch:global(.is-on) small {
+    color: #2e7140;
   }
   .kch:global(.is-on) .kch-ico {
-    background: var(--ck-green);
+    background: #2e7140;
   }
-  .kc {
-    padding: 13px;
-    border: 0;
-    border-radius: 99px;
-    font: inherit;
-    font-size: 1rem;
+  /* bottom nav: one pill slides to the chosen tab */
+  .knav-wrap {
+    display: grid;
+    gap: 6px;
+  }
+  .knav-who {
+    font-size: 0.75rem;
     font-weight: 700;
-    color: #5c3b00;
-    background: var(--k-amber);
-    transition:
-      background-color 0.4s ease-out,
-      color 0.4s ease-out;
-  }
-  .kc:disabled {
-    background: #e6e6e6;
-    color: #8a8a8a;
+    color: var(--ck-ink-3);
   }
   .knav {
     position: relative;
     display: grid;
     grid-template-columns: 1.6fr 1fr 1fr;
-    padding: 5px;
+    padding: 6px;
     border-radius: 99px;
     background: #fff;
     box-shadow: 0 10px 22px -14px rgb(20 23 26 / 0.4), 0 0 0 1px #ececec;
   }
   .knav-pill {
     position: absolute;
-    top: 5px;
-    bottom: 5px;
-    left: 5px;
+    top: 6px;
+    bottom: 6px;
+    left: 6px;
     width: var(--pw, 40%);
     border-radius: 99px;
-    background: var(--ck-ink);
+    background: var(--k-ink);
     transform: translateX(var(--px, 0px));
     transition:
       transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
@@ -379,20 +945,20 @@ const icon = {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 10px;
+    padding: 12px 10px;
     border: 0;
     background: none;
     font: inherit;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--ck-ink);
+    color: var(--k-ink);
     cursor: pointer;
     transition: color 0.3s ease-out;
   }
   .knav-tab svg {
     flex: none;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     fill: none;
     stroke: currentColor;
     stroke-width: 1.7;
@@ -409,52 +975,52 @@ const icon = {
     display: inline;
   }
 
-  /* contrast: one quiet line of checks */
-  .kit-checks {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  .kit-checks li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 14px 6px 6px;
-    border-radius: 99px;
-    background: #fff;
-    box-shadow: 0 0 0 1px var(--ck-rule);
-    font-size: 0.8125rem;
-    color: var(--ck-ink-2);
-  }
-  .kit-checks b {
-    color: var(--ck-ink);
-  }
-  .kc-dot {
-    display: grid;
-    place-items: center;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--bg);
-    color: var(--fg);
-    box-shadow: inset 0 0 0 1px rgb(20 23 26 / 0.12);
-    font-size: 0.75rem;
-    font-weight: 800;
-  }
-
   @media (max-width: 900px) {
-    .kit {
+    .kit-cols {
       grid-template-columns: 1fr;
+    }
+    .kit-ratios {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .kit-comp {
+      grid-template-columns: 1fr;
+    }
+    .kit-type-row {
+      grid-template-columns: 110px 80px minmax(0, 1fr);
+    }
+    .kit-type-row > :nth-child(3),
+    .kit-type-row > :nth-child(4) {
+      display: none;
     }
   }
-  @media (max-width: 480px) {
-    .kit-choices {
-      grid-template-columns: 1fr;
-    }
-    .kb {
-      padding: 10px 16px;
+  @media (max-width: 640px) {
+    .kit-tab {
+      padding: 10px 14px;
       font-size: 0.875rem;
+    }
+    .kit-type-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 2px;
+    }
+    .kit-type-headrow {
+      display: none;
+    }
+    .kit-type-row > :nth-child(2) {
+      font-family: ui-monospace, 'SF Mono', monospace;
+      font-size: 0.75rem;
+    }
+    .kit-type-sample {
+      font-size: min(var(--fs, 40px), 2.4rem) !important;
+      line-height: 1.2 !important;
+      white-space: normal;
+    }
+    .kb-lg {
+      padding: 12px 18px;
+      font-size: 0.9375rem;
+    }
+    .kit-btn-row {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 10px;
     }
   }
 </style>

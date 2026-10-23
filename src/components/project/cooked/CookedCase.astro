@@ -2,6 +2,11 @@
 import Phone from './Phone.astro';
 import CookedFlow from './CookedFlow.astro';
 import CookedKit from './CookedKit.astro';
+import CookedShard from './CookedShard.astro';
+import CookedPersona from './CookedPersona.astro';
+import CookedJourney from './CookedJourney.astro';
+import Prototype from '../../Prototype.astro';
+import { skills } from '../../../data/skills';
 import { withBase } from '../../../lib/url';
 import type { Project } from '../../../data/projects';
 import { projects } from '../../../data/projects';
@@ -12,6 +17,8 @@ interface Props {
 const { project } = Astro.props;
 const others = projects.filter((p) => p.slug !== project.slug);
 const img = (n: string) => withBase(`/projects/cooked/${n}.webp`);
+// the same clickable Figma prototype the UI design skill shows
+const proto = skills.find((s) => s.slug === 'ui-design')?.works.find((w) => w.title === 'Cooked app')?.prototype;
 
 // facts shown in the hero; placeholders stay hidden until they're real
 const facts = [
@@ -100,6 +107,7 @@ const journey = [
   <!-- the menu: floats at the foot of the card, marks the course you're in -->
   <div class="ck-dock-wrap" data-ck-dock>
     <nav class="ck-dock" aria-label="Case study courses">
+      <span class="ck-dock-now" aria-hidden="true" data-dock-now></span>
       <ol>
         {
           courses.map((c) => (
@@ -121,10 +129,10 @@ const journey = [
   <section class="ck-ch" id="cooked-starter" data-phase="starter" aria-label="Starter: the problem">
     <div class="ck-scene" style="--len: 3.2" data-scene="imagine" data-ck-rail>
       <div class="ck-stage">
-        <p class="ck-beat ck-beat-1" data-b1>Ordering in is easy.</p>
-        <p class="ck-beat ck-beat-2" data-b2>Knowing how it’s made isn’t.<br /><span>Oil, spice, hygiene: you don’t get a say.</span></p>
+        <p class="ck-beat ck-beat-1" data-b1>Imagine this.</p>
+        <p class="ck-beat ck-beat-2" data-b2>A long day. You’re tired.<br /><span>So you order in.</span></p>
         <div class="ck-beat ck-beat-3" data-b3>
-          <p>Convenience wins. You give up&nbsp;<em data-control>control.</em></p>
+          <p>…and you have no real&nbsp;<em data-control>control.</em></p>
         </div>
         <div class="ck-seesaw" data-seesaw>
           <svg viewBox="0 0 800 420" role="img" aria-label="A seesaw: convenience outweighs control">
@@ -239,6 +247,8 @@ const journey = [
         </li>
         <li data-a="pop"><img src={img('wok')} alt="" width="359" height="359" loading="lazy" />Home recipes are loved most</li>
       </ul>
+      <!-- pieces of the app, set beside what they answer -->
+      <div class="ck-shard ck-shard-obs" data-a="right"><CookedShard kind="repeat" from="Home" tilt={-3} /></div>
     </div>
   </section>
 
@@ -251,6 +261,7 @@ const journey = [
     </header>
 
     <div class="ck-block ck-persona" data-ck-pt="0.12">
+      <div class="ck-persona-top">
       <div class="ck-persona-card" data-a="up">
         <img class="ck-persona-fig" src={img('seeker')} alt="" width="400" height="400" loading="lazy" />
         <div>
@@ -266,6 +277,16 @@ const journey = [
           <p class="ck-persona-meta">Archetype: Ananya, 32 · Mumbai · long workdays · husband + 1 child · orders in 3–5× a week</p>
         </div>
       </div>
+      <div class="ck-shard ck-shard-persona" data-a="right"><CookedShard kind="customise" from="Customise dish" tilt={4} /></div>
+      </div>
+      <CookedPersona />
+    </div>
+
+    <div class="ck-block ck-journeymap" data-ck-pt="0.1">
+      <p class="ck-kicker" data-a="up">User journey</p>
+      <h3 class="ck-h" data-a="up">A weeknight dinner, today</h3>
+      <p class="ck-jm-lede" data-a="up">Ananya ordering in after work, step by step, mapped from our interviews and her pain points.</p>
+      <CookedJourney />
     </div>
 
     <div class="ck-scene" style="--len: 2" data-scene="spectrum" data-ck-rail>
@@ -291,6 +312,7 @@ const journey = [
         <li data-a="pop"><span>3</span>Trust &amp; safety</li>
         <li data-a="pop"><span>4</span>Guilt-free eating</li>
       </ol>
+      <div class="ck-shard ck-shard-needs" data-a="right"><CookedShard kind="hygiene" from="Chef sign-up" tilt={3} /></div>
     </div>
 
     <div class="ck-scene" style="--len: 1.35" data-scene="hmw" data-ck-rail>
@@ -325,6 +347,7 @@ const journey = [
           <li><span class="ck-box"></span>Give control without complexity</li>
         </ol>
       </div>
+      <div class="ck-shard ck-shard-chef" data-a="right"><CookedShard kind="chef" from="Select chefs" tilt={5} /></div>
     </div>
   </section>
 
@@ -434,15 +457,6 @@ const journey = [
     </header>
 
     <div class="ck-block ck-brand" data-ck-pt="0.12">
-      <ul class="ck-swatches">
-        <li class="sw-green" data-a="fill-x"><b>Green</b>grounding, trustworthy, healthy</li>
-        <li class="sw-white" data-a="fill-x"><b>White</b>just a plain colour</li>
-        <li class="sw-turmeric" data-a="fill-x"><b>Turmeric</b>appetising by nature</li>
-      </ul>
-      <div class="ck-type" data-a="up">
-        <p class="ck-type-aa">Aa</p>
-        <p><b>Satoshi</b>clean, modern, but warm</p>
-      </div>
       <img class="ck-mood" src={img('moodboard')} alt="Moodboard: green urban-food posters, food app screens and warm food photography" width="1606" height="766" loading="lazy" data-a="up" />
     </div>
 
@@ -493,6 +507,18 @@ const journey = [
         <Phone src="ui-chef-dash" alt="Chef dashboard with requests, rating and earnings" class="ck-p4" />
       </div>
     </div>
+
+    {
+      proto && (
+        <div class="ck-block ck-proto" data-ck-pt="0.12">
+          <p class="ck-kicker" data-a="up">Prototype</p>
+          <h3 class="ck-h" data-a="up">Try it yourself</h3>
+          <div data-a="up">
+            <Prototype prototype={proto} title="Cooked" kind="Onboarding, browsing chefs and dishes, and a chef’s sign-up" />
+          </div>
+        </div>
+      )
+    }
 
     <div class="ck-block ck-merch" data-ck-pt="0.86">
       <h3 class="ck-h" data-a="up">Beyond the screen</h3>
@@ -772,30 +798,40 @@ const journey = [
   .ck-dock-wrap:global(.is-on) .ck-dock {
     pointer-events: auto;
   }
+  /* one panel: six even rows, names in one left-aligned column, dots in one line on the right.
+     It rests folded to its dots; at each new course a pill beside it names just that course, and
+     on hover or focus the panel names them all */
   .ck-dock ol {
     position: relative;
     display: grid;
-    justify-items: end;
-    gap: 2px;
+    gap: 0;
   }
-  /* a faint capsule behind the dots, so they read over photos and screens */
+  /* liquid glass, as in Apple's Control Center: the page blurs and saturates behind it, a bright
+     rim catches light along the top edge, a sheen falls across it, and it sits on a soft shadow */
   .ck-dock ol::before {
     content: '';
     position: absolute;
-    top: -6px;
-    bottom: -6px;
-    right: -6px;
-    width: 20px;
-    border-radius: 99px;
-    background: rgb(255 255 255 / 0.78);
-    box-shadow: 0 0 0 1px var(--ck-rule);
+    inset: -7px -9px;
+    border-radius: 18px;
+    background:
+      linear-gradient(150deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.12) 42%, rgb(255 255 255 / 0.04) 60%, rgb(255 255 255 / 0.22)),
+      rgb(244 245 242 / 0.32);
+    -webkit-backdrop-filter: blur(14px) saturate(1.8);
+    backdrop-filter: blur(14px) saturate(1.8);
+    box-shadow:
+      inset 0 1px 1px rgb(255 255 255 / 0.95),
+      inset 0 0 0 1px rgb(255 255 255 / 0.55),
+      inset 0 -1px 1px rgb(20 23 26 / 0.06),
+      0 0 0 0.5px rgb(20 23 26 / 0.14),
+      0 14px 32px -14px rgb(20 23 26 / 0.35);
   }
   .ck-dock a {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 6px 0 6px 10px;
-    min-height: 32px;
+    justify-content: space-between;
+    min-height: 30px;
+    padding: 0 2px;
     color: var(--ck-ink-2);
     text-decoration: none;
     white-space: nowrap;
@@ -814,36 +850,88 @@ const journey = [
       background-color 0.25s ease-out;
   }
   .ck-dock a:global(.is-active)::after {
-    height: 26px;
+    height: 20px;
     background: var(--ck-green);
   }
-  /* names appear only on hover or keyboard focus: the rail never sits over the content */
   .ck-dock-tag {
-    display: grid;
-    justify-items: end;
-    padding: 5px 10px;
-    border-radius: 10px;
-    background: rgb(255 255 255 / 0.94);
-    box-shadow: 0 0 0 1px var(--ck-rule), 0 10px 22px -14px rgb(20 23 26 / 0.45);
+    display: block;
+    max-width: 0;
+    margin: 0;
+    overflow: hidden;
     opacity: 0;
-    translate: 6px 0;
+    transition:
+      max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      margin 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.25s ease-out;
+  }
+  /* hovering the panel, or focusing into it, names every course */
+  .ck-dock:hover .ck-dock-tag,
+  .ck-dock:focus-within .ck-dock-tag {
+    max-width: 120px;
+    margin: 0 14px 0 4px;
+    opacity: 1;
+  }
+  /* at a new course, its name alone: a separate glass pill beside its dot, the size of the word.
+     It only fades; the panel's own names (for hover) never change shape, so nothing jumps */
+  .ck-dock-now {
+    position: absolute;
+    top: var(--now-y, 50%);
+    right: calc(100% + 18px);
+    padding: 6px 12px;
+    border-radius: 12px;
+    background:
+      linear-gradient(150deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.12) 50%, rgb(255 255 255 / 0.22)),
+      rgb(244 245 242 / 0.32);
+    -webkit-backdrop-filter: blur(14px) saturate(1.8);
+    backdrop-filter: blur(14px) saturate(1.8);
+    box-shadow:
+      inset 0 1px 1px rgb(255 255 255 / 0.95),
+      inset 0 0 0 1px rgb(255 255 255 / 0.55),
+      0 0 0 0.5px rgb(20 23 26 / 0.14),
+      0 10px 24px -12px rgb(20 23 26 / 0.35);
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+    color: var(--ck-ink);
+    pointer-events: none;
+    opacity: 0;
+    translate: 6px -50%;
     transition:
       opacity 0.25s ease-out,
-      translate 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+      translate 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      top 0.35s cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .ck-dock a:hover .ck-dock-tag,
-  .ck-dock a:focus-visible .ck-dock-tag {
+  .ck-dock:global(.is-open):not(:hover):not(:focus-within) .ck-dock-now {
     opacity: 1;
-    translate: 0 0;
+    translate: 0 -50%;
   }
   .ck-dock-label {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--ck-ink-3);
+    transition: color 0.25s ease-out;
+  }
+  .ck-dock a:global(.is-active) .ck-dock-label {
     font-weight: 800;
     color: var(--ck-ink);
   }
+  @media (hover: hover) {
+    .ck-dock a:hover .ck-dock-label {
+      color: var(--ck-green);
+    }
+  }
+  .ck-dock a:focus-visible {
+    outline: 2px solid var(--ck-green);
+    outline-offset: 1px;
+    border-radius: 6px;
+  }
+  /* the stage (Discover, Define…) is read out with the name, but not drawn */
   .ck-dock-stage {
-    font-size: 0.6875rem;
-    color: var(--ck-ink-3);
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 
   /* ---------- starter: imagine + seesaw ---------- */
@@ -1763,73 +1851,11 @@ const journey = [
   }
 
   /* ---------- deliver ---------- */
-  .ck-brand {
-    display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: clamp(18px, 3vw, 40px);
-  }
-  .ck-swatches {
-    display: grid;
-    gap: 12px;
-  }
-  .ck-swatches li {
-    display: grid;
-    align-content: end;
-    gap: 2px;
-    min-height: 120px;
-    padding: 18px 22px;
-    border-radius: 20px;
-    font-weight: 600;
-    transform-origin: left;
-  }
-  .ck-swatches b {
-    font-size: 1.5rem;
-    font-weight: 900;
-    letter-spacing: -0.02em;
-  }
-  .sw-green {
-    background: var(--ck-green);
-    color: #fff;
-  }
-  .sw-white {
-    background: #fff;
-    box-shadow: 0 0 0 1px var(--ck-rule);
-  }
-  .sw-turmeric {
-    background: var(--ck-turmeric);
-  }
-  .ck-type {
-    display: grid;
-    align-content: center;
-    justify-items: start;
-    gap: 6px;
-    padding: 28px 32px;
-    border-radius: 20px;
-    background: #fff;
-    box-shadow: 0 0 0 1px var(--ck-rule);
-    font-weight: 600;
-    color: var(--ck-ink-2);
-  }
-  .ck-type p {
-    display: grid;
-  }
-  .ck-type b {
-    font-size: 1.75rem;
-    font-weight: 900;
-    color: var(--ck-ink);
-  }
-  .ck-type-aa {
-    font-size: clamp(5rem, 11vw, 9rem);
-    font-weight: 900;
-    line-height: 0.9;
-    letter-spacing: -0.05em;
-    color: var(--ck-ink) !important;
-  }
   .ck-kit-wrap > .ck-kicker {
     margin-bottom: 10px;
   }
   .ck-mood {
-    grid-column: 1 / -1;
+    display: block;
     width: 100%;
     height: auto;
     border-radius: 20px;
@@ -2043,6 +2069,119 @@ const journey = [
   }
 
   /* ---------- tablet / phone ---------- */
+  /* the journey map, after the persona */
+  .ck-journeymap > .ck-kicker {
+    margin-bottom: 10px;
+  }
+  .ck-jm-lede {
+    max-width: 60ch;
+    margin: 14px 0 clamp(24px, 4vh, 40px);
+    font-size: 1.0625rem;
+    color: var(--ck-ink-2);
+  }
+
+  /* the live prototype, in Cooked's colours: a turmeric Play, green links, a soft white stage */
+  .ck-proto {
+    --accent: var(--ck-green);
+    --accent-fill: var(--ck-turmeric);
+    --on-accent: #5c3b00;
+    --sand-3: var(--ck-ink-3);
+    --ink-rgb: 20 23 26;
+    --bg-rgb: 255 255 255;
+  }
+  .ck-proto > .ck-kicker {
+    margin-bottom: 10px;
+  }
+  /* the poster's phones are sized by the stage's width: kept to a width they fit at */
+  .ck-proto :global(.pt) {
+    max-width: 940px;
+    margin: 0 auto;
+  }
+  .ck-proto :global(.pt-stage) {
+    border-radius: 22px;
+    border-color: var(--ck-rule);
+  }
+  .ck-proto :global(.pt-bar) {
+    font-weight: 600;
+  }
+
+  /* ---------- pieces of the app beside the research ---------- */
+  .ck-shard {
+    position: relative;
+    z-index: 2;
+    width: fit-content;
+    max-width: 100%;
+  }
+  /* under the third card of a four-up row: "Trust comes from repeat…", "Trust & safety" */
+  .ck-shard-obs,
+  .ck-shard-needs {
+    margin: -14px 0 0 calc(50% + 4px);
+  }
+  .ck-shard-needs {
+    --sh-w: 300px;
+  }
+  /* hangs off the persona card's lower right corner, into room made below it */
+  .ck-persona-top,
+  .ck-recipe-wrap {
+    position: relative;
+  }
+  .ck-persona-top {
+    margin-bottom: 230px;
+  }
+  .ck-shard-persona {
+    position: absolute;
+    top: calc(100% - 40px);
+    right: -30px;
+    --sh-w: 320px;
+  }
+  /* rests on the recipe card's empty right half, by "Build trust through human connection" */
+  .ck-shard-chef {
+    position: absolute;
+    top: 50%;
+    left: calc(50% + 150px);
+    width: 300px;
+    --sh-w: 300px;
+  }
+  @media (max-width: 1100px) {
+    .ck-persona-top {
+      margin-bottom: 28px;
+    }
+    .ck-shard-persona {
+      position: relative;
+      top: auto;
+      right: auto;
+      margin: -30px 4% 0 auto;
+    }
+    .ck-shard-chef {
+      position: relative;
+      top: auto;
+      left: auto;
+      margin: -24px 6% 0 auto;
+    }
+  }
+  @media (max-width: 900px) {
+    .ck-shard-obs,
+    .ck-shard-needs {
+      margin: 24px 0 0 auto;
+    }
+  }
+  @media (max-width: 640px) {
+    .ck-shard,
+    .ck-shard-persona,
+    .ck-shard-chef,
+    .ck-shard-obs,
+    .ck-shard-needs {
+      margin: 24px auto 0;
+    }
+    .ck-shard {
+      width: min(330px, 100%);
+    }
+    .ck-shard :global(.sh) {
+      width: 100%;
+      transform: rotate(calc(var(--tilt) / 2));
+    }
+  }
+
   @media (max-width: 900px) {
     .ck-notes {
       grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -2060,9 +2199,6 @@ const journey = [
     .ck-needs,
     .ck-said {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-    .ck-brand {
-      grid-template-columns: 1fr;
     }
     .ck-persona-card {
       grid-template-columns: 1fr;
@@ -2178,9 +2314,13 @@ const journey = [
     .ck-others-grid {
       grid-template-columns: 1fr;
     }
-    /* phones: dots only */
-    .ck-dock-tag {
+    /* phones: there's no room for six names, so only the current course is named;
+       the dots stay in their one line on the right */
+    .ck-dock a:not(:global(.is-active)) .ck-dock-tag {
       display: none;
+    }
+    .ck-dock a {
+      justify-content: flex-end;
     }
     .ck-journey-track {
       --ph-w: min(56vw, 30svh);

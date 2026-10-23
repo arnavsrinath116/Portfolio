@@ -7,10 +7,10 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 | | |
 |---|---|
-| **Time spent** | **~22 h 40 min** of active build time over 11 days (2026-10-12 → 2026-10-22), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
-| **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-22 15:20 UTC): **65%** of the current 5-hour limit and **43%** of this week's limit |
-| **Tokens** | About **2.17 M** tokens written by Claude, and about **1.39 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 34 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
+| **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
+| **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
+| **Commits** | 35 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,151 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-10-23 · Tracker: the brief becomes an HMW
+- **Read the signal:** "The brief" is now a How Might We, labelled "How might we" in the same small label style:
+  - "How might we give students a **small physical push** to finish their assignments, with something on the desk that's harder to ignore than an app?"
+  - The highlighted phrase stays the same.
+  - Neither the A3 nor the A4 board has an HMW, so this is the brief's own wording, reframed as a question.
+- **Subtitle:** the chapter's subtitle now matches: "From notes to one clear question".
+
+## 2026-10-23 · Course menus: one name at a time
+- **Feedback:** the menu opening with every name at each new section was too much.
+- **Now:** while a section's header is on screen, the panel names just that section beside its pill. Hovering the panel, or tabbing into it, still shows every name.
+- **The one name sits in its own glass pill:** beside its dot, sized to the word (clear glass for Cooked, smoked for the tracker). The capsule of dots keeps its slim width, and the full panel with every name appears only on hover or focus.
+  - **Bug, from a screen recording:** at first the pill was the panel's own name tag, restyled between floating and in-panel. Scrolling back and forth over a header switched it between the two, and its width animated inside the panel. For a moment the panel ballooned into a tall box with the name cut off.
+  - **Fix:** the pill is now a separate element (`[data-dock-now]` / `[data-rail-now]`) that only fades and slides. The script fills in the current name and lines it up with that row (`--now-y`). The panel's own names are used only for the hover view, so neither changes shape when the other shows.
+- **Applies to both menus:** Cooked's course menu and the tracker's chapter rail.
+
+## 2026-10-23 · Tracker: the full user persona
+- **Why:** the persona was a monogram ("RS"), a one-line profile and two cut-down lists. It now follows the A4 board's "User Persona" slide in full.
+- **Layout:** a datasheet for the person the box is for, in the circuit-board style.
+  - **Photo:** her photo from the board, rendered from the PDF at 3× and saved as `persona-riya.webp` (560 px, 44 KB), captioned "User persona".
+  - **Header:** a copper "University student" kicker and her name.
+  - **Spec row**, like a pin table: Age 20 · Location Pune (hostel) · Course Undergraduate.
+  - **About:** 3 lines.
+  - **Three lists, each with an LED:** Behaviour (amber, 4), Pain points (red, 5), Goals (green, 4).
+- **Text:** the board's wording, with only light tidying (for example "Reduce phone usage" → "Reduce phone use"). The old shortened lines are gone.
+- **Smaller screens:** at 900 px and below the photo shrinks to a 200 px portrait above the details. The lists stack at 760 px, and the spec row becomes label and value lines on phones.
+
+## 2026-10-23 · Course menus in liquid glass
+- **Like Apple's Control Center:** the Cooked course menu and the tracker's chapter rail are now glass panels. The page behind blurs (14 px) and saturates, and they sit on a soft drop shadow.
+  - A bright rim catches light along the top edge, a sheen falls diagonally across the surface, and a faint darker line runs along the bottom edge.
+  - Corners are 18 px, so the folded column of dots reads as a glass capsule.
+- **Two tints:**
+  - Cooked: clear glass, tinted with its page colour at 32%.
+  - Tracker: smoked glass, a dark slate at 42% with a pale rim.
+
+## 2026-10-23 · Tracker: the chapter rail folds and opens like Cooked's
+- **Same behaviour as Cooked's course menu, in the tracker's own circuit style:** one dark panel with a fine line, even 29 px rows, the chapter names in one left-aligned column, and the LEDs in one line on the right, with the current one lit copper.
+- **Folding:** it rests folded to its LEDs, and opens while any chapter header is on screen (top at 85% until its bottom passes 15%). Past the header, it folds back. Hovering or keyboard focus opens it any time.
+- **Stages:** the stage under each name (Discover, Define…) is no longer drawn, but screen readers still read it.
+- **Phones:** only the current chapter is named.
+- **HMI** has no rail to change: it is still a placeholder project, and its double-diamond sidebar is always visible.
+
+## 2026-10-23 · Cooked: every course named in the menu
+- **Feedback:** people wanted to see all the steps, not dots that only named themselves on hover.
+- **First try, replaced the same day:** a separate tag beside each dot. Each tag was sized to its own word, and the current one was taller, so the boxes looked mismatched.
+- **Now: one panel with six even rows.**
+  - Each row is 30 px tall.
+  - The names (Starter, Ingredients, Recipe, Kitchen, Plating, Dessert) sit in one left-aligned column, at 12 px.
+  - The dots form one line on the right.
+  - The current course has the dark bold name and the green pill; the others are grey, and turn green on hover.
+  - The stage names (Discover, Define…) are no longer drawn, but screen readers still read them with each name.
+- **Phones:** the same panel, naming only the current course, with the dots still in their one line.
+- **Folds to its dots:** the panel rests as the slim column of dots, and opens only while a course's header is on screen: the four chapter headers, and Dessert's "Imagine this again".
+  - Each header opens it from when its top reaches 85% of the screen until its bottom passes 15%. Past the header, it folds back.
+  - The names slide out from behind the dots.
+  - Hovering or keyboard focus opens it any time.
+  - A first version opened on a 2.6 s timer whenever the course changed; it was replaced the same day.
+
+## 2026-10-23 · Cooked: a user journey map
+- **Why:** neither the case study, the FigJam board nor the two decks had a journey map, so one is built from the existing research: the interview quotes, the persona's pain points and her behaviours.
+- **Where:** Define, right after the full persona. Title: "A weeknight dinner, today"; the lede says it's mapped from the interviews and her pain points.
+- **Six steps** of Ananya ordering in after work, with today's apps: the day ends → deciding what to eat → ordering → waiting → eating → after the meal.
+- **Each step has:**
+  - a number;
+  - a short description;
+  - its touchpoints, as chips (for example Swiggy, Zomato, Box8, the cooking-instructions note, order tracking, the rating prompt);
+  - one high, green with a +;
+  - one low, turmeric with a −.
+  - The ordering low is the interview quote "Most apps aren't accommodating of specific requests".
+- **Mood line:** runs across all six steps, from High to Low. It draws in as you scroll, and its dots pop in. The highest point is green (eating) and the lows are turmeric (deciding, waiting, after the meal).
+  - The line is drawn at about the band's on-screen proportions. Keeping the stroke an even width with SVG's non-scaling-stroke setting broke the draw-in animation and left gaps.
+- **Layout:** a six-column grid. Below 1120 px it scrolls sideways inside its own box, with a "Scroll sideways" hint, and the page never overflows. The map is revealed as one piece, so the cards don't slide out of the scrolling box.
+- **File:** `CookedJourney.astro`.
+
+## 2026-10-23 · Cooked: the full persona
+- **What's new:** the whole persona from the FigJam board's "Persona Archetype" frame, read again from the board, now sits under the persona card. The card itself is unchanged.
+- **Always visible (left card):**
+  - **Ananya Mehta, "The home manager"**, with six facts as small green icons: 32 · Mumbai · Marketing executive · No full-time cook · Busy schedule · Husband + 1 child.
+  - Her bio.
+  - The key insight, on a turmeric note.
+- **Behind tabs (right card),** with the same sliding ink pill as the UI kit:
+  - **Goals:** 4 personal and 6 food goals.
+  - **Motivations:** 7.
+  - **Pain points:** 9, in two columns on wide screens.
+  - **Behaviours:** 5, plus the apps she uses today (Swiggy, Zomato, Dunzo, Box8, as plain text chips, not logos).
+- **Edits to the board's text:**
+  - Fixed typos: "Aanya" → "Ananya"; "bas" → "but".
+  - Dropped a stray "Motivations" bullet.
+  - Tightened a few lines lightly, for example "Reduce dependency on unhealthy takeout" → "Depend less on unhealthy takeout".
+  - Her photo is the one from the board: the persona frame is a single pasted image, so it was exported at full size (6900 px) and cropped to its circle. It sits round, beside her name, as `persona-ananya.webp` (480 px, 18 KB). The card above keeps its line drawing.
+- **The spice and oil picker** now hangs off the persona card itself, not off the bottom of the whole block.
+- **Layout:** on phones the two cards stack, and the facts and lists go to one column.
+- **File:** `CookedPersona.astro`.
+
+## 2026-10-23 · Cooked: "Imagine this" is back
+- **Opener restored:** the 2026-10-15 problem-statement opener is undone, and the original beats return word for word: "Imagine this." → "A long day. You're tired. So you order in." → "…and you have no real CONTROL."
+- **Unchanged:** the seesaw, the timing and everything else in the starter.
+
+## 2026-10-23 · Cooked: the working prototype in the case study
+- **Try it yourself:** a new block in Deliver, after the chef-side screens and before "Beyond the screen". It is the same clickable Figma prototype the UI design skill shows, using the shared `Prototype` component.
+  - It reads the Cooked entry from `skills.ts`, so the two stay in sync.
+  - As before, a poster of three screens shows first, and the heavy Figma embed loads only when Play is pressed.
+- **In Cooked's colours:** a turmeric Play button, a green "Open in Figma" link, and a soft white stage with Cooked's 22 px corners.
+  - The stage is capped at 940 px wide. The poster's phones are sized from the stage's width, so at full case-study width they ran taller than the stage.
+- **Poster:** the third screen is now Customise dish (spice level and cooking oil) instead of the chef sign-up's cuisine step. This changes both the case study and the UI design skill, and the unused `cooked-cuisine.webp` is removed.
+
+## 2026-10-23 · Cooked: pieces of the app in the research
+The opening chapters read text-heavy, so four small pieces of the real Cooked screens now sit beside the points they answer. Nothing that was there changed.
+
+- **The pieces** are live HTML in the app's own styling, not phone mockups. Each one is tilted a few degrees, has a small green "From the app · …" label, and slides in as it's reached.
+
+| Where | Point it answers | From the app |
+|---|---|---|
+| Discover · What we noticed | "Trust comes from repeat, familiar meals" | Home's Repeat Last Meal list, with two orders |
+| Define · Persona | Customises before choosing; checks ingredients | Customise dish: Spice Level and Cooking Oil pickers, which respond to taps |
+| Define · What they're hungry for | "Trust & safety" | Three lines of the chef's hygiene declaration |
+| Define · The recipe | "Build trust through human connection" | A Select chefs card (Maria Rodriguez, 4.9) |
+
+- **Placement:** two pieces hang just under the third card of their four-card rows. The pickers hang off the persona card's lower right corner, with room made below it. The chef card rests on the recipe card's empty right half.
+  - At tablet widths the persona and chef pieces drop under their cards.
+  - On phones every piece sits full width under its block, at half the tilt.
+- **Images:** the dish thumbnails and the chef portrait are cropped from the existing screens: `shard-carbonara`, `shard-salmon` and `shard-maria.webp`, 2–10 KB each.
+- **Files:** `CookedShard.astro` holds the four pieces.
+
+## 2026-10-23 · Cooked: the full UI kit, in tabs
+- **Back to the full kit.** The distilled kit is replaced by the full one from 2026-10-14, rebuilt from the session transcript. It has five parts:
+  - Colour tokens: 18 tokens in three columns.
+  - Contrast: 8 pairs, calculated with the WCAG formula.
+  - Type scale: 10 Satoshi steps, now set in real Cooked lines instead of "The quick brown fox".
+  - Buttons: 5 variants at 3 sizes.
+  - Components: pressables, step dots, Continue, choice cards, and the diner and chef navs.
+- **Tabs, not scroll.** Each part sits behind a tab, so the block is only as tall as the open part. The tab bar is itself a Cooked bottom nav, with the ink pill sliding to the open tab.
+  - The open part's height eases to the new one, and its pieces arrive in turn.
+  - Contrast ratios count up each time that tab opens.
+  - The components demo plays once, the first time that tab opens.
+  - Arrow keys move between tabs. On phones the tabs wrap to a second row, and the pill follows across rows.
+- **Pressables move the step dots on.**
+- **Removed:**
+  - The three swatches (Green, White, Turmeric) and the Satoshi card above the kit, since the Colour and Type tabs now cover them. The moodboard stays.
+  - The note under the contrast cards.
+
+## 2026-10-22 · Work log is a timeline
+- About → Work log is now a timeline instead of a numbered register. A big year label sits on the left, then a rail with a dot per entry, then the title, a line about it, and pill links.
+- The "Now" dot is filled in the accent with a soft halo. An entry that happened within the one above it gets a smaller dot.
+- Years: Now (2024 – 2028), 2026, 2025, 2024. Real entries: Now, B.Des Experience Design at FLAME University, Pune, with a minor in Business Analytics (and the Résumé pill); under it, a 2-month mentorship with the Design Director of Tata Elxsi (2026) and 2 months of NGO work at AAS, Aim for the Awareness of Society (2025); then 2024, grades 11–12 at GD Goenka, Indore. The "Next" entry and the placeholder rows are gone, and the intro line now reads "Where I've studied, and who I've learned from."
 
 ## 2026-10-22 · Portrait in About; the footer says "Let's get in touch"
 - About → About me now shows Arnav's photo (`public/about/arnav.webp`). It was turned 1.5° clockwise to level it (measured off the column and mural edges), then cropped in about 1.25× to the frame's 4:5, at 960×1200 and 149 KB.

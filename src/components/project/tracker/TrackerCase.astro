@@ -105,6 +105,7 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
   <!-- the rail: one LED per chapter -->
   <div class="tk-rail-wrap" data-tk-rail>
     <nav class="tk-rail" aria-label="Build log chapters">
+      <span class="tk-rail-now" aria-hidden="true" data-rail-now></span>
       <ol>
         {
           chapters.map((c) => (
@@ -132,32 +133,57 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
 
     <div class="tk-block">
       <p class="tk-big" data-a="up">She studies for hours.<br /><span>Gets very little done.</span></p>
+      <!-- the user persona, as on the A4 board: a datasheet for the person the box is for -->
       <div class="tk-persona" data-a="up">
-        <div class="tk-persona-id">
-          <span class="tk-avatar" aria-hidden="true">RS</span>
-          <div>
-            <p class="tk-persona-name">Riya Sharma</p>
-            <p class="tk-mutedline">20 · undergrad · Pune hostel</p>
-          </div>
-        </div>
-        <div class="tk-pins">
-          <div>
-            <p class="tk-pins-head"><i class="tk-led tk-led-red"></i>Pain points</p>
+        <figure class="tk-persona-photo">
+          <img src={img('persona-riya')} alt="Riya, the persona: a smiling university student with a backpack, holding a yellow notebook" width="560" height="906" loading="lazy" decoding="async" />
+          <figcaption>User persona</figcaption>
+        </figure>
+        <div class="tk-persona-main">
+          <p class="tk-persona-kick">University student</p>
+          <p class="tk-persona-name">Riya Sharma</p>
+          <dl class="tk-persona-spec">
+            <div><dt>Age</dt><dd>20</dd></div>
+            <div><dt>Location</dt><dd>Pune (hostel)</dd></div>
+            <div><dt>Course</dt><dd>Undergraduate</dd></div>
+          </dl>
+          <div class="tk-persona-about">
+            <p class="tk-pins-head">About</p>
             <ul>
-              <li>Phone always within reach</li>
-              <li>Unplanned breaks</li>
-              <li>Doesn’t track real focus time</li>
-              <li>Ignores productivity apps</li>
+              <li>Busy student managing assignments, deadlines and a social life</li>
+              <li>Studies regularly, but struggles with consistency</li>
+              <li>Wants to be productive, but gets easily distracted</li>
             </ul>
           </div>
-          <div>
-            <p class="tk-pins-head"><i class="tk-led tk-led-green"></i>Goals</p>
-            <ul>
-              <li>Stay focused for longer</li>
-              <li>Less phone while studying</li>
-              <li>See real productivity</li>
-              <li>Build a study habit</li>
-            </ul>
+          <div class="tk-pins">
+            <div>
+              <p class="tk-pins-head"><i class="tk-led tk-led-amber"></i>Behaviour</p>
+              <ul>
+                <li>Studies at a desk with laptop + phone nearby</li>
+                <li>Frequently checks her phone while studying</li>
+                <li>Takes unplanned breaks</li>
+                <li>Uses productivity tools, but doesn’t stick to them</li>
+              </ul>
+            </div>
+            <div>
+              <p class="tk-pins-head"><i class="tk-led tk-led-red"></i>Pain points</p>
+              <ul>
+                <li>Feels she studies for long but achieves very little</li>
+                <li>Gets distracted by social media</li>
+                <li>Doesn’t track actual productive time</li>
+                <li>Feels guilty after wasting time</li>
+                <li>Finds apps easy to ignore</li>
+              </ul>
+            </div>
+            <div>
+              <p class="tk-pins-head"><i class="tk-led tk-led-green"></i>Goals</p>
+              <ul>
+                <li>Stay focused for longer</li>
+                <li>Reduce phone use while studying</li>
+                <li>Track real productivity</li>
+                <li>Build better study habits</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -178,7 +204,7 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     <header class="tk-chead" data-tk-via>
       <p class="tk-pin"><span>02</span>Define</p>
       <h3 class="tk-h" id="tk-signal-t">Read the signal</h3>
-      <p class="tk-sub" data-a="up">From notes to one clear brief</p>
+      <p class="tk-sub" data-a="up">From notes to one clear question</p>
     </header>
 
     <div class="tk-block tk-split">
@@ -187,8 +213,8 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
         <img src={img('ideas-2')} alt="More handwritten idea notes" width="540" height="960" loading="lazy" decoding="async" />
       </div>
       <div>
-        <p class="tk-label" data-a="up">The brief</p>
-        <p class="tk-brief" data-a="up">Give students a <em>small physical push</em> to finish their assignments, something on the desk that’s harder to ignore than an app.</p>
+        <p class="tk-label" data-a="up">How might we</p>
+        <p class="tk-brief" data-a="up">How might we give students a <em>small physical push</em> to finish their assignments, with something on the desk that’s harder to ignore than an app?</p>
         <p class="tk-label" data-a="up">Mood</p>
         <div class="tk-mood" data-a="stagger">
           {['mood-1', 'mood-2', 'mood-3', 'mood-4', 'mood-5', 'mood-6'].map((m) => <img src={img(m)} alt="" width="300" height="300" loading="lazy" decoding="async" />)}
@@ -780,18 +806,41 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
   .tk-rail-wrap:global(.is-on) .tk-rail {
     pointer-events: auto;
   }
+  /* one panel: even rows, chapter names in one left-aligned column, LEDs in one line on the
+     right. It rests folded to its LEDs; while a chapter's header is on screen a pill beside it
+     names just that chapter, and on hover or focus the panel names them all */
   .tk-rail ol {
+    position: relative;
     display: grid;
-    justify-items: end;
-    gap: 4px;
+  }
+  /* liquid glass, smoked for the dark board: the board blurs and saturates behind it, a pale rim
+     catches light along the top edge, a faint sheen falls across it */
+  .tk-rail ol::before {
+    content: '';
+    position: absolute;
+    inset: -7px -9px;
+    border-radius: 18px;
+    background:
+      linear-gradient(150deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.03) 42%, rgb(255 255 255 / 0) 60%, rgb(255 255 255 / 0.06)),
+      rgb(28 32 37 / 0.42);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    backdrop-filter: blur(14px) saturate(1.6);
+    box-shadow:
+      inset 0 1px 1px rgb(255 255 255 / 0.28),
+      inset 0 0 0 1px rgb(255 255 255 / 0.12),
+      inset 0 -1px 1px rgb(0 0 0 / 0.3),
+      0 0 0 0.5px rgb(0 0 0 / 0.6),
+      0 14px 32px -14px rgb(0 0 0 / 0.75);
   }
   .tk-rail a {
+    position: relative;
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 5px 0 5px 10px;
+    justify-content: space-between;
     min-height: 29px;
+    padding: 0 2px;
     text-decoration: none;
+    white-space: nowrap;
     color: var(--sand);
   }
   .tk-rail a::after {
@@ -811,30 +860,80 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     box-shadow: 0 0 10px 2px rgb(255 107 44 / 0.7);
   }
   .tk-rail-tag {
-    display: grid;
-    justify-items: end;
-    padding: 5px 10px;
-    border-radius: 8px;
-    background: rgb(16 19 22 / 0.95);
-    box-shadow: 0 0 0 1px var(--tk-line);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    color: var(--sand-3);
+    display: block;
+    max-width: 0;
+    margin: 0;
+    overflow: hidden;
     opacity: 0;
-    translate: 6px 0;
+    font-size: 0;
+    transition:
+      max-width 0.45s var(--tk-ease),
+      margin 0.45s var(--tk-ease),
+      opacity 0.25s ease-out;
+  }
+  /* hovering the panel, or focusing into it, names every chapter */
+  .tk-rail:hover .tk-rail-tag,
+  .tk-rail:focus-within .tk-rail-tag {
+    max-width: 140px;
+    margin: 0 14px 0 4px;
+    opacity: 1;
+  }
+  /* at a new chapter, its name alone: a separate smoked-glass pill beside its LED, the size of
+     the word. It only fades; the panel's own names (for hover) never change shape */
+  .tk-rail-now {
+    position: absolute;
+    top: var(--now-y, 50%);
+    right: calc(100% + 18px);
+    padding: 6px 12px;
+    border-radius: 12px;
+    background:
+      linear-gradient(150deg, rgb(255 255 255 / 0.16), rgb(255 255 255 / 0.03) 50%, rgb(255 255 255 / 0.06)),
+      rgb(28 32 37 / 0.42);
+    -webkit-backdrop-filter: blur(14px) saturate(1.6);
+    backdrop-filter: blur(14px) saturate(1.6);
+    box-shadow:
+      inset 0 1px 1px rgb(255 255 255 / 0.28),
+      inset 0 0 0 1px rgb(255 255 255 / 0.12),
+      0 0 0 0.5px rgb(0 0 0 / 0.6),
+      0 10px 24px -12px rgb(0 0 0 / 0.75);
+    font-family: var(--font-letter);
+    font-size: 0.75rem;
+    font-weight: 800;
+    white-space: nowrap;
+    color: var(--sand);
+    pointer-events: none;
+    opacity: 0;
+    translate: 6px -50%;
     transition:
       opacity 0.25s ease-out,
-      translate 0.3s var(--tk-ease);
+      translate 0.35s var(--tk-ease),
+      top 0.35s var(--tk-ease);
   }
+  .tk-rail:global(.is-open):not(:hover):not(:focus-within) .tk-rail-now {
+    opacity: 1;
+    translate: 0 -50%;
+  }
+  /* the name is drawn; the stage (Discover, Define…) is read out with it, but not drawn */
   .tk-rail-tag b {
     font-family: var(--font-letter);
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--sand-3);
+    transition: color 0.25s ease-out;
+  }
+  .tk-rail a:global(.is-active) .tk-rail-tag b {
+    font-weight: 800;
     color: var(--sand);
   }
-  .tk-rail a:hover .tk-rail-tag,
-  .tk-rail a:focus-visible .tk-rail-tag {
-    opacity: 1;
-    translate: 0 0;
+  @media (hover: hover) {
+    .tk-rail a:hover .tk-rail-tag b {
+      color: var(--tk-copper);
+    }
+  }
+  .tk-rail a:focus-visible {
+    outline: 1px solid var(--tk-copper);
+    outline-offset: 1px;
+    border-radius: 6px;
   }
 
   /* ---------- chapter heads ---------- */
@@ -889,7 +988,7 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
   }
   .tk-persona {
     display: grid;
-    grid-template-columns: minmax(200px, 0.7fr) 1.6fr;
+    grid-template-columns: minmax(180px, 0.55fr) minmax(0, 2fr);
     gap: clamp(20px, 4vw, 48px);
     margin-top: clamp(28px, 4vh, 44px);
     padding: clamp(20px, 3vw, 32px);
@@ -897,30 +996,110 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     background: var(--tk-panel);
     box-shadow: inset 0 0 0 1px var(--tk-line);
   }
-  .tk-persona-id {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .tk-avatar {
+  .tk-persona-photo {
     display: grid;
-    place-items: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--tk-panel-2);
-    box-shadow: inset 0 0 0 1.5px var(--tk-copper);
+    align-content: start;
+    gap: 10px;
+    margin: 0;
+  }
+  .tk-persona-photo img {
+    width: 100%;
+    aspect-ratio: 560 / 760;
+    object-fit: cover;
+    object-position: 50% 20%;
+    border-radius: 12px;
+    box-shadow: inset 0 0 0 1px var(--tk-line);
+  }
+  .tk-persona-photo figcaption {
     font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--sand-3);
+  }
+  .tk-persona-main {
+    display: grid;
+    align-content: start;
+    gap: 22px;
+  }
+  .tk-persona-kick {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     color: var(--tk-copper);
   }
   .tk-persona-name {
-    font-size: 1.25rem;
+    margin-top: -14px;
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem);
     font-weight: 600;
+    line-height: 1.1;
+  }
+  /* the spec row reads like a datasheet's pin table */
+  .tk-persona-spec {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0;
+    border-top: 1px solid var(--tk-line);
+    border-bottom: 1px solid var(--tk-line);
+  }
+  .tk-persona-spec > div {
+    display: grid;
+    gap: 4px;
+    padding: 10px 14px 10px 0;
+  }
+  .tk-persona-spec > div + div {
+    padding-left: 14px;
+    border-left: 1px solid var(--tk-line);
+  }
+  .tk-persona-spec dt {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .tk-persona-spec dd {
+    margin: 0;
+    font-size: 1rem;
+    color: var(--sand);
+  }
+  .tk-persona-about li {
+    padding: 7px 0;
+    border-top: 1px solid var(--tk-line);
+    font-size: 0.9375rem;
+    color: var(--sand-2);
   }
   .tk-pins {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
+  }
+  /* narrower: the photo shrinks to a portrait beside nothing, and the lists stack */
+  @media (max-width: 900px) {
+    .tk-persona-photo {
+      width: min(200px, 60%);
+    }
+  }
+  @media (max-width: 760px) {
+    .tk-pins {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 18px;
+    }
+  }
+  /* phones: the spec row becomes label / value lines */
+  @media (max-width: 600px) {
+    .tk-persona-spec {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .tk-persona-spec > div,
+    .tk-persona-spec > div + div {
+      grid-template-columns: 90px minmax(0, 1fr);
+      align-items: baseline;
+      padding: 9px 0;
+      border-left: 0;
+    }
+    .tk-persona-spec > div + div {
+      border-top: 1px solid var(--tk-line);
+    }
   }
   .tk-pins-head {
     display: flex;
@@ -944,6 +1123,10 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
     width: 8px;
     height: 8px;
     border-radius: 50%;
+  }
+  .tk-led-amber {
+    background: #f5b54a;
+    box-shadow: 0 0 8px #f5b54a;
   }
   .tk-led-red {
     background: #ff5a4a;
@@ -1900,8 +2083,12 @@ const cmX = (cm: number) => 70 + (cm / 60) * 540;
       padding: 4px 7px;
       font-size: 0.6875rem;
     }
-    .tk-rail-tag {
+    /* phones: there's no room for every name, so only the current chapter is named */
+    .tk-rail a:not(:global(.is-active)) .tk-rail-tag {
       display: none;
+    }
+    .tk-rail a {
+      justify-content: flex-end;
     }
   }
   /* touch: each chapter LED is a full-size target */

@@ -28,15 +28,42 @@ const chapters = [
 
 const facts = [
   { dt: 'Name', dd: site.name },
-  { dt: 'Studying', dd: 'FLAME University' }, // PLACEHOLDER: confirm
+  { dt: 'Studying', dd: 'FLAME University' },
   { dt: 'Based in', dd: site.city },
   { dt: 'Works in', dd: site.disciplines.join(' · ') },
 ];
-// PLACEHOLDER: where I've worked and studied
-const record = [
-  { no: 'R-01', name: 'FLAME University', role: 'Design', state: 'Now' },
-  { no: 'R-02', name: 'Akela Studios', role: 'Animation · Traverse', state: 'Before' },
-  { no: 'R-03', name: 'Your studio', role: 'Product · UX · HMI', state: 'Next' },
+// where I've studied and who I've learned from, newest first. `year` is the big label on the
+// left and `when` the line under it; a `sub` entry happened within the one above it
+const log: { year?: string; when?: string; title: string; org: string; state: string; links?: { label: string; href: string; solid?: boolean; download?: boolean }[] }[] = [
+  {
+    year: 'Now',
+    when: '2024 – 2028',
+    title: 'B.Des Experience Design',
+    org: 'FLAME University, Pune · minor in Business Analytics',
+    state: 'now',
+    links: [{ label: 'Résumé', href: withBase(site.resume), download: true }],
+  },
+  {
+    year: '2026',
+    when: '2 months',
+    title: 'Mentorship',
+    org: 'Mentored by the Design Director of Tata Elxsi',
+    state: 'sub',
+  },
+  {
+    year: '2025',
+    when: '2 months',
+    title: 'NGO work',
+    org: 'AAS · Aim for the Awareness of Society',
+    state: 'sub',
+  },
+  {
+    year: '2024',
+    when: 'Grades 11 – 12',
+    title: 'Higher secondary',
+    org: 'GD Goenka, Indore',
+    state: 'past',
+  },
 ];
 const tools = [
   { no: 'T-01', name: 'Fusion 360', use: 'Parts that print and fit' },
@@ -152,30 +179,37 @@ const interests = [
           <div class="ab-two">
             <div>
               <p class="ab-kick">02 · Work log</p>
-              <h3 class="ab-h">Where I’ve <span class="hl">been building</span></h3>
-              <p class="ab-text">Study, studio work, and the next sheet in the set.</p>
+              <h3 class="ab-h">Where I’ve <span class="hl">been designing</span></h3>
+              <p class="ab-text">Where I’ve studied, and who I’ve learned from.</p>
             </div>
-            <div class="ab-reg">
-              <p class="ab-reg-head"><span>No.</span><span>Record</span></p>
-              <ol>
-                {
-                  record.map((r) => (
-                    <li>
-                      <span class="ab-no">{r.no}</span>
-                      <span class="ab-org">{r.name}</span>
-                      <span class="ab-role">{r.role}</span>
-                      <span class:list={['ab-state', `is-${r.state.toLowerCase()}`]}>{r.state}</span>
-                    </li>
-                  ))
-                }
-              </ol>
-              <p class="ab-links">
-                <a class="ab-link" href={withBase(site.resume)} download>
-                  Résumé
-                  <Icon name="arrow-down" />
-                </a>
-              </p>
-            </div>
+            <ol class="ab-tl">
+              {
+                log.map((e) => (
+                  <li class:list={['ab-tl-item', `is-${e.state}`]}>
+                    <p class="ab-tl-when">
+                      {e.year && <span class="ab-tl-year">{e.year}</span>}
+                      {e.when && <span class="ab-tl-span">{e.when}</span>}
+                    </p>
+                    <span class="ab-tl-rail" aria-hidden="true">
+                      <i />
+                    </span>
+                    <div class="ab-tl-body">
+                      <h4 class="ab-tl-title">{e.title}</h4>
+                      <p class="ab-tl-org">{e.org}</p>
+                      {e.links && (
+                        <p class="ab-tl-acts">
+                          {e.links.map((l) => (
+                            <a class:list={['ab-pill', { 'is-solid': l.solid }]} href={l.href} download={l.download}>
+                              {l.label}
+                            </a>
+                          ))}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                ))
+              }
+            </ol>
           </div>
         </article>
 
@@ -617,7 +651,7 @@ const interests = [
     margin: 0;
     font-stretch: 125%;
     font-weight: 640;
-    font-size: clamp(1.6rem, 3vw, 2.6rem);
+    font-size: clamp(1.5rem, 2.8vw, 2.6rem);
     line-height: 1;
     letter-spacing: -0.025em;
     text-transform: uppercase;
@@ -801,25 +835,137 @@ const interests = [
     color: var(--sand-3);
     text-align: right;
   }
-  .ab-state {
-    min-width: 56px;
+  /* 02 · work log: a timeline. Year on the left, a rail with a dot per entry, links as pills */
+  .ab-tl {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ab-tl-item {
+    display: grid;
+    grid-template-columns: 124px 22px minmax(0, 1fr);
+    column-gap: 16px;
+  }
+  .ab-tl-when {
+    display: grid;
+    align-content: start;
+    gap: 6px;
+    margin: 0;
+  }
+  .ab-tl-year {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+  }
+  .ab-tl-span {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .is-now .ab-tl-year {
+    color: var(--accent);
+  }
+  /* the rail runs from dot to dot */
+  .ab-tl-rail {
+    position: relative;
+  }
+  .ab-tl-rail::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 1px solid var(--line);
+  }
+  .ab-tl-item:first-child .ab-tl-rail::before {
+    top: 10px;
+  }
+  .ab-tl-item:last-child .ab-tl-rail::before {
+    bottom: auto;
+    height: 10px;
+  }
+  .ab-tl-rail i {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    width: 13px;
+    height: 13px;
+    border: 1.5px solid var(--sand-2);
+    border-radius: 50%;
+    background: var(--slate-2);
+    translate: -50% -50%;
+  }
+  /* something that happened within the entry above: a smaller dot, no year */
+  .is-sub .ab-tl-rail i {
+    width: 9px;
+    height: 9px;
+  }
+  .is-now .ab-tl-rail i {
+    border-color: var(--accent-fill);
+    background: var(--accent-fill);
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--accent) 22%, transparent);
+  }
+  .ab-tl-body {
+    padding-bottom: clamp(22px, 3.4vh, 36px);
+  }
+  .ab-tl-item:last-child .ab-tl-body {
+    padding-bottom: 0;
+  }
+  .ab-tl-title {
+    margin: 0;
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(0.95rem, 1.3vw, 1.125rem);
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .ab-tl-org {
+    margin: 6px 0 0;
+    font-size: 0.9375rem;
+    color: var(--sand-2);
+  }
+  .ab-tl-acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 0;
+  }
+  .ab-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.06em;
-    text-align: right;
     text-transform: uppercase;
-    color: var(--sand-2);
-  }
-  .ab-state.is-now {
+    text-decoration: none;
     color: var(--accent);
+    transition:
+      border-color var(--dur-base) var(--ease-out),
+      background-color var(--dur-base) var(--ease-out),
+      color var(--dur-base) var(--ease-out);
   }
-  /* dashed means not yet drawn, as on the skills index */
-  .ab-state.is-next {
-    justify-self: end;
-    min-width: 0;
-    padding-bottom: 2px;
-    border-bottom: 1px dashed var(--sand-3);
-    color: var(--sand-3);
+  .ab-pill.is-solid {
+    border-color: var(--accent-fill);
+    background: var(--accent-fill);
+    color: var(--on-accent);
+  }
+  @media (hover: hover) {
+    .ab-pill:hover {
+      border-color: var(--accent);
+    }
+    .ab-pill.is-solid:hover {
+      background: transparent;
+      color: var(--accent);
+    }
   }
 
   /* 03 · the kit: two frames from the photography sheet */
@@ -1171,9 +1317,12 @@ const interests = [
       grid-row: 2;
       text-align: left;
     }
-    .ab-state {
-      grid-column: 3;
-      grid-row: 1;
+    .ab-tl-item {
+      grid-template-columns: 76px 18px minmax(0, 1fr);
+      column-gap: 10px;
+    }
+    .ab-tl-year {
+      font-size: 0.8125rem;
     }
     .ab-btns svg:nth-child(2),
     .ab-star,

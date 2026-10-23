@@ -176,6 +176,36 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         ST(article.querySelector('.ck-hero')!, { start: 'top -35%', end: () => `+=${sc.scrollHeight}`, toggleClass: { targets: dock, className: 'is-on' } }),
       );
 
+    // it rests folded to its dots, and opens with every course's name while a course's header
+    // is on screen (Dessert's is its "Imagine this again"); past the header, it folds again
+    const rail = dock?.querySelector<HTMLElement>('.ck-dock');
+    if (rail) {
+      // the pill beside the rail carries the current name, lined up with its row
+      const now = rail.querySelector<HTMLElement>('[data-dock-now]');
+      const sync = () => {
+        const a = rail.querySelector<HTMLElement>('a.is-active');
+        if (!a || !now) return;
+        now.textContent = a.querySelector('.ck-dock-label')?.textContent ?? '';
+        rail.style.setProperty('--now-y', `${a.offsetTop + a.offsetHeight / 2}px`);
+      };
+      sync();
+      new MutationObserver(sync).observe(rail, { subtree: true, attributes: true, attributeFilter: ['class'] });
+      const open = new Set<number>();
+      article.querySelectorAll<HTMLElement>('.ck-chead, .ck-again').forEach((h, i) =>
+        ScrollTrigger.create(
+          ST(h, {
+            start: 'top 85%',
+            end: 'bottom 15%',
+            onToggle: (self) => {
+              if (self.isActive) open.add(i);
+              else open.delete(i);
+              rail.classList.toggle('is-open', open.size > 0);
+            },
+          }),
+        ),
+      );
+    }
+
     // the full user flow: fits the card by default; click or "Zoom in" to read it, drag to move around
     const view = article.querySelector<HTMLElement>('[data-cf-view]');
     const zoomBtn = article.querySelector<HTMLButtonElement>('[data-cf-zoom]');
@@ -250,6 +280,72 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         new ResizeObserver(() => pick(tabs.find((t) => t.classList.contains('is-on')) ?? tabs[0])).observe(nav);
         (nav as HTMLElement & { _pick?: (t: HTMLElement) => void })._pick = pick;
       });
+      // pressables: each press moves the step dots on
+      const dots = Array.from(kit.querySelectorAll<HTMLElement>('[data-kit-dots] i'));
+      let dot = 0;
+      const step = () => {
+        dot = (dot + 1) % dots.length;
+        dots.forEach((d, k) => d.classList.toggle('is-on', k === dot));
+      };
+      kit.querySelectorAll('[data-kit-press]').forEach((b) => b.addEventListener('click', step));
+
+      // the kit's parts sit behind tabs; the open part's height eases to the new one
+      const bar = kit.querySelector<HTMLElement>('[data-kit-tabs]');
+      const stage = kit.querySelector<HTMLElement>('[data-kit-stage]');
+      const parts = Array.from(kit.querySelectorAll<HTMLButtonElement>('[data-kit-tab]'));
+      const panels = Array.from(kit.querySelectorAll<HTMLElement>('[data-kit-panel]'));
+      let part = 0;
+      let demoed = false;
+      const place = () => {
+        const t = parts[part];
+        bar?.style.setProperty('--pw', `${t.offsetWidth}px`);
+        bar?.style.setProperty('--ph', `${t.offsetHeight}px`);
+        bar?.style.setProperty('--px', `${t.offsetLeft}px`);
+        bar?.style.setProperty('--py', `${t.offsetTop}px`);
+        // the first real placement lands in place; only later moves slide
+        if (bar && !bar.dataset.set && t.offsetWidth) requestAnimationFrame(() => (bar.dataset.set = ''));
+      };
+      // a part's moment as it opens: the ratios count up; the components play a short demo once
+      const opened = (panel: HTMLElement) => {
+        if (reduce) return;
+        panel.querySelectorAll<HTMLElement>('[data-kit-num]').forEach((n, k) => {
+          const v = { x: 1 };
+          gsap.to(v, { x: Number(n.dataset.kitNum), duration: 0.9, delay: 0.1 + k * 0.045, ease: 'power2.out', onUpdate: () => (n.textContent = v.x.toFixed(1)) });
+        });
+        if (panel.id !== 'kit-panel-components' || demoed) return;
+        demoed = true;
+        const nav = panel.querySelector<HTMLElement & { _pick?: (t: HTMLElement) => void }>('[data-kit-nav]');
+        const tabs = nav ? Array.from(nav.querySelectorAll<HTMLElement>('.knav-tab')) : [];
+        setTimeout(() => choices[0]?.click(), 500);
+        setTimeout(step, 800);
+        tabs.slice(1).forEach((t, k) => setTimeout(() => nav?._pick?.(t), 1100 + k * 650));
+        if (tabs[0]) setTimeout(() => nav?._pick?.(tabs[0]), 1100 + 2 * 650);
+      };
+      const open = (i: number) => {
+        if (i === part || !stage) return;
+        const from = stage.offsetHeight;
+        part = i;
+        parts.forEach((t, k) => {
+          t.classList.toggle('is-on', k === i);
+          t.setAttribute('aria-selected', String(k === i));
+          t.tabIndex = k === i ? 0 : -1;
+        });
+        panels.forEach((p, k) => (p.hidden = k !== i));
+        place();
+        if (!reduce) gsap.fromTo(stage, { height: from }, { height: stage.offsetHeight, duration: 0.45, ease: 'power3.out', clearProps: 'height' });
+        opened(panels[i]);
+      };
+      parts.forEach((t, i) => t.addEventListener('click', () => open(i)));
+      // arrow keys move between the tabs, as in any tab list
+      bar?.addEventListener('keydown', (e) => {
+        const k = e.key;
+        if (k !== 'ArrowRight' && k !== 'ArrowLeft') return;
+        e.preventDefault();
+        const i = (part + (k === 'ArrowRight' ? 1 : parts.length - 1)) % parts.length;
+        open(i);
+        parts[i].focus();
+      });
+      if (bar) new ResizeObserver(place).observe(bar);
     }
 
     // the wordmark lands with a little bounce each time the card opens
@@ -491,24 +587,6 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         0,
       );
       hold(tl, 0.12);
-    }
-
-    // UI kit: a short demo plays once as it arrives: a choice is made, Continue turns on, the nav moves
-    if (kit) {
-      const nav = kit.querySelector<HTMLElement & { _pick?: (t: HTMLElement) => void }>('[data-kit-nav]');
-      const first = kit.querySelector<HTMLButtonElement>('[data-kit-choice]');
-      ScrollTrigger.create(
-        ST(kit, {
-          start: 'top 55%',
-          once: true,
-          onEnter: () => {
-            const tabs = nav ? Array.from(nav.querySelectorAll<HTMLElement>('.knav-tab')) : [];
-            setTimeout(() => first?.click(), 500);
-            tabs.slice(1).forEach((t, k) => setTimeout(() => nav?._pick?.(t), 1100 + k * 650));
-            if (tabs[0]) setTimeout(() => nav?._pick?.(tabs[0]), 1100 + 2 * 650);
-          },
-        }),
-      );
     }
 
     // dessert: the turmeric finale opens out
