@@ -2,7 +2,8 @@
 Builds the Music room in Blender, bakes its sunset light, and exports it for the web.
 
   /Applications/Blender.app/Contents/MacOS/Blender --background --factory-startup \
-    --python tools/room/build_room.py -- [--quick]
+    --python tools/room/build_room.py -- [--quick | --audit | --preview out.png]
+  tools/room/compress.sh   # then: WebP textures + Draco, ~475 KB instead of ~1.1 MB
 
 Everything static is modelled here, lit by a low sun through the window, and baked (Cycles,
 Metal) into one texture per surface group, so the browser shows real bounce light and soft
@@ -240,7 +241,8 @@ cyl('TT_Knob', 0.018, 0.012, (PX - 0.19, PY - 0.14, TZ + 0.091), 'black')
 
 # record stacks on the table: a lean against the wall, a flat pile, books
 for i in range(6):
-    box(f'Lean_{i}', (0.31, 0.012, 0.31), (TX - 0.72 + i * 0.012, TY + 0.25, TZ + 0.155), f'sleeve{i % 4}', rot=(math.radians(-14 - i * 1.5), 0, 0))
+    # fanned front to back, each just clear of the one behind (side by side, their faces shared planes and flickered)
+    box(f'Lean_{i}', (0.31, 0.012, 0.31), (TX - 0.72 + i * 0.004, TY + 0.25 - i * 0.018, TZ + 0.155), f'sleeve{i % 4}', rot=(math.radians(-14 - i * 1.5), 0, 0))
 for i in range(5):
     box(f'Flat_{i}', (0.31, 0.31, 0.009), (TX - 0.52 + (i % 2) * 0.01, TY - 0.12 + (i % 3) * 0.008, TZ + 0.0045 + i * 0.009), f'sleeve{(i + 1) % 4}', rot=(0, 0, math.radians(4 - i * 2)))
 for i, (w, h) in enumerate([(0.22, 0.04), (0.2, 0.035), (0.21, 0.03), (0.18, 0.045)]):
@@ -249,13 +251,14 @@ for i, (w, h) in enumerate([(0.22, 0.04), (0.2, 0.035), (0.21, 0.03), (0.18, 0.0
 # frames on the left of the window: the drawing-sheet poster and two photos
 def frame(name, w, h, loc, mat, tilt=0):
     box(name + '_F', (w + 0.04, 0.025, h + 0.04), loc, 'black', rot=(0, 0, 0))
-    o = plane(name, w, h, (loc[0], loc[1] - 0.014, loc[2]), (math.radians(90), 0, 0), mat)
+    # the print sits 5 mm proud of the frame's face: any closer and the two flicker
+    o = plane(name, w, h, (loc[0], loc[1] - 0.0175, loc[2]), (math.radians(90), 0, 0), mat)
     return o
 
 
-frame('Poster', 0.48, 0.67, (-1.35, W_Y - 0.02, 1.85), 'poster')
-frame('Photo0', 0.42, 0.32, (-1.85, W_Y - 0.02, 2.2), 'photo0')
-frame('Photo1', 0.36, 0.27, (-1.95, W_Y - 0.02, 1.55), 'photo1')
+frame('Poster', 0.48, 0.67, (-1.35, W_Y - 0.0125, 1.85), 'poster')
+frame('Photo0', 0.42, 0.32, (-1.85, W_Y - 0.0125, 2.2), 'photo0')
+frame('Photo1', 0.36, 0.27, (-1.95, W_Y - 0.0125, 1.55), 'photo1')
 
 # the record shelf on the right: a walnut case, three bays of spines
 SX, SY = 2.05, 1.55
@@ -391,6 +394,43 @@ for o in list(scene.objects):
         for m in o.modifiers:
             bpy.context.view_layer.objects.active = o
             bpy.ops.object.modifier_apply(modifier=m.name)
+
+if '--audit' in args:
+    # which named objects overlap: coplanar triangles facing the same way flicker (z-fighting);
+    # facing opposite ways they're hidden, glued back to back
+    from mathutils.bvhtree import BVHTree
+    import bmesh
+    meshes = [o for o in scene.objects if o.type == 'MESH' and o.name != 'View']
+    data = {}
+    for o in meshes:
+        bm = bmesh.new()
+        bm.from_mesh(o.data)
+        bm.transform(o.matrix_world)
+        bmesh.ops.triangulate(bm, faces=bm.faces)
+        bm.faces.ensure_lookup_table()
+        data[o.name] = (BVHTree.FromBMesh(bm), [(f.normal.copy(), f.calc_center_median()) for f in bm.faces], bm)
+    out = {}
+    names = list(data)
+    for i, a_ in enumerate(names):
+        for b_ in names[i:]:
+            ta, fa, bma = data[a_]
+            tb, fb, _ = data[b_]
+            if a_ == b_:
+                tb = BVHTree.FromBMesh(bma)  # a tree doesn't report overlaps with itself
+            for ia, ib in ta.overlap(tb):
+                if a_ == b_ and (ia >= ib or fa[ia][1] == fb[ib][1]):
+                    continue
+                na, ca = fa[ia]
+                nb, cb = fb[ib]
+                d = na.dot(nb)
+                if abs(d) < 0.999 or abs((cb - ca).dot(na)) > 0.005:
+                    continue
+                key = (a_, b_, 'zfight' if d > 0 else 'back')
+                out.setdefault(key, [0, cb])
+                out[key][0] += 1
+    for (a_, b_, k), (n, c) in sorted(out.items(), key=lambda kv: -kv[1][0]):
+        print(f'AUDIT {k:6} {n:4}  {a_} <-> {b_}  at ({c.x:.2f}, {c.y:.2f}, {c.z:.2f})')
+    sys.exit(0)
 
 baked = []
 for g, prefixes in GROUPS.items():
