@@ -23,13 +23,15 @@ import { initClock } from './clock';
 import { initWordReveal } from './wordReveal';
 import { initAbout } from './about';
 import { initMusicRoom } from './musicRoom';
+import { lite } from './perf';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 let lenis: Lenis | null = null;
-if (!reduce) {
+// lite mode (weaker devices): native scrolling, no dust, no mercury cursor
+if (!reduce && !lite) {
   // a heavier glide: each wheel tick travels a little less and settles a little longer
   lenis = new Lenis({ lerp: 0.08, wheelMultiplier: 0.85, anchors: true });
   lenis.on('scroll', ScrollTrigger.update);
@@ -37,8 +39,10 @@ if (!reduce) {
   gsap.ticker.lagSmoothing(0);
 }
 
-initDust({ reduce });
-initFluid(); // the mercury cursor
+if (!lite) {
+  initDust({ reduce });
+  initFluid(); // the mercury cursor
+}
 
 initFrame();
 initHeader();

@@ -6,8 +6,8 @@ export const site = {
   email: '116.arnavsrinath@gmail.com',
   linkedin: 'https://www.linkedin.com/',
   resume: '/resume.pdf', // the PDF lives at public/resume.pdf
-  // PLACEHOLDER: city label. Time zone was read from this Mac; confirm it.
-  city: 'Your city',
+  // where I'm based; the clock's time zone covers both (IST)
+  city: 'Pune / Goa',
   timeZone: 'Asia/Kolkata',
   sheet: {
     number: 'A-000',

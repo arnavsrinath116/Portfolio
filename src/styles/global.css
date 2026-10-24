@@ -354,3 +354,24 @@ html.intro-pending .plotter {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ---------- lite mode (weaker devices, see scripts/perf.ts) ----------
+   Live glass blur redraws everything behind a panel on every scroll frame, which older GPUs
+   can't keep up with: in lite mode panels are solid instead, and the soft edge blur is off. */
+html.is-lite *,
+html.is-lite *::before,
+html.is-lite *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html.is-lite .edge-blur {
+  display: none !important;
+}
+html.is-lite .ck-dock ol::before,
+html.is-lite .ck-dock-now {
+  background: rgb(248 248 245 / 0.96) !important;
+}
+html.is-lite .tk-rail ol::before,
+html.is-lite .tk-rail-now {
+  background: rgb(26 30 35 / 0.96) !important;
+}

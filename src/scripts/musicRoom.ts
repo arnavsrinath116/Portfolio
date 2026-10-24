@@ -9,6 +9,7 @@
  * no audio files and no licences to worry about. A record can carry `src` (an audio file you own)
  * to play that instead.
  */
+import { maxDpr } from './perf';
 type THREE_ = typeof import('three');
 type CANNON_ = typeof import('cannon-es');
 
@@ -326,7 +327,7 @@ async function build(host: HTMLElement, reduce: boolean) {
 
   // ---- renderer, scene, camera ----
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(maxDpr());
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;

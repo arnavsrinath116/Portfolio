@@ -7,6 +7,7 @@
  * in proportion to where it sits on the axis, so the assembly opens up like an exploded
  * view, and the diagonal keeps the spread-out parts on the sheet.
  */
+import { lite, maxDpr } from './perf';
 type Three = typeof import('three');
 
 const EDGE_ANGLE = 40; // creases sharper than this are drawn; smooth curves are left to the silhouette
@@ -53,12 +54,12 @@ async function start(canvas: HTMLCanvasElement, reduce: boolean) {
   ]);
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const draco = new DRACOLoader().setDecoderPath(`${base}/draco/`);
-  const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(`${base}/models/jet.glb`);
+  const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(`${base}/models/${lite || window.matchMedia('(pointer: coarse)').matches ? 'jet-lite' : 'jet'}.glb`);
   draco.dispose();
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'low-power' });
   // phones draw at 1.5× (sharp enough for line art, far less work for a small GPU)
-  renderer.setPixelRatio(Math.min(devicePixelRatio, window.matchMedia('(pointer: coarse)').matches ? 1.5 : 2));
+  renderer.setPixelRatio(maxDpr(window.matchMedia('(pointer: coarse)').matches ? 1.5 : 2));
   renderer.autoClear = false; // the casings can take a pass of their own over the internals
   const scene = new THREE.Scene();
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, -20, 20);

@@ -8,6 +8,7 @@
  * A model marked for a section opens cut through its long axis (like a
  * section analysis in Fusion): the cut faces show in the accent blue.
  */
+import { maxDpr } from './perf';
 type Three = typeof import('three');
 type Lib = {
   THREE: Three;
@@ -182,7 +183,7 @@ async function start(fig: HTMLElement, reduce: boolean): Promise<Viewer> {
   const { THREE, GLTFLoader, DRACOLoader, OrbitControls } = await loadLib();
 
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(maxDpr());
   renderer.localClippingEnabled = true;
   stage.prepend(renderer.domElement);
 

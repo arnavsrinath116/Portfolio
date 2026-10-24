@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 36 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 37 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,32 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-10-24 · Based in Pune / Goa
+- **City:** the "Your city" placeholder in `site.ts` is now **Pune / Goa**. It shows in About → About me ("Based in") and in the footer clock ("Local time · Pune / Goa").
+- **Time zone:** the clock's Asia/Kolkata covers both cities.
+
+## 2026-10-24 · Lite mode for weaker devices
+**Why it lagged on weaker devices:**
+- Several effects run every frame at once: smooth scrolling, the mercury cursor, the full-page dust, the guide and wire lines.
+- Up to three WebGL scenes, with the hero jet at about 720k vertices drawn per frame, at up to 2× pixel ratio.
+- Live backdrop blur on the edge blur and the glass menus, which redraws everything behind them on every scroll frame.
+- About 1 MB of JavaScript.
+
+Strong devices were fine; weak ones couldn't keep up with all of it together.
+
+**What changed:**
+- **`src/scripts/perf.ts`** decides lite mode once, on load: 4 or fewer CPU cores, 4 GB of memory or less, data saver, or reduced motion. It sets `html.is-lite`. `?lite` / `?full` in the URL force either mode for the visit, for testing.
+- **In lite mode:**
+  - No dust canvas, no mercury cursor (the normal cursor is used), and native scrolling instead of Lenis.
+  - 3D draws at most 1.25× pixel ratio (`maxDpr()`), against 2× (1.5× on touch) otherwise. This covers the hero jet, the model viewers and the Music room.
+  - No backdrop blur anywhere and no edge blur. The glass menus and their name pills get solid 96% fills instead.
+  - **A lighter hero jet,** also used on every touch device: `jet-lite.glb` is welded and simplified with gltf-transform to about 30% of the jet (215k vertices drawn instead of 720k), then Draco-compressed. It's 357 KB instead of 985 KB and still crisp at hero size.
+- **Already in place:**
+  - three.js, the physics engine and every model load only when needed: the jet on the hero, the viewers as they come near, and the room when the Music tab opens.
+  - The jet, the viewers and the room pause off screen or when the tab is hidden, and the cursor sleeps when idle.
+- **Checked:** `?lite` gives no dust, no fluid cursor, no Lenis, `jet-lite.glb` and no edge blur. `?full` matches the site before this change. Neither mode logs console errors. This Mac (14 cores, 32 GB) gets full mode automatically.
+- **Dev:** `.claude/launch.json` now starts `astro dev` itself.
 
 ## 2026-10-23 · Music room: QA pass and a lighter file
 - **QA:** checked with the blender-asset-qa plugin, render profile at a 5 mm tolerance. A new `--audit` flag in `build_room.py` names which source objects overlap, before they're merged and baked.
