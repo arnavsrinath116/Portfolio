@@ -31,6 +31,29 @@ export function initAbout({ reduce }: { reduce: boolean }) {
     document.dispatchEvent(new CustomEvent('about:chapter', { detail: i }));
   };
 
+  // a tab tour: each time the window comes into view, the tabs behind light up left to right,
+  // so it's clear they can be opened (the styles live in About.astro)
+  const strip = sec.querySelector<HTMLElement>('[role="tablist"]');
+  if (strip && !reduce) {
+    let k = 0;
+    tabs.forEach((t) => !t.classList.contains('is-on') && t.style.setProperty('--i', String(k++)));
+    let touring = 0;
+    new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting || touring) return;
+        // restart the animation from its first frame, even if the class was only just removed
+        strip.classList.remove('ab-tabs-tour');
+        void strip.offsetWidth;
+        strip.classList.add('ab-tabs-tour');
+        touring = window.setTimeout(() => {
+          strip.classList.remove('ab-tabs-tour');
+          touring = 0;
+        }, (0.25 + k * 0.13 + 0.9) * 1000 + 100);
+      },
+      { threshold: 1, rootMargin: '0px 0px -20% 0px' },
+    ).observe(strip);
+  }
+
   if (reduce || window.matchMedia('(max-width: 760px)').matches) {
     sec.classList.add('is-flat');
     tabs.forEach((t, i) =>
