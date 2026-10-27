@@ -21,7 +21,6 @@ export interface Fluid {
 }
 
 const R = 11; // resting radius (px)
-const R_WRAP = 4; // what is left of the drop once it has wrapped an element
 const MAGNET_RANGE = 120;
 const PAD = 6; // gap between an element and the liquid wrapped around it
 
@@ -345,7 +344,8 @@ export function initFluid(): Fluid | null {
   // it stops), the motion angle, and how far it has pulled into a sphere
   const move = { st: 0, sv: 0, a: 0, ball: 0 };
   const mag = { x: 1, y: 0, amp: 0 };
-  const wrap = { on: 0, p: 0, entry: 0, at: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
+  // absorb: how much of the drop has gone into the ring (1 = all of it: a full takeover)
+  const wrap = { on: 0, p: 0, absorb: 0, entry: 0, at: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
   const flood = { x: 0, y: 0, r: 0, hole: 0 };
   // silver on dark surfaces, black ink on light ones. An open case study brings its own
   // world (Cooked is light, the tracker's board is dark); otherwise the site's theme decides
@@ -457,20 +457,30 @@ export function initFluid(): Fluid | null {
       wrap.radius = Math.max(3, rad + PAD);
       wrap.entry = Math.atan2((mouse.y - cy) / (r.height / 2), (mouse.x - cx) / (r.width / 2));
       wrap.at = wrap.entry;
+      // a full takeover: the drop pours itself into the ring round the element, and is gone
       gsap.killTweensOf(wrap);
-      gsap.to(wrap, { on: 1, duration: 0.2, ease: 'power2.out' });
-      gsap.to(wrap, { p: 1, duration: 0.6, delay: 0.06, ease: 'power3.out' });
+      gsap.to(wrap, { on: 1, duration: 0.15, ease: 'power2.out' });
+      gsap.to(wrap, { p: 1, duration: 0.35, ease: 'power3.out' });
+      gsap.to(wrap, { absorb: 1, duration: 0.25, ease: 'power2.out' });
       kick();
     };
     const leave = () => {
       if (!wrap.el || wrap.leaving) return;
       wrap.leaving = true;
       gsap.killTweensOf(wrap);
-      gsap.to(wrap, { p: 0, duration: 0.3, ease: 'power2.in' });
+      // the pointer comes back at once, whole and under the cursor (no spring back from the
+      // element's edge); the ring it leaves behind drains away on its own
+      wrap.absorb = 0;
+      for (const j of [head, midJ, tail]) {
+        j.x = mouse.x;
+        j.y = mouse.y;
+        j.vx = 0;
+        j.vy = 0;
+      }
+      gsap.to(wrap, { p: 0, duration: 0.18, ease: 'power2.in' });
       gsap.to(wrap, {
         on: 0,
         duration: 0.18,
-        delay: 0.24,
         ease: 'power2.in',
         onComplete: () => {
           wrap.el = null;
@@ -612,8 +622,8 @@ export function initFluid(): Fluid | null {
   const render = (now: number, rect: DOMRect | null, len: number) => {
     const time = (now - t0) / 1000;
     const s = Math.max(0, size.s);
-    // volume-ish: the drop thins as it stretches, and gives itself to the wrap
-    const base = (R + (R_WRAP - R) * wrap.p) * s;
+    // volume-ish: the drop thins as it stretches, and gives all of itself to the wrap
+    const base = R * (1 - wrap.absorb) * s;
     const r1 = base; // the arrow keeps its size while it moves (the trail is extra, not taken from it)
     const r2 = r1 * (1 - 0.45 * Math.min(len / 30, 1));
 

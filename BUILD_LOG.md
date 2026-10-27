@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 38 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 39 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,12 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-10-27 · Cursor: a full takeover on buttons, an instant release
+- **Before:** on a button the mercury cursor shrank to a 4 px bead riding round the ring, so a ball stayed visible. Leaving took about 0.4 s: the ring unwound, then the cursor sprang back from the button's edge to the pointer, dragging its trail, which felt stuck.
+- **Now, on a button:** the drop pours itself into the ring and is gone (`wrap.absorb` 0 → 1 over 0.25 s). The ring forms in 0.35 s, so the button is fully taken over.
+- **Now, on leaving:** the arrow is back under the pointer at once, at full size, with no spring from the edge and no trail. The ring it leaves behind drains away by itself in 0.18 s.
+- **Checked:** headless Chrome with real mouse events. One frame on the element shows the full ring with no ball; 60 ms after leaving, the arrow is under the pointer while the ring drains; after 0.4 s it's clean.
 
 ## 2026-10-25 · About: the tabs look clickable
 - **Problem:** the About window's other tabs read as part of a picture of a browser, so visitors didn't try them.
