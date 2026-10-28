@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 39 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 40 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,19 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-10-28 · Skills: each row shows its work on hover
+- **What:** hovering a sheet in the Skills index tips its finished works out of the row's right end, as small cards. They're tilted, overlapping and slightly off-height, a little messy on purpose. The work count and arrow fade out of the way.
+- **One image per work:** a work's first image, the middle screen of a prototype, or a film's poster.
+  - 3D modeling: Aston Martin and Traverse.
+  - UI design: the Nexo and Cooked phones.
+  - Product sketching: the hand mixer, the flight seat and the steering HMI.
+  - Photography: Debrecen.
+  - Sheets still in drafting show nothing.
+- **Motion:** pure CSS. The cards spring in one after another, 0.06 s apart, with a slight overshoot, and drop away quickly when the pointer leaves. With reduced motion they only fade.
+- **Never covers the name:** on pointer enter, a short script measures where the name's text ends and scales the stack down to the room left, to no less than 45%.
+- **Assets:** `public/skills/peek/`, 124 px tall (160 px for phones), 26 KB for all eight, loaded lazily. Hover devices only.
+- **History:** this replaces, the same day, a floating pile that covered the page. A version that plotted the work into the drawing viewport was also tried, and reverted at the owner's request.
 
 ## 2026-10-27 · Cursor: a full takeover on buttons, an instant release
 - **Before:** on a button the mercury cursor shrank to a 4 px bead riding round the ring, so a ball stayed visible. Leaving took about 0.4 s: the ring unwound, then the cursor sprang back from the button's edge to the pointer, dragging its trail, which felt stuck.
