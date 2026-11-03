@@ -111,18 +111,20 @@ export const projects: Project[] = [
     learnings: 'What you would do differently next time.',
   },
   {
-    // not a design project: a group research project, and the documentary I wrote and shot for it
+    // not a design project: a thirteen-person DIP field study of Theyyam, and the documentary I co-led for it
     slug: 'documentary',
     discipline: 'Research',
-    title: 'Research documentary',
-    note: 'Written and shot by me, for a team of 13',
-    summary: 'A research project by a team of thirteen. My part was the documentary: I wrote it and I shot it.',
-    role: 'Writer · Camera',
+    title: 'The Man the God Wore',
+    note: 'A documentary on Theyyam, written and shot by me',
+    summary:
+      'A thirteen-person field study of Theyyam in Kannur, Kerala, where a performer becomes a god. My part was the documentary: I wrote it and I shot it.',
+    cover: { src: '/projects/theyyam/cover.webp', alt: 'A Theyyam performer in red face paint and headdress', focus: '50% 35%' },
+    role: 'Documentary co-lead · Writer · Camera',
     team: '13 people',
-    duration: 'Duration TBD',
+    duration: '9 days in the field · 2025–26',
     tools: ['Camera TBD', 'Editing TBD'],
     phases: phases(),
-    outcome: 'What happened in the end: results you can honestly state.',
+    outcome: 'A documentary, a 100-page report and a final presentation for FLAME University’s Discover India Program.',
     learnings: 'What you would do differently next time.',
   },
 ];

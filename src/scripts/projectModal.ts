@@ -264,7 +264,8 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
   modal.addEventListener('click', (e) => {
     const sw = (e.target as HTMLElement).closest<HTMLElement>('[data-switch-project]');
     if (sw) switchProject(sw.dataset.switchProject!);
-    const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('[data-phase-link]');
+    // chapter links, and in-card jumps (e.g. a summary's "try the prototype")
+    const link = (e.target as HTMLElement).closest<HTMLAnchorElement>('[data-phase-link], [data-jump]');
     if (link) {
       e.preventDefault();
       const t = modal.querySelector<HTMLElement>(link.getAttribute('href')!);

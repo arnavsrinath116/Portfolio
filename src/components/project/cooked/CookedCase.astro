@@ -29,14 +29,23 @@ const facts = [
   ['Tools', project.tools.join(' · ')],
 ].filter(([, v]) => v && !/TBD/i.test(v));
 
-// the menu: each course is a stage of the double diamond, named for the kitchen
+// the menu, named for the kitchen. The hero serves the finished app first (as the tracker shows
+// its finished box); then the courses run in order: the problem, the brief, how we got there
+// (research, then design), and the app in full with how it went
 const courses = [
   { key: 'starter', label: 'Starter', stage: 'The problem' },
-  { key: 'discover', label: 'Ingredients', stage: 'Discover' },
-  { key: 'define', label: 'Recipe', stage: 'Define' },
-  { key: 'develop', label: 'Kitchen', stage: 'Develop' },
-  { key: 'deliver', label: 'Plating', stage: 'Deliver' },
-  { key: 'outcome', label: 'Dessert', stage: 'Outcome' },
+  { key: 'brief', label: 'The order', stage: 'The brief' },
+  { key: 'discover', label: 'Ingredients', stage: 'Research' },
+  { key: 'develop', label: 'Kitchen', stage: 'Design' },
+  { key: 'deliver', label: 'Plating', stage: 'The app' },
+  { key: 'outcome', label: 'Dessert', stage: 'How it went' },
+];
+
+// the hero's three screens: what the app does, one step each
+const heroShots = [
+  { src: 'ui-search', cap: 'Pick the dish first', alt: 'Search dishes: a grid of dishes to choose from' },
+  { src: 'ui-customise', cap: 'Your spice, your oil', alt: 'Customise dish: spice level and cooking oil' },
+  { src: 'ui-chefs', cap: 'Chefs who make it best', alt: 'Select chefs: home chefs with ratings, distance and experience' },
 ];
 
 const quotes = [
@@ -96,11 +105,22 @@ const journey = [
       <p class="ck-kicker">A UX/UI case study</p>
       <h2 class="ck-wordmark" id="cooked-title"><img src={img('wordmark')} alt="Cooked!" width="1600" height="347" loading="lazy" data-ck-preload /></h2>
       <p class="ck-tag">Your food, your way</p>
-      <p class="ck-lede">An app that lets people outsource cooking, without giving up control of their food.</p>
+      <p class="ck-lede">Ordering in means giving up a say in how your food is made. Cooked lets you book a home chef who cooks it <em>your way</em>.</p>
       <dl class="ck-facts">
         {facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
       </dl>
+      {proto && <a class="ck-hero-btn" href="#cooked-proto" data-jump data-magnet>Try the prototype</a>}
     </div>
+    <ol class="ck-hero-app" aria-label="The app in three steps">
+      {
+        heroShots.map((h, i) => (
+          <li class={`ck-hs ck-hs-${i + 1}`}>
+            <Phone src={h.src} alt={h.alt} />
+            <span class="ck-hs-cap"><b>{i + 1}</b>{h.cap}</span>
+          </li>
+        ))
+      }
+    </ol>
     <p class="ck-cue" aria-hidden="true"><span class="ck-cue-dot"></span>Scroll to start cooking</p>
   </header>
 
@@ -127,7 +147,7 @@ const journey = [
 
   <!-- ===================== starter: the problem ===================== -->
   <section class="ck-ch" id="cooked-starter" data-phase="starter" aria-label="Starter: the problem">
-    <div class="ck-scene" style="--len: 3.2" data-scene="imagine" data-ck-rail>
+    <div class="ck-scene" style="--len: 2.1" data-scene="imagine" data-ck-rail>
       <div class="ck-stage">
         <p class="ck-beat ck-beat-1" data-b1>Imagine this.</p>
         <p class="ck-beat ck-beat-2" data-b2>A long day. You’re tired.<br /><span>So you order in.</span></p>
@@ -163,22 +183,6 @@ const journey = [
         <figure data-a="pop"><img src={img("parent")} alt="" width="400" height="417" loading="lazy" /><figcaption>Parents</figcaption></figure>
       </div>
     </div>
-  </section>
-
-  <!-- ===================== 01 discover ===================== -->
-  <section class="ck-ch" id="cooked-discover" data-phase="discover" aria-labelledby="cooked-discover-t">
-    <header class="ck-chead" data-ck-pt="0.14">
-      <p class="ck-course" data-a="up"><span>01</span>Discover</p>
-      <h3 class="ck-ctitle" id="cooked-discover-t" data-a="up">Gathering the<br />ingredients</h3>
-      <img class="ck-chead-art" src={img('doodles-turmeric')} alt="" width="900" height="900" loading="lazy" data-a="spin" />
-    </header>
-
-    <ul class="ck-pantry" data-ck-pt="0.9">
-      <li data-a="up"><b data-count="4">4</b>interviews</li>
-      <li data-a="up"><b data-count="11">11</b>questions</li>
-      <li data-a="up"><b data-count="20">20</b>assumptions</li>
-      <li data-a="up"><b data-count="6">6</b>market reports</li>
-    </ul>
 
     <div class="ck-block ck-stats" data-ck-pt="0.1">
       <h3 class="ck-h" data-a="up">The numbers</h3>
@@ -197,6 +201,66 @@ const journey = [
       <img class="ck-stats-icons" src={img('food-icons')} alt="" width="700" height="700" loading="lazy" data-a="par" data-speed="60" />
       <p class="ck-source">NielsenIQ · IMARC · Kadence · Market Xcel · Expert Market Research · IBEF</p>
     </div>
+  </section>
+
+  <!-- ===================== 01 the brief ===================== -->
+  <section class="ck-ch" id="cooked-brief" data-phase="brief" aria-labelledby="cooked-brief-t">
+    <header class="ck-chead" data-ck-pt="0.86">
+      <p class="ck-course" data-a="up"><span>01</span>The brief</p>
+      <h3 class="ck-ctitle" id="cooked-brief-t" data-a="up">Taking the<br />order</h3>
+      <img class="ck-chead-art" src={img('doodles-green')} alt="" width="900" height="900" loading="lazy" data-a="spin" />
+    </header>
+
+    <div class="ck-scene" style="--len: 1.15" data-scene="hmw" data-ck-rail>
+      <div class="ck-stage ck-hmw">
+        <p class="ck-kicker">How might we</p>
+        <p class="ck-hmw-q" aria-label={hmw}>
+          {hmw.split(' ').map((w) => <span class:list={['w', { k: hmwKey.has(w) }]} aria-hidden="true">{w} </span>)}
+        </p>
+        <p class="ck-insight" data-insight>People don’t lack the desire for control. They lack a <em>system</em> that makes control <em>effortless</em>.</p>
+      </div>
+    </div>
+
+    <div class="ck-scene" style="--len: 1.25" data-scene="shift" data-ck-rail>
+      <div class="ck-stage ck-shift">
+        <p class="ck-shift-a" data-shift-a>Food being delivered to me<span class="ck-strike" data-strike></span></p>
+        <svg class="ck-shift-arrow" viewBox="0 0 300 160" aria-hidden="true">
+          <path d="M20 20 C 30 120, 160 150, 270 110" data-arrow></path>
+          <path d="M240 92 L272 110 L246 136" data-arrow-head></path>
+        </svg>
+        <p class="ck-shift-b" data-shift-b>My food being <em>made for me</em>.</p>
+      </div>
+    </div>
+
+    <div class="ck-block ck-recipe-wrap" data-ck-pt="0.12">
+      <div class="ck-recipe" data-a="up">
+        <p class="ck-kicker">The recipe</p>
+        <p class="ck-recipe-goal">Outsource cooking, without giving up control.</p>
+        <ol class="ck-steps" data-a="stagger">
+          <li><span class="ck-box"></span>Shift control to the chef</li>
+          <li><span class="ck-box"></span>Make control feel natural, not effortful</li>
+          <li><span class="ck-box"></span>Build trust through human connection</li>
+          <li><span class="ck-box"></span>Give control without complexity</li>
+        </ol>
+      </div>
+      <div class="ck-shard ck-shard-chef" data-a="right"><CookedShard kind="chef" from="Select chefs" tilt={5} /></div>
+    </div>
+  </section>
+
+  <!-- ===================== 02 research ===================== -->
+  <section class="ck-ch" id="cooked-discover" data-phase="discover" aria-labelledby="cooked-discover-t">
+    <header class="ck-chead" data-ck-pt="0.14">
+      <p class="ck-course" data-a="up"><span>02</span>Research</p>
+      <h3 class="ck-ctitle" id="cooked-discover-t" data-a="up">Gathering the<br />ingredients</h3>
+      <img class="ck-chead-art" src={img('doodles-turmeric')} alt="" width="900" height="900" loading="lazy" data-a="spin" />
+    </header>
+
+    <ul class="ck-pantry" data-ck-pt="0.9">
+      <li data-a="up"><b data-count="4">4</b>interviews</li>
+      <li data-a="up"><b data-count="11">11</b>questions</li>
+      <li data-a="up"><b data-count="20">20</b>assumptions</li>
+      <li data-a="up"><b data-count="6">6</b>market reports</li>
+    </ul>
 
     <div class="ck-block ck-heard" data-ck-pt="0.1" data-heard>
       <h3 class="ck-h">What we heard</h3>
@@ -215,7 +279,7 @@ const journey = [
       </div>
     </div>
 
-    <div class="ck-scene" style="--len: 1.4" data-scene="assumptions" data-ck-rail>
+    <div class="ck-scene" style="--len: 1.15" data-scene="assumptions" data-ck-rail>
       <div class="ck-stage ck-assume">
         <h3 class="ck-h">What we assumed</h3>
         <ul class="ck-notes">
@@ -250,15 +314,6 @@ const journey = [
       <!-- pieces of the app, set beside what they answer -->
       <div class="ck-shard ck-shard-obs" data-a="right"><CookedShard kind="repeat" from="Home" tilt={-3} /></div>
     </div>
-  </section>
-
-  <!-- ===================== 02 define ===================== -->
-  <section class="ck-ch" id="cooked-define" data-phase="define" aria-labelledby="cooked-define-t">
-    <header class="ck-chead" data-ck-pt="0.86">
-      <p class="ck-course" data-a="up"><span>02</span>Define</p>
-      <h3 class="ck-ctitle" id="cooked-define-t" data-a="up">Writing the<br />recipe</h3>
-      <img class="ck-chead-art" src={img('doodles-green')} alt="" width="900" height="900" loading="lazy" data-a="spin" />
-    </header>
 
     <div class="ck-block ck-persona" data-ck-pt="0.12">
       <div class="ck-persona-top">
@@ -289,7 +344,7 @@ const journey = [
       <CookedJourney />
     </div>
 
-    <div class="ck-scene" style="--len: 2" data-scene="spectrum" data-ck-rail>
+    <div class="ck-scene" style="--len: 1.2" data-scene="spectrum" data-ck-rail>
       <div class="ck-stage ck-spec">
         <h3 class="ck-h">Not everyone wants the same amount of control</h3>
         <div class="ck-spec-track" data-spec-track>
@@ -314,52 +369,17 @@ const journey = [
       </ol>
       <div class="ck-shard ck-shard-needs" data-a="right"><CookedShard kind="hygiene" from="Chef sign-up" tilt={3} /></div>
     </div>
-
-    <div class="ck-scene" style="--len: 1.35" data-scene="hmw" data-ck-rail>
-      <div class="ck-stage ck-hmw">
-        <p class="ck-kicker">How might we</p>
-        <p class="ck-hmw-q" aria-label={hmw}>
-          {hmw.split(' ').map((w) => <span class:list={['w', { k: hmwKey.has(w) }]} aria-hidden="true">{w} </span>)}
-        </p>
-        <p class="ck-insight" data-insight>People don’t lack the desire for control. They lack a <em>system</em> that makes control <em>effortless</em>.</p>
-      </div>
-    </div>
-
-    <div class="ck-scene" style="--len: 1.9" data-scene="shift" data-ck-rail>
-      <div class="ck-stage ck-shift">
-        <p class="ck-shift-a" data-shift-a>Food being delivered to me<span class="ck-strike" data-strike></span></p>
-        <svg class="ck-shift-arrow" viewBox="0 0 300 160" aria-hidden="true">
-          <path d="M20 20 C 30 120, 160 150, 270 110" data-arrow></path>
-          <path d="M240 92 L272 110 L246 136" data-arrow-head></path>
-        </svg>
-        <p class="ck-shift-b" data-shift-b>My food being <em>made for me</em>.</p>
-      </div>
-    </div>
-
-    <div class="ck-block ck-recipe-wrap" data-ck-pt="0.12">
-      <div class="ck-recipe" data-a="up">
-        <p class="ck-kicker">The recipe</p>
-        <p class="ck-recipe-goal">Outsource cooking, without giving up control.</p>
-        <ol class="ck-steps" data-a="stagger">
-          <li><span class="ck-box"></span>Shift control to the chef</li>
-          <li><span class="ck-box"></span>Make control feel natural, not effortful</li>
-          <li><span class="ck-box"></span>Build trust through human connection</li>
-          <li><span class="ck-box"></span>Give control without complexity</li>
-        </ol>
-      </div>
-      <div class="ck-shard ck-shard-chef" data-a="right"><CookedShard kind="chef" from="Select chefs" tilt={5} /></div>
-    </div>
   </section>
 
-  <!-- ===================== 03 develop ===================== -->
+  <!-- ===================== 03 design ===================== -->
   <section class="ck-ch" id="cooked-develop" data-phase="develop" aria-labelledby="cooked-develop-t">
     <header class="ck-chead" data-ck-pt="0.14">
-      <p class="ck-course" data-a="up"><span>03</span>Develop</p>
+      <p class="ck-course" data-a="up"><span>03</span>Design</p>
       <h3 class="ck-ctitle" id="cooked-develop-t" data-a="up">Testing in<br />the kitchen</h3>
       <img class="ck-chead-art ck-chead-wok" src={img('chef')} alt="" width="700" height="700" loading="lazy" data-a="spin" />
     </header>
 
-    <div class="ck-scene" style="--len: 1.5" data-scene="ideas" data-ck-rail>
+    <div class="ck-scene" style="--len: 1.2" data-scene="ideas" data-ck-rail>
       <div class="ck-stage ck-ideas">
         <h3 class="ck-h">Three directions</h3>
         <ul class="ck-wall ck-dirs">
@@ -418,7 +438,7 @@ const journey = [
       </p>
     </div>
 
-    <div class="ck-scene" style="--len: 1.4" data-scene="pivot" data-ck-rail>
+    <div class="ck-scene" style="--len: 1.2" data-scene="pivot" data-ck-rail>
       <div class="ck-stage ck-pivot">
         <p class="ck-kicker">The taste test</p>
         <h3 class="ck-h">Feedback flipped the menu</h3>
@@ -446,15 +466,6 @@ const journey = [
         </ul>
       </div>
     </div>
-  </section>
-
-  <!-- ===================== 04 deliver ===================== -->
-  <section class="ck-ch" id="cooked-deliver" data-phase="deliver" aria-labelledby="cooked-deliver-t">
-    <header class="ck-chead" data-ck-pt="0.86">
-      <p class="ck-course" data-a="up"><span>04</span>Deliver</p>
-      <h3 class="ck-ctitle" id="cooked-deliver-t" data-a="up">Plating up</h3>
-      <img class="ck-chead-art" src={img('logo-c')} alt="" width="377" height="342" loading="lazy" data-a="spin" />
-    </header>
 
     <div class="ck-block ck-brand" data-ck-pt="0.12">
       <img class="ck-mood" src={img('moodboard')} alt="Moodboard: green urban-food posters, food app screens and warm food photography" width="1606" height="766" loading="lazy" data-a="up" />
@@ -465,8 +476,26 @@ const journey = [
       <h3 class="ck-h" data-a="up">The kit behind the screens</h3>
       <CookedKit />
     </div>
+  </section>
 
-    <div class="ck-scene ck-journey-scene" style="--len: 2.6" data-scene="journey" data-ck-rail>
+  <!-- ===================== 04 the app ===================== -->
+  <section class="ck-ch" id="cooked-deliver" data-phase="deliver" aria-labelledby="cooked-deliver-t">
+    <header class="ck-chead" data-ck-pt="0.86">
+      <p class="ck-course" data-a="up"><span>04</span>The app</p>
+      <h3 class="ck-ctitle" id="cooked-deliver-t" data-a="up">Plating up</h3>
+      <img class="ck-chead-art" src={img('logo-c')} alt="" width="377" height="342" loading="lazy" data-a="spin" />
+    </header>
+
+    <div class="ck-block ck-setup" data-ck-pt="0.88">
+      <h3 class="ck-h" data-a="up">Set up once. Skip anytime.</h3>
+      <div class="ck-phones">
+        <Phone src="ui-role" alt="Role choice: consumer or chef" class="ck-p1" />
+        <Phone src="ui-diet" alt="Dietary preference, step 1 of 4" class="ck-p2" />
+        <Phone src="ui-budget" alt="Budget range slider, the last onboarding step" class="ck-p3" />
+      </div>
+    </div>
+
+    <div class="ck-scene ck-journey-scene" style="--len: 1.9" data-scene="journey" data-ck-rail>
       <div class="ck-stage ck-journey">
         <div class="ck-journey-head">
           <h3 class="ck-h">Book a chef, food first</h3>
@@ -489,15 +518,6 @@ const journey = [
       </div>
     </div>
 
-    <div class="ck-block ck-setup" data-ck-pt="0.88">
-      <h3 class="ck-h" data-a="up">Set up once. Skip anytime.</h3>
-      <div class="ck-phones">
-        <Phone src="ui-role" alt="Role choice: consumer or chef" class="ck-p1" />
-        <Phone src="ui-diet" alt="Dietary preference, step 1 of 4" class="ck-p2" />
-        <Phone src="ui-budget" alt="Budget range slider, the last onboarding step" class="ck-p3" />
-      </div>
-    </div>
-
     <div class="ck-block ck-chefside" data-ck-pt="0.12">
       <h3 class="ck-h" data-a="up">For the chefs: trust is earned up front</h3>
       <div class="ck-phones ck-phones-4">
@@ -510,7 +530,7 @@ const journey = [
 
     {
       proto && (
-        <div class="ck-block ck-proto" data-ck-pt="0.12">
+        <div class="ck-block ck-proto" id="cooked-proto" data-ck-pt="0.12">
           <p class="ck-kicker" data-a="up">Prototype</p>
           <h3 class="ck-h" data-a="up">Try it yourself</h3>
           <div data-a="up">
@@ -672,7 +692,7 @@ const journey = [
     font-weight: 800;
   }
   .ck-block {
-    padding: clamp(52px, 8vh, 100px) var(--ck-pad);
+    padding: clamp(40px, 6vh, 72px) var(--ck-pad);
   }
   .ck-block > .ck-h {
     margin-bottom: clamp(28px, 5vh, 56px);
@@ -694,10 +714,11 @@ const journey = [
   .ck-hero {
     position: relative;
     display: grid;
-    place-items: center;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 64px);
     min-height: var(--stage-h);
     padding: 64px var(--ck-pad) 96px;
-    text-align: center;
   }
   .ck-hero-frame {
     position: absolute;
@@ -711,13 +732,27 @@ const journey = [
   .ck-hero-inner {
     position: relative;
     display: grid;
-    justify-items: center;
+    justify-items: start;
     gap: 14px;
-    max-width: 760px;
+    max-width: 600px;
+    /* frosted white card, so the doodles behind it don't fight the text */
+    padding: clamp(24px, 3vw, 40px);
+    border-radius: 28px;
+    background: rgb(255 255 255 / 0.74);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    box-shadow:
+      0 0 0 1px rgb(20 23 26 / 0.06),
+      0 24px 50px -30px rgb(20 23 26 / 0.35);
+  }
+  :global(html.is-lite) .ck-hero-inner {
+    background: rgb(255 255 255 / 0.94);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
   .ck-wordmark img {
     display: block;
-    width: min(640px, 72vw);
+    width: min(460px, 72vw);
     height: auto;
     margin-top: 10px;
   }
@@ -728,14 +763,18 @@ const journey = [
     letter-spacing: -0.01em;
   }
   .ck-lede {
-    max-width: 30ch;
-    font-size: clamp(1rem, 1.4vw, 1.1875rem);
+    max-width: 36ch;
+    font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
+    font-weight: 500;
+    line-height: 1.4;
     color: var(--ck-ink-2);
+  }
+  .ck-lede em {
+    font-weight: 800;
   }
   .ck-facts {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
     gap: 10px;
     margin-top: 10px;
   }
@@ -753,6 +792,88 @@ const journey = [
   }
   .ck-facts dd {
     font-weight: 700;
+  }
+  .ck-hero-btn {
+    margin-top: 10px;
+    padding: 14px 24px;
+    border-radius: 99px;
+    background: var(--ck-green);
+    font-weight: 800;
+    color: #fff;
+    text-decoration: none;
+    box-shadow: 0 14px 28px -16px rgb(51 113 64 / 0.8);
+  }
+  .ck-hero-btn:focus-visible {
+    outline: 2px solid var(--ck-green);
+    outline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .ck-hero-btn {
+      transition: background-color 0.2s ease-out;
+    }
+    .ck-hero-btn:hover {
+      background: #285a33;
+    }
+  }
+  /* the finished app: three screens in a loose fan, each with what it does */
+  .ck-hero-app {
+    --ph-w: clamp(132px, 13vw, 200px);
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: clamp(10px, 1.4vw, 20px);
+  }
+  .ck-hs {
+    display: grid;
+    justify-items: center;
+    gap: 16px;
+  }
+  .ck-hs-1 {
+    margin-top: 56px;
+    rotate: -4deg;
+  }
+  .ck-hs-3 {
+    margin-top: 56px;
+    rotate: 4deg;
+  }
+  .ck-hs-cap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px 7px 7px;
+    border-radius: 99px;
+    background: #fff;
+    box-shadow:
+      0 0 0 1px var(--ck-rule),
+      0 10px 20px -14px rgb(20 23 26 / 0.4);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .ck-hs-cap b {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--ck-green);
+    font-size: 0.75rem;
+    color: #fff;
+  }
+  @media (max-width: 900px) {
+    .ck-hero {
+      grid-template-columns: minmax(0, 1fr);
+      padding-bottom: 110px;
+    }
+    .ck-hero-app {
+      --ph-w: clamp(92px, 27vw, 160px);
+    }
+    .ck-hs-cap {
+      white-space: normal;
+      max-width: calc(var(--ph-w) + 16px);
+      font-size: 0.75rem;
+    }
   }
   .ck-cue {
     position: absolute;
@@ -1034,8 +1155,8 @@ const journey = [
     display: grid;
     align-content: center;
     gap: 18px;
-    min-height: min(calc(var(--stage-h) * 0.62), 520px);
-    padding: clamp(56px, 9vh, 110px) var(--ck-pad);
+    min-height: min(calc(var(--stage-h) * 0.42), 360px);
+    padding: clamp(44px, 7vh, 80px) var(--ck-pad);
   }
   .ck-course {
     display: flex;

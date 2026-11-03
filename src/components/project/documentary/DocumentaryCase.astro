@@ -1,4 +1,5 @@
 ---
+import { withBase } from '../../../lib/url';
 import type { Project } from '../../../data/projects';
 import { projects } from '../../../data/projects';
 
@@ -7,54 +8,107 @@ interface Props {
 }
 const { project } = Astro.props;
 const others = projects.filter((p) => p.slug !== project.slug);
+const img = (n: string) => withBase(`/projects/theyyam/${n}.webp`);
 
-// a group research project, told through the part that was mine: the documentary. The card is a
-// screening room: the chapters are reels, the facts sit on a slate, and it ends on the credits.
-// PLACEHOLDER: every dashed slot and "to come" line waits for the real material.
+// The Man the God Wore: a thirteen-person DIP field study of Theyyam in Kannur, told through the
+// part that was mine, the documentary. The card is a screening room: the film plays first, in the
+// camera's viewfinder; then the reels run the ritual, the question, the fieldwork, the filmmaking,
+// what we found, and the credits. Everything here comes from the report and the two presentations.
+// PLACEHOLDER: lines set in mono (.dc-todo) wait for Arnav's own account of writing and shooting.
+const FILM = 'https://drive.google.com/file/d/18LXtGkTumYXwmwiRuVJ8TjdpPyq_WjGt/preview';
+
 const reels = [
-  { key: 'research', title: 'The research', note: 'What the group set out to find' },
-  { key: 'why', title: 'Why a film', note: 'What the documentary had to do' },
-  { key: 'writing', title: 'Writing', note: 'Structure, script, interviews' },
-  { key: 'shooting', title: 'Shooting', note: 'Locations, frames, light' },
-  { key: 'film', title: 'The film', note: 'Watch it' },
-  { key: 'credits', title: 'Credits', note: 'Thirteen people' },
+  { key: 'ritual', title: 'The ritual', note: 'Where a man becomes a god' },
+  { key: 'question', title: 'The question', note: 'What we went to Kannur to find' },
+  { key: 'field', title: 'In the field', note: 'Nine days, ten groves, thirty-five voices' },
+  { key: 'making', title: 'Making the film', note: 'Writing it, shooting it' },
+  { key: 'found', title: 'What we found', note: 'Belief, still burning' },
+  { key: 'credits', title: 'Credits', note: 'Thirteen of us' },
 ];
 
 const slate = [
-  ['Project', 'Research project'],
-  ['My role', 'Writer · Camera'],
-  ['Team', '13 people'],
-  ['Duration', project.duration],
-].filter(([, v]) => v && !/TBD/i.test(v));
+  ['Programme', 'Discover India · FLAME University'],
+  ['Fieldwork', 'Kannur, Kerala · 20–28 Feb 2026'],
+  ['My role', 'Documentary co-lead · writer & camera'],
+  ['Team', '13 students · mentor Prof. Priya Joshi'],
+];
 
-// the team, in credit order; mine is filled in, the other twelve wait for their names
+// the full ritual arc, as all thirteen of us watched it
+const arc = [
+  { t: 'The Thottam', d: 'Before the costume, the performer sings the deity’s story. Its origin, in its own words.', src: 'ch1-performer', alt: 'A performer in black and white, head thrown back, body marked with white paint' },
+  { t: 'The face', d: 'Mugathezhuthu: four to six hours of natural pigment. Each deity has its own face.', src: 'face-paints', alt: 'A grid of twenty-five painted Theyyam faces, each pattern different' },
+  { t: 'The mirror', d: 'Mukhadarshanam. He looks into a mirror and no longer finds himself there.', src: 'mirror', alt: 'A performer in face paint looking into a hand mirror' },
+  { t: 'The crown', d: 'The mudi goes on, and with it the deity is believed to enter the body.', src: 'red-costume', alt: 'A Theyyam performer in full red costume, headdress and breastplate' },
+  { t: 'Urayal', d: 'The drums rise, the voice changes, the eyes go somewhere else. The god arrives.', src: 'ch3-fire-crown', alt: 'A performer with a towering headdress of flaming torches before a crowd' },
+  { t: 'The oracle', d: 'Now the deity: devotees, upper castes among them, bow and bring their troubles.', src: 'ch6-goddess', alt: 'Close-up of a goddess Theyyam: red painted face, silver eyes, red headdress' },
+];
+
+const sounds = [
+  ['The crowd', 'before, during and after the transformation'],
+  ['Chilambu', 'the ankle bells: the performer’s steps against the deity’s'],
+  ['Chenda', 'the drums, as tempo and volume climb toward Urayal'],
+  ['Thottam', 'the sung origin story'],
+  ['The voice', 'the shift in the performer’s voice as the god takes it'],
+];
+
+const diagrams = [
+  { src: 'dia-kantakarnan', t: 'Kantakarnan' },
+  { src: 'dia-bhagavathy', t: 'Panayakkatu Bhagavathy' },
+  { src: 'dia-pottan', t: 'Pottan' },
+];
+
+const findings = [
+  { big: 'Transformation is lived, not a metaphor.', d: 'Performers describe the self leaving the body so the god can take it. The congregation treats it that way too.' },
+  { big: 'A living archive for communities never permitted to write.', d: 'The Thottam carries history and migration through song, passed down inside performing families.' },
+  { big: 'It turns caste upside down, then sets it back.', d: 'For the length of the ritual, upper castes bow to a performer from a marginalised community. After it, the order returns.' },
+  { big: 'Tourism and phones threaten it, and keep it visible.', d: 'Staged shows strip the ritual of its sacred logic; the same cameras give it new ways to survive.' },
+];
+
+// the team, as credited in the report; the documentary team first
 const crew = [
-  { name: 'Arnav Srinath', role: 'Documentary: written and shot by', me: true },
-  ...Array.from({ length: 12 }, () => ({ name: 'Name to come', role: 'Research', me: false })),
+  { name: 'Simran Vyas', role: 'Documentary lead' },
+  { name: 'Arnav Srinath', role: 'Documentary co-lead · writer & camera', me: true },
+  { name: 'Bhanu Tarun Krishna Veeramachaneni', role: 'Documentary · writing' },
+  { name: 'Soumya Gupta', role: 'Group representative' },
+  { name: 'Aliya Premji', role: 'Co-group representative' },
+  { name: 'Srishti Sudharsan', role: 'Writing lead' },
+  { name: 'Radha Kulkarni', role: 'Writing co-lead · logistics' },
+  { name: 'Richa Sajai', role: 'Writing' },
+  { name: 'Divyanshi Nigam', role: 'Writing' },
+  { name: 'Nitiksha Thukrul', role: 'Writing' },
+  { name: 'Muktak Joshi', role: 'Logistics lead' },
+  { name: 'Vikhyat Upadhyay', role: 'Finance lead' },
+  { name: 'Suhani Aggarwal', role: 'Finance co-lead · logistics' },
 ];
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
-<article class="dc" data-project={project.slug} data-theme="film" data-card-bg="#0e0d0c" aria-labelledby="dc-title" hidden>
-  <!-- ============ the opening frame ============ -->
+<article class="dc" data-project={project.slug} data-theme="film" data-card-bg="#0e0d0c" aria-labelledby="dc-title" hidden data-dc>
+  <!-- ============ the film first, in the camera's viewfinder ============ -->
   <header class="dc-hero">
-    <!-- the opening title card, in the camera's viewfinder -->
-    <div class="dc-frame">
+    <div class="dc-frame" data-dc-frame>
+      <img class="dc-poster" src={img('poster')} alt="" width="1333" height="558" loading="lazy" decoding="async" />
       <span class="dc-viewfinder" aria-hidden="true">
         <span class="dc-mark dc-tl"></span><span class="dc-mark dc-tr"></span>
         <span class="dc-mark dc-bl"></span><span class="dc-mark dc-br"></span>
         <span class="dc-rec"><i></i>Rec</span>
-        <span class="dc-tc">00:00:00:00</span>
-        <span class="dc-frame-slot">Opening still to come</span>
+        <span class="dc-tc">Kannur · Feb 2026</span>
       </span>
       <div class="dc-titlecard">
         <p class="dc-kicker">{project.discipline} · A documentary</p>
         <h2 class="dc-title" id="dc-title">{project.title}</h2>
       </div>
+      <button type="button" class="dc-play" data-dc-play data-film-src={FILM} data-magnet>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"></path></svg>
+        Watch the film
+      </button>
     </div>
 
     <div class="dc-hero-copy">
-      <p class="dc-lede">{project.summary}</p>
+      <p class="dc-lede">
+        In North Kerala, a man puts on paint, a crown and a costume, and the village believes he becomes a god. Thirteen of us spent
+        nine days in Kannur studying that transformation. I co-led the documentary: <em>I wrote it and shot it.</em>
+      </p>
       <dl class="dc-slate">
         {
           slate.map(([k, v]) => (
@@ -95,63 +149,184 @@ const pad = (n: number) => String(n).padStart(2, '0');
           <p class="dc-rnote">{r.note}</p>
         </header>
 
-        {r.key === 'research' && (
-          <div class="dc-split">
-            <p class="dc-copy dc-todo">The question the group researched, how the thirteen of you split the work, and what you found.</p>
-            <div class="dc-slot dc-wide">Research material to come</div>
-          </div>
-        )}
-
-        {r.key === 'why' && (
-          <div class="dc-split">
-            <p class="dc-copy dc-todo">Why the findings needed a film, who it was made for, and what it had to make people feel or understand.</p>
-            <blockquote class="dc-quote dc-todo">A line from the film, or the brief, to come.</blockquote>
-          </div>
-        )}
-
-        {r.key === 'writing' && (
-          <div class="dc-split">
-            <p class="dc-copy dc-todo">How you shaped the story: the structure, the script, and the interview questions.</p>
-            <div class="dc-pages">
-              <div class="dc-slot dc-page">Script page</div>
-              <div class="dc-slot dc-page">Script page</div>
-            </div>
-          </div>
-        )}
-
-        {r.key === 'shooting' && (
+        {r.key === 'ritual' && (
           <>
-            <p class="dc-copy dc-todo">Where and how you shot it: the kit, the locations, and the choices behind the frames.</p>
+            <div class="dc-split">
+              <div class="dc-copy">
+                <p>
+                  <b>Theyyam</b> is a ritual of the Kavus, the sacred groves of North Malabar, older than Brahmanical Hinduism and rooted
+                  in fear of the forces of nature. Its scholars call it the <em>Theatre of the Earth</em>: costumes of coconut leaf, colours
+                  from the soil.
+                </p>
+                <p>
+                  The performer does not represent the deity. For the length of the ritual, he is it. He comes from a community long
+                  pushed to the margins, and yet the upper castes bow to him.
+                </p>
+              </div>
+              <figure class="dc-fig">
+                <img src={img('ch4-red-face')} alt="A Theyyam performer in red face paint and headdress, seen through flowers" width="992" height="1200" loading="lazy" decoding="async" />
+              </figure>
+            </div>
+            <div class="dc-split dc-split-flip">
+              <figure class="dc-fig">
+                <img src={img('ch2-phone')} alt="A phone held up in the dark, filming a Theyyam performance" width="992" height="1200" loading="lazy" decoding="async" />
+              </figure>
+              <div class="dc-copy">
+                <p class="dc-pull">And it is changing.</p>
+                <p>
+                  Tourism reframed it as folk art and moved it onto stages. Phones carry it everywhere, cut loose from the grove. And
+                  the Tharavaads, the ancestral family houses that keep the tradition alive, are quietly coming apart.
+                </p>
+              </div>
+            </div>
+          </>
+        )}
+
+        {r.key === 'question' && (
+          <>
+            <div class="dc-split">
+              <div class="dc-copy">
+                <p>
+                  We went looking for one moment: <b>Urayal</b>, when the performer stops being a man and the deity arrives. Before the
+                  field, our question was how the ritual’s choreography (sound, rhythm, movement and text) makes that crossing happen.
+                </p>
+                <p>The research we read kept leaving the same things out.</p>
+              </div>
+              <blockquote class="dc-quote">
+                How does transformation in Theyyam bring together origin, embodiment, time and modernity in a single ritual?
+                <cite>The question we ended on</cite>
+              </blockquote>
+            </div>
+            <ol class="dc-gaps">
+              <li><b>The performer’s own voice.</b> Theyyam is written about from the outside; what he goes through is almost never asked.</li>
+              <li><b>The Thottam.</b> The sung origin stories are cited everywhere and translated almost nowhere.</li>
+              <li><b>The families.</b> What tourism and commodification do to the people who carry it is barely examined.</li>
+            </ol>
+            <p class="dc-shift">
+              <span>Before the field</span>
+              <s>Kasaragodi Nritya, Theyyam evvam Kavyagaram: a study of folk art and tradition</s>
+              <span>After it</span>
+              <b>The Man the God Wore</b>
+            </p>
+            <p class="dc-note">On the ground, access to performers in the middle of the ritual was limited, so the study widened from one moment to the whole system around it.</p>
+          </>
+        )}
+
+        {r.key === 'field' && (
+          <>
+            <ul class="dc-counts">
+              <li><b>9</b>days in Kannur</li>
+              <li><b>10+</b>Kavus visited</li>
+              <li><b>35</b>interviews</li>
+              <li><b>13</b>of us, every one at a full ritual</li>
+            </ul>
+            <p class="dc-copy dc-lead">
+              Performers, drummers, Kavu owners, folk-studies professors, writers and families, in Malayalam and English. Alongside them,
+              all of us watched the full arc of a live Theyyam, with a checklist we built to serve both the report and the film.
+            </p>
+            <ol class="dc-arc">
+              {arc.map((s, k) => (
+                <li>
+                  <figure class="dc-arc-fig">
+                    <img src={img(s.src)} alt={s.alt} loading="lazy" decoding="async" />
+                  </figure>
+                  <p class="dc-arc-no">{pad(k + 1)}</p>
+                  <h4>{s.t}</h4>
+                  <p>{s.d}</p>
+                </li>
+              ))}
+            </ol>
+            <div class="dc-split dc-sounds">
+              <div>
+                <p class="dc-label">Five sounds we recorded</p>
+                <ol class="dc-sound-list">
+                  {sounds.map(([k, v]) => (
+                    <li>
+                      <b>{k}</b>
+                      {v}
+                    </li>
+                  ))}
+                </ol>
+              </div>
+              <figure class="dc-fig">
+                <img src={img('chenda')} alt="A chenda drum on a wooden stand in a temple courtyard, in black and white" width="675" height="1200" loading="lazy" decoding="async" />
+                <figcaption>The chenda: its tempo marks the onset of Urayal.</figcaption>
+              </figure>
+            </div>
+            <div class="dc-dias">
+              <p class="dc-label">The shrine that walks: three costumes, drawn for the report</p>
+              <ul>
+                {diagrams.map((x) => (
+                  <li>
+                    <img src={img(x.src)} alt={`Hand-illustrated diagram of the ${x.t} Theyyam costume, each part labelled`} width="824" height="1100" loading="lazy" decoding="async" />
+                    <span>{x.t}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </>
+        )}
+
+        {r.key === 'making' && (
+          <>
+            <div class="dc-split">
+              <div class="dc-copy">
+                <p>
+                  The report could describe Urayal. The film had to let people hear the drums climb and see the face in the mirror.
+                </p>
+                <p class="dc-todo">To come from Arnav: how the film was structured and written, what you shot it on, and one decision on the ground that shaped it.</p>
+              </div>
+              <figure class="dc-fig">
+                <img src={img('fire-performer')} alt="A Theyyam performer surrounded by burning embers at night" width="676" height="1200" loading="lazy" decoding="async" />
+              </figure>
+            </div>
             <div class="dc-stills">
-              {Array.from({ length: 4 }, (_, k) => (
+              {[
+                ['ch5-lamp', 'Oil lamps inside a shrine'],
+                ['ch7-grove', 'A performer in a grass skirt before a temple'],
+                ['poster', 'A figure silhouetted against a ritual fire'],
+              ].map(([src, alt]) => (
                 <figure class="dc-still">
-                  <div class="dc-slot">Still {pad(k + 1)}</div>
-                  <figcaption>Frame {pad(k + 1)} · caption to come</figcaption>
+                  <img src={img(src)} alt={alt} loading="lazy" decoding="async" />
                 </figure>
               ))}
             </div>
           </>
         )}
 
-        {r.key === 'film' && (
-          <div class="dc-screen">
-            <div class="dc-slot dc-player">The documentary to come</div>
-            <p class="dc-screen-bar">
-              <span>Running time to come</span>
-              <span>Written and shot by Arnav Srinath</span>
+        {r.key === 'found' && (
+          <>
+            <ol class="dc-finds">
+              {findings.map((f) => (
+                <li>
+                  <b>{f.big}</b>
+                  <p>{f.d}</p>
+                </li>
+              ))}
+            </ol>
+            <p class="dc-pull dc-coda">
+              The deeper threat is quieter: when the Tharavaad falls apart, the networks that sustain the performing families go with it.
             </p>
-          </div>
+            <ul class="dc-outputs">
+              <li><b>A documentary</b>written and shot in Kannur</li>
+              <li><b>A 100-page report</b>for FLAME’s Discover India Program</li>
+              <li><b>A final presentation</b>to the university</li>
+            </ul>
+          </>
         )}
 
         {r.key === 'credits' && (
-          <ol class="dc-crew">
-            {crew.map((c) => (
-              <li class:list={{ 'is-me': c.me, 'dc-todo': !c.me }}>
-                <span>{c.role}</span>
-                <b>{c.name}</b>
-              </li>
-            ))}
-          </ol>
+          <>
+            <ol class="dc-crew">
+              {crew.map((c) => (
+                <li class:list={{ 'is-me': c.me }}>
+                  <span>{c.role}</span>
+                  <b>{c.name}</b>
+                </li>
+              ))}
+            </ol>
+            <p class="dc-thanks">Research &amp; field mentor: Prof. Priya Joshi. With thanks to Dr. Rajesh Komath, and to every family in Kannur who fed us before they answered our questions.</p>
+          </>
         )}
       </section>
     ))
@@ -172,6 +347,35 @@ const pad = (n: number) => String(n).padStart(2, '0');
   </nav>
 </article>
 
+<script>
+  // the film loads only when asked for: the Drive player takes the viewfinder's place, and is
+  // removed again when the card closes or switches, so nothing keeps playing in the background
+  const card = document.querySelector<HTMLElement>('[data-dc]');
+  const frame = card?.querySelector<HTMLElement>('[data-dc-frame]');
+  const play = card?.querySelector<HTMLButtonElement>('[data-dc-play]');
+  if (card && frame && play) {
+    play.addEventListener('click', () => {
+      const f = document.createElement('iframe');
+      f.className = 'dc-player';
+      f.src = play.dataset.filmSrc!;
+      f.title = 'The Man the God Wore, the documentary';
+      f.allow = 'autoplay; fullscreen';
+      f.allowFullscreen = true;
+      frame.append(f);
+      frame.classList.add('is-playing');
+      f.focus();
+    });
+    const stop = () => {
+      frame.querySelector('iframe')?.remove();
+      frame.classList.remove('is-playing');
+    };
+    document.addEventListener('pm:hidden', stop);
+    document.addEventListener('pm:shown', (e) => {
+      if ((e as CustomEvent).detail?.slug !== card.dataset.project) stop();
+    });
+  }
+</script>
+
 <style>
   .dc {
     --dc-bg: #0e0d0c;
@@ -179,7 +383,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     --dc-line: rgb(236 226 206 / 0.12);
     --dc-ink: #ece2ce;
     --dc-ink-2: #b4ab99;
-    --dc-ink-3: #827a6c;
+    --dc-ink-3: #8a8274;
     --dc-tungsten: #f2b35b; /* its own warm light, independent of the site accent */
     --dc-rec: #ff4b3e;
     --dc-pad: clamp(24px, 6vw, 96px);
@@ -188,8 +392,17 @@ const pad = (n: number) => String(n).padStart(2, '0');
     background: var(--dc-bg);
     overflow-x: clip;
   }
+  .dc em {
+    font-style: normal;
+    color: var(--dc-tungsten);
+  }
+  .dc img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
 
-  /* ---------- the opening frame ---------- */
+  /* ---------- the film, in the viewfinder ---------- */
   .dc-hero {
     display: grid;
     gap: clamp(28px, 4vw, 48px);
@@ -198,17 +411,42 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .dc-frame {
     position: relative;
     aspect-ratio: 2.39;
+    overflow: hidden;
     border-radius: 4px;
-    background:
-      radial-gradient(120% 90% at 50% 40%, rgb(242 179 91 / 0.08), transparent 60%),
-      var(--dc-panel);
+    background: #050505;
     box-shadow: 0 0 0 1px var(--dc-line);
+    transition: aspect-ratio 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .dc-frame.is-playing {
+    aspect-ratio: 16 / 9;
+  }
+  .dc-poster {
+    position: absolute;
+    inset: 0;
+    height: 100% !important;
+    object-fit: cover;
+    object-position: 50% 45%;
+    opacity: 0.85;
+  }
+  /* a soft dark ground under the title card */
+  .dc-frame::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(5 5 5 / 0.85), rgb(5 5 5 / 0.1) 55%, transparent);
+    pointer-events: none;
+  }
+  .dc-viewfinder {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
   }
   .dc-mark {
     position: absolute;
     width: 22px;
     height: 22px;
-    border: 0 solid var(--dc-ink-2);
+    border: 0 solid rgb(236 226 206 / 0.7);
   }
   .dc-tl { top: 14px; left: 14px; border-width: 1.5px 0 0 1.5px; }
   .dc-tr { top: 14px; right: 14px; border-width: 1.5px 1.5px 0 0; }
@@ -222,7 +460,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     font-size: 0.75rem;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--dc-ink-2);
+    color: rgb(236 226 206 / 0.8);
   }
   .dc-rec {
     left: 48px;
@@ -240,34 +478,17 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .dc-tc {
     right: 48px;
   }
-  .dc-frame-slot {
-    position: absolute;
-    inset: 0 0 45%;
-    display: grid;
-    place-items: center;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--dc-ink-3);
-  }
   @keyframes dc-blink {
     50% {
       opacity: 0;
     }
   }
-
   .dc-titlecard {
     position: absolute;
+    z-index: 2;
     left: clamp(22px, 4vw, 48px);
-    right: clamp(22px, 4vw, 48px);
+    right: clamp(180px, 22vw, 300px);
     bottom: clamp(26px, 4.5vw, 52px);
-  }
-  .dc-hero-copy {
-    display: grid;
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
-    gap: 12px clamp(28px, 5vw, 72px);
-    align-items: start;
   }
   .dc-kicker {
     margin-bottom: 12px;
@@ -278,16 +499,70 @@ const pad = (n: number) => String(n).padStart(2, '0');
     color: var(--dc-tungsten);
   }
   .dc-title {
-    font-size: clamp(1.5rem, 5.6vw, 4.75rem);
+    font-size: clamp(1.5rem, 5.2vw, 4.5rem);
     font-stretch: 125%;
     font-weight: 640;
     line-height: 0.95;
     letter-spacing: -0.025em;
     text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .dc-play {
+    position: absolute;
+    z-index: 3;
+    right: clamp(22px, 4vw, 48px);
+    bottom: clamp(26px, 4.5vw, 52px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px 14px 16px;
+    border: 0;
+    border-radius: 99px;
+    background: var(--dc-tungsten);
+    font: inherit;
+    font-weight: 700;
+    color: var(--dc-bg);
+    cursor: pointer;
+  }
+  .dc-play svg {
+    width: 20px;
+    height: 20px;
+    fill: currentColor;
+  }
+  .dc-play:focus-visible {
+    outline: 2px solid var(--dc-ink);
+    outline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .dc-play {
+      transition: background-color 0.2s ease-out;
+    }
+    .dc-play:hover {
+      background: var(--dc-ink);
+    }
+  }
+  .dc-frame.is-playing :is(.dc-viewfinder, .dc-titlecard, .dc-play, .dc-poster),
+  .dc-frame.is-playing::after {
+    display: none;
+  }
+  .dc-frame :global(.dc-player) {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .dc-hero-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 12px clamp(28px, 5vw, 72px);
+    align-items: start;
   }
   .dc-lede {
-    max-width: 52ch;
-    font-size: 1.0625rem;
+    max-width: 56ch;
+    font-size: 1.125rem;
     line-height: 1.6;
     color: var(--dc-ink-2);
   }
@@ -309,12 +584,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .dc-slate div:last-child {
     border-bottom: 0;
   }
-  /* an odd fact out takes the whole last row */
-  .dc-slate div:last-child:nth-child(odd) {
-    grid-column: 1 / -1;
-    border-right: 0;
-  }
-  .dc-slate dt {
+  .dc-slate dt,
+  .dc-label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     letter-spacing: 0.1em;
@@ -325,13 +596,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
     margin-top: 4px;
     font-size: 0.9375rem;
     font-weight: 600;
+    line-height: 1.35;
   }
 
   /* ---------- the reels ---------- */
   .dc-rail {
     position: sticky;
     top: 0;
-    z-index: 3;
+    z-index: 5;
     padding: 0 var(--dc-pad);
     background: rgb(14 13 12 / 0.92);
     backdrop-filter: blur(10px);
@@ -404,7 +676,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     grid-template-columns: auto minmax(0, 1fr);
     gap: 4px 20px;
     align-items: baseline;
-    margin-bottom: clamp(24px, 4vh, 40px);
+    margin-bottom: clamp(28px, 5vh, 48px);
     padding-bottom: 18px;
     border-bottom: 1px solid var(--dc-line);
   }
@@ -431,69 +703,56 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
   .dc-split {
     display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: clamp(24px, 4vw, 64px);
+    align-items: center;
+  }
+  .dc-split + .dc-split {
+    margin-top: clamp(40px, 7vh, 80px);
+  }
+  .dc-split-flip {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: clamp(24px, 4vw, 56px);
-    align-items: start;
   }
   .dc-copy {
+    display: grid;
+    gap: 16px;
     max-width: 58ch;
     font-size: 1.0625rem;
     line-height: 1.65;
     color: var(--dc-ink-2);
   }
-  /* copy still to be written: set in mono so a placeholder never passes for the real thing */
-  .dc-todo {
-    font-family: var(--font-mono);
-    font-size: 0.875rem;
-    color: var(--dc-ink-3);
+  .dc-copy b {
+    font-weight: 600;
+    color: var(--dc-ink);
   }
-  .dc-quote {
-    margin: 0;
-    padding: 4px 0 4px 22px;
-    border-left: 2px solid var(--dc-tungsten);
-    line-height: 1.5;
-  }
-
-  /* dashed = not shot yet: where the material will sit */
-  .dc-slot {
-    display: grid;
-    place-items: center;
-    min-height: 160px;
-    padding: 16px;
-    border: 1px dashed rgb(236 226 206 / 0.22);
-    border-radius: 4px;
-    background: rgb(236 226 206 / 0.02);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-align: center;
-    text-transform: uppercase;
-    color: var(--dc-ink-3);
-  }
-  .dc-wide {
-    aspect-ratio: 16 / 10;
-  }
-  .dc-pages {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-  }
-  .dc-page {
-    aspect-ratio: 1 / 1.414;
-  }
-  .dc-stills {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: clamp(16px, 2vw, 24px);
+  .dc-lead {
     margin-top: clamp(24px, 4vh, 40px);
   }
-  .dc-still {
+  .dc-pull {
+    font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--dc-ink);
+  }
+  /* copy still to be written: set in mono so a placeholder never passes for the real thing */
+  .dc-todo {
+    padding: 14px 16px;
+    border: 1px dashed rgb(236 226 206 / 0.22);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--dc-ink-3);
+  }
+  .dc-fig {
     margin: 0;
   }
-  .dc-still .dc-slot {
-    aspect-ratio: 16 / 9;
+  .dc-fig img {
+    max-height: 60vh;
+    object-fit: cover;
+    border-radius: 4px;
   }
-  .dc-still figcaption {
+  .dc-fig figcaption {
     margin-top: 10px;
     font-family: var(--font-mono);
     font-size: 0.75rem;
@@ -501,27 +760,293 @@ const pad = (n: number) => String(n).padStart(2, '0');
     color: var(--dc-ink-3);
   }
 
-  /* the screen: the film, letterboxed in the dark */
-  .dc-screen {
-    padding: clamp(16px, 3vw, 40px);
-    border-radius: 6px;
-    background: #050505;
-    box-shadow: 0 40px 90px -40px rgb(242 179 91 / 0.25);
+  /* the question */
+  .dc-quote {
+    margin: 0;
+    padding: 4px 0 4px 22px;
+    border-left: 2px solid var(--dc-tungsten);
+    font-size: clamp(1.25rem, 2vw, 1.625rem);
+    font-weight: 600;
+    line-height: 1.35;
   }
-  .dc-player {
-    aspect-ratio: 16 / 9;
+  .dc-quote cite {
+    display: block;
+    margin-top: 12px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-style: normal;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dc-ink-3);
   }
-  .dc-screen-bar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 8px 24px;
+  .dc-gaps {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin: clamp(32px, 6vh, 56px) 0 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: gap;
+  }
+  .dc-gaps li {
+    padding: 20px;
+    border: 1px solid var(--dc-line);
+    border-radius: 4px;
+    background: var(--dc-panel);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--dc-ink-2);
+  }
+  .dc-gaps b {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 1.0625rem;
+    color: var(--dc-ink);
+  }
+  /* the title, before and after the field */
+  .dc-shift {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px 20px;
+    align-items: baseline;
+    margin-top: clamp(32px, 6vh, 56px);
+    padding: 22px 0;
+    border-block: 1px solid var(--dc-line);
+  }
+  .dc-shift span {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--dc-ink-3);
+  }
+  .dc-shift s {
+    color: var(--dc-ink-3);
+    text-decoration-color: var(--dc-rec);
+  }
+  .dc-shift b {
+    font-size: clamp(1.25rem, 2.4vw, 1.875rem);
+    font-stretch: 125%;
+    font-weight: 640;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--dc-tungsten);
+  }
+  .dc-note {
     margin-top: 14px;
+    max-width: 70ch;
+    font-size: 0.9375rem;
+    color: var(--dc-ink-3);
+  }
+
+  /* the field */
+  .dc-counts {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--dc-line);
+    border-radius: 4px;
+  }
+  .dc-counts li {
+    display: grid;
+    gap: 4px;
+    padding: 20px;
+    font-size: 0.875rem;
+    color: var(--dc-ink-2);
+  }
+  .dc-counts li + li {
+    border-left: 1px solid var(--dc-line);
+  }
+  .dc-counts b {
+    font-size: clamp(2rem, 4vw, 3.25rem);
+    font-stretch: 125%;
+    font-weight: 640;
+    line-height: 1;
+    color: var(--dc-ink);
+  }
+  /* the ritual arc: six frames along a strip, scrolled sideways */
+  .dc-arc {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 1fr);
+    gap: 16px;
+    margin: clamp(32px, 6vh, 56px) calc(var(--dc-pad) * -1) 0;
+    padding: 0 var(--dc-pad) 10px;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: var(--dc-pad);
+  }
+  .dc-arc li {
+    scroll-snap-align: start;
+  }
+  /* wide enough for all six frames: lay them out in a row, no sideways scroll */
+  @media (min-width: 1100px) {
+    .dc-arc {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      margin-inline: 0;
+      padding-inline: 0;
+      overflow: visible;
+    }
+  }
+  .dc-arc-fig {
+    margin: 0 0 14px;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 4px;
+    background: var(--dc-panel);
+  }
+  .dc-arc-fig img {
+    height: 100%;
+    object-fit: cover;
+  }
+  .dc-arc-no {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    color: var(--dc-tungsten);
+  }
+  .dc-arc h4 {
+    margin: 4px 0 6px;
+    font-size: 1.0625rem;
+    font-weight: 700;
+  }
+  .dc-arc li > p:last-child {
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--dc-ink-2);
+  }
+  .dc-sounds {
+    margin-top: clamp(48px, 8vh, 88px);
+  }
+  .dc-sounds .dc-fig img {
+    max-height: 56vh;
+  }
+  .dc-sound-list {
+    display: grid;
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--dc-line);
+  }
+  .dc-sound-list li {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--dc-line);
+    font-size: 0.9375rem;
+    color: var(--dc-ink-2);
+  }
+  .dc-sound-list b {
+    font-weight: 700;
+    color: var(--dc-ink);
+  }
+  /* the costume diagrams, inverted to chalk on the dark */
+  .dc-dias {
+    margin-top: clamp(48px, 8vh, 88px);
+  }
+  .dc-dias ul {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 2vw, 24px);
+    margin: 16px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dc-dias li {
+    display: grid;
+    gap: 10px;
+  }
+  .dc-dias img {
+    /* white paper inverts to pure black, which screen drops, leaving only the chalk lines */
+    filter: invert(1) sepia(0.3) brightness(0.92);
+    mix-blend-mode: screen;
+  }
+  .dc-dias span {
     font-family: var(--font-mono);
     font-size: 0.75rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+    color: var(--dc-ink-2);
+  }
+
+  /* making the film */
+  .dc-stills {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(12px, 2vw, 20px);
+    margin-top: clamp(32px, 6vh, 56px);
+  }
+  .dc-still {
+    margin: 0;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 4px;
+  }
+  .dc-still img {
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* what we found */
+  .dc-finds {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    overflow: hidden;
+    border: 1px solid var(--dc-line);
+    border-radius: 4px;
+    background: var(--dc-line);
+  }
+  .dc-finds li {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    padding: clamp(20px, 3vw, 32px);
+    background: var(--dc-bg);
+  }
+  .dc-finds b {
+    font-size: clamp(1.25rem, 2vw, 1.625rem);
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .dc-finds p {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--dc-ink-2);
+  }
+  .dc-coda {
+    max-width: 30ch;
+    margin: clamp(40px, 7vh, 72px) 0 0;
+  }
+  .dc-outputs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: clamp(32px, 6vh, 56px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .dc-outputs li {
+    display: grid;
+    gap: 2px;
+    padding: 14px 18px;
+    border: 1px solid var(--dc-line);
+    border-radius: 4px;
+    font-size: 0.875rem;
     color: var(--dc-ink-3);
+  }
+  .dc-outputs b {
+    font-size: 1rem;
+    color: var(--dc-ink);
   }
 
   /* the credits: centred, as at the end of a film */
@@ -549,9 +1074,6 @@ const pad = (n: number) => String(n).padStart(2, '0');
     font-size: 1.125rem;
     font-weight: 600;
   }
-  .dc-crew li.is-me {
-    margin-bottom: 18px;
-  }
   .dc-crew li.is-me span {
     color: var(--dc-tungsten);
   }
@@ -562,8 +1084,12 @@ const pad = (n: number) => String(n).padStart(2, '0');
     letter-spacing: -0.02em;
     text-transform: uppercase;
   }
-  .dc-crew li.dc-todo b {
-    font-weight: 400;
+  .dc-thanks {
+    max-width: 52ch;
+    margin: clamp(40px, 7vh, 64px) auto 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    text-align: center;
     color: var(--dc-ink-3);
   }
 
@@ -609,11 +1135,27 @@ const pad = (n: number) => String(n).padStart(2, '0');
 
   @media (max-width: 820px) {
     .dc-hero-copy,
-    .dc-split {
+    .dc-split,
+    .dc-split-flip {
       grid-template-columns: minmax(0, 1fr);
     }
+    .dc-split-flip .dc-fig {
+      order: 2;
+    }
     .dc-frame {
-      aspect-ratio: 4 / 3.4;
+      aspect-ratio: 4 / 3.6;
+    }
+    .dc-frame.is-playing {
+      aspect-ratio: 16 / 9;
+    }
+    .dc-titlecard {
+      right: clamp(22px, 4vw, 48px);
+      bottom: 92px;
+    }
+    .dc-play {
+      left: clamp(22px, 4vw, 48px);
+      right: auto;
+      bottom: 26px;
     }
     .dc-rec {
       left: 40px;
@@ -621,15 +1163,45 @@ const pad = (n: number) => String(n).padStart(2, '0');
     .dc-tc {
       right: 40px;
     }
+    .dc-gaps,
+    .dc-finds {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .dc-counts {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .dc-counts li:nth-child(3) {
+      border-left: 0;
+    }
+    .dc-counts li:nth-child(n + 3) {
+      border-top: 1px solid var(--dc-line);
+    }
+    .dc-dias ul,
+    .dc-stills {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .dc-fig img {
+      max-height: 60vh;
+    }
   }
   @media (max-width: 560px) {
-    .dc-stills {
+    .dc-slate,
+    .dc-shift {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .dc-slate div:nth-child(odd) {
+      border-right: 0;
+    }
+    .dc-slate div:nth-last-child(-n + 2):nth-child(odd) {
+      border-bottom: 1px solid var(--dc-line);
     }
   }
   @media (prefers-reduced-motion: reduce) {
     .dc-rec i {
       animation: none;
+    }
+    .dc-frame {
+      transition: none;
     }
   }
 </style>

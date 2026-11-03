@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 41 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 42 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,29 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-11-03 · The Man the God Wore: the documentary case, filled in from the research
+
+- The research documentary placeholder is now **The Man the God Wore**, the 13-person Discover India Program field study of Theyyam in Kannur. The content comes from the report and both presentations.
+- **It opens on the film.** The viewfinder shows a still from the field. "Watch the film" swaps it for the Drive player in place, and the frame widens to 16:9. The player is removed when the card closes, so nothing keeps playing.
+- The reels follow the path from problem to result: the ritual → the question (gaps in the literature; the title before and after the field) → in the field (counts, the six-step ritual arc, five recorded sounds, the hand-drawn costume diagrams inverted to chalk) → making the film → what we found → credits, with the documentary team first.
+- Field photos and figures from the report are saved as WebP in `public/projects/theyyam/`, and the work tile now has a cover.
+- Still to come from Arnav (set in mono so it can't pass for final copy): how the film was written and shot, kit, running time, and which photos are his.
+
+## 2026-11-03 · Cooked: rebuilt to open on the solution, then show how we got there
+- **Why:** reviewers said the case study doesn't say what it does at the start. The solution only arrived about 27 screens in. The tracker, which people love, opens on the finished box and then walks through the process. Cooked now does the same.
+- **The order tells it, with no labels.** The structure follows Situation, Task, Action, Result, but the page never names the method (a labelled STAR summary was tried first and dropped).
+  - **Hero: the solution.** The copy sits on the left: one line with the problem and the answer ("Ordering in means giving up a say in how your food is made. Cooked lets you book a home chef who cooks it your way."), the facts, and a "Try the prototype" button that jumps to the prototype. On the right, three screens of the finished app in a fan, numbered: pick the dish first, your spice and your oil, chefs who make it best.
+  - The hero copy sits on a frosted white card (a blur over the doodle frame, solid white in lite mode), so the doodles no longer fight the text.
+  - **Starter · The problem:** the "Imagine this" seesaw, who's at the table, and now the numbers too, moved up from research.
+  - **01 · The brief** ("Taking the order"): the HMW, "delivered to me → made for me", and the recipe card. These were buried at the end of Define.
+  - **02 · Research** ("Gathering the ingredients"): the counts, what we heard, the assumptions, what we noticed, the persona, the journey map, the control spectrum and the needs. Define is folded into it.
+  - **03 · Design** ("Testing in the kitchen"): three directions, paper, the user flow, wireframes, the pivot. The moodboard and the UI kit moved here from Deliver, since they're part of how the screens were made.
+  - **04 · The app** ("Plating up"): onboarding first ("Set up once. Skip anytime."), then the booking journey, the chef side, the prototype and the merch.
+  - **Dessert · How it went:** unchanged.
+- **The menu:** Starter, The order, Ingredients, Kitchen, Plating, Dessert, with plain stage names under each.
+- **Less scroll:** the pinned scenes keep every animation over less scroll. In screen heights, the opener goes from 3.2 to 2.1 and the booking journey from 2.6 to 1.9; the others lose 0.2 to 0.8 each. Block padding and the chapter headers are tighter. At 1440 × 900 the card is 33.8 screens, down from 39.4, and the solution is on the first screen.
+- **Jumps:** links marked `data-jump` scroll inside the card, the way the chapter links do (`projectModal.ts`).
 
 ## 2026-11-03 · Projects: a space for the research documentary
 - **What:** a new case study for a group research project (13 people) that isn't a design project. Arnav's part was the documentary, which he wrote and shot. It's the fourth project, so it shows on the All projects page; the front page still shows the first three.
