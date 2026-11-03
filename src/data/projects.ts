@@ -17,7 +17,7 @@ export interface Phase {
 
 export interface Project {
   slug: string;
-  discipline: 'Product' | 'UX' | 'UX/UI' | 'HMI';
+  discipline: 'Product' | 'UX' | 'UX/UI' | 'HMI' | 'Research';
   title: string;
   /** one line under the title on the work tile */
   note: string;
@@ -106,6 +106,21 @@ export const projects: Project[] = [
     team: 'Team TBD',
     duration: 'Duration TBD',
     tools: ['Figma', 'Fusion 360'],
+    phases: phases(),
+    outcome: 'What happened in the end: results you can honestly state.',
+    learnings: 'What you would do differently next time.',
+  },
+  {
+    // not a design project: a group research project, and the documentary I wrote and shot for it
+    slug: 'documentary',
+    discipline: 'Research',
+    title: 'Research documentary',
+    note: 'Written and shot by me, for a team of 13',
+    summary: 'A research project by a team of thirteen. My part was the documentary: I wrote it and I shot it.',
+    role: 'Writer · Camera',
+    team: '13 people',
+    duration: 'Duration TBD',
+    tools: ['Camera TBD', 'Editing TBD'],
     phases: phases(),
     outcome: 'What happened in the end: results you can honestly state.',
     learnings: 'What you would do differently next time.',

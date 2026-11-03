@@ -353,7 +353,7 @@ export function initFluid(): Fluid | null {
   const inkTarget = () => {
     const world = pmCard?.dataset.theme;
     if (world === 'light') return 1;
-    if (world === 'pcb') return 0;
+    if (world === 'pcb' || world === 'film') return 0;
     return document.documentElement.dataset.theme === 'light' ? 1 : 0;
   };
   const ink = { v: inkTarget() };
