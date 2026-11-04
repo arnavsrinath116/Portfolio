@@ -9,10 +9,8 @@ import { gsap } from 'gsap';
  * back round. A damped "jelly" spring squashes the whole body on sharp turns
  * and clicks; a click also sends a ripple around its surface.
  *
- * Over an interactive element the same body flows onto the element's edge
- * and spreads around it from where you entered (Venom-style), thinning as it
- * goes; leaving drains it back into a drop that pulls away to the pointer.
- * Nearby elements tug the drop into a smooth bulge toward them.
+ * It always stays a pointer: buttons and links show their own hover states
+ * instead of the liquid taking them over.
  * The menu flood is the same liquid filling the screen.
  */
 
@@ -21,8 +19,6 @@ export interface Fluid {
 }
 
 const R = 11; // resting radius (px)
-const MAGNET_RANGE = 120;
-const PAD = 6; // gap between an element and the liquid wrapped around it
 
 const VERT = `
 attribute vec2 aPos;
@@ -39,12 +35,6 @@ uniform vec3 uTail;     // x, y, radius
 uniform vec2 uMid;      // the trail's middle joint (it lags behind the head, the tail lags behind it)
 uniform vec3 uWob;      // squash amount, squash angle, ripple amplitude
 uniform vec3 uMove;     // stretch along the motion (negative = squash), motion angle, sphere blend
-uniform vec3 uMag;      // dir.xy, bulge amplitude
-uniform vec4 uRect;     // center.xy, half size.xy
-uniform float uRectR;   // corner radius of the wrapped element (+ gap)
-uniform float uRectP;   // how far the liquid has spread around (0..1)
-uniform float uEntry;   // angle where it arrived
-uniform float uRectOn;
 uniform vec3 uFlood;    // center.xy, radius
 uniform vec3 uHole;     // center.xy, radius
 uniform float uInk;     // 0 = silver mercury (dark sheet), 1 = black ink (light sheet)
@@ -53,11 +43,6 @@ float smin(float a, float b, float k) {
   float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
   return mix(b, a, h) - k * h * (1.0 - h);
 }
-float sdBox(vec2 p, vec2 b, float r) {
-  vec2 q = abs(p) - b + r;
-  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-}
-float wrapAng(float a) { return atan(sin(a), cos(a)); }
 
 // exact distance to a 2D round cone (circle r1 at a, circle r2 at b, tangent hull)
 float sdRoundCone(vec2 p, vec2 a, vec2 b, float r1, float r2) {
@@ -161,28 +146,12 @@ float body(vec2 p) {
 
   // soft wobble running round the surface after a click (low order: no facets)
   float ang = atan(q.y, q.x);
-  d -= uWob.z * sin(ang * 3.0 - uTime * 12.0);
-
-  // a smooth single bulge leaning toward the nearest element (liquid tug)
-  vec2 w = p - uHead.xy;
-  float da = wrapAng(atan(w.y, w.x) - atan(uMag.y, uMag.x));
-  float lean = pow(max(cos(da), 0.0), 3.0) * uMag.z;
-  return d - lean * smoothstep(uHead.z * 3.0, 0.0, length(w));
+  return d - uWob.z * sin(ang * 3.0 - uTime * 12.0);
 }
 
 float scene(vec2 p) {
   float d = body(p);
 
-  if (uRectOn > 0.001) {
-    vec2 rp = p - uRect.xy;
-    float rd = sdBox(rp, uRect.zw, min(uRectR, min(uRect.z, uRect.w)));
-    float a = atan(rp.y / max(uRect.w, 1.0), rp.x / max(uRect.z, 1.0));
-    float ad = abs(wrapAng(a - uEntry)) / 3.14159;
-    float th = (3.2 + 0.35 * sin(a * 3.0 + uTime * 1.6)) * uRectOn; // a ring wide enough to show its fill inside the outline
-    float ring = abs(rd) - th;
-    ring += max(0.0, ad - uRectP) * 80.0;      // only where the liquid has reached
-    d = smin(d, ring, 10.0);                    // joined to the drop: one body
-  }
 
   if (uFlood.z > 0.5) {
     vec2 fp = p - uFlood.xy;
@@ -315,12 +284,6 @@ export function initFluid(): Fluid | null {
     mid: U('uMid'),
     wob: U('uWob'),
     move: U('uMove'),
-    mag: U('uMag'),
-    rect: U('uRect'),
-    rectR: U('uRectR'),
-    rectP: U('uRectP'),
-    entry: U('uEntry'),
-    rectOn: U('uRectOn'),
     flood: U('uFlood'),
     hole: U('uHole'),
     ink: U('uInk'),
@@ -343,9 +306,6 @@ export function initFluid(): Fluid | null {
   // speed-reactive shape: stretch along the motion (sprung, so it overshoots into a squash when
   // it stops), the motion angle, and how far it has pulled into a sphere
   const move = { st: 0, sv: 0, a: 0, ball: 0 };
-  const mag = { x: 1, y: 0, amp: 0 };
-  // absorb: how much of the drop has gone into the ring (1 = all of it: a full takeover)
-  const wrap = { on: 0, p: 0, absorb: 0, entry: 0, at: 0, radius: 3, el: null as HTMLElement | null, leaving: false };
   const flood = { x: 0, y: 0, r: 0, hole: 0 };
   // silver on dark surfaces, black ink on light ones. An open case study brings its own
   // world (Cooked is light, the tracker's board is dark); otherwise the site's theme decides
@@ -363,10 +323,6 @@ export function initFluid(): Fluid | null {
   let last = performance.now();
   const t0 = last;
 
-  const magnets = () => Array.from(document.querySelectorAll<HTMLElement>('[data-magnet]'));
-  let magnetList = magnets();
-  new MutationObserver(() => (magnetList = magnets())).observe(document.body, { childList: true, subtree: true });
-
   const resize = () => {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = window.innerWidth;
@@ -375,18 +331,6 @@ export function initFluid(): Fluid | null {
     canvas.height = Math.round(H * dpr);
     gl.viewport(0, 0, canvas.width, canvas.height);
     kick();
-  };
-
-  /** Point on the element's (padded) edge in the direction of `angle`. */
-  const edgePoint = (r: DOMRect, angle: number) => {
-    const cx = r.left + r.width / 2;
-    const cy = r.top + r.height / 2;
-    const hw = r.width / 2 + PAD;
-    const hh = r.height / 2 + PAD;
-    const dx = Math.cos(angle) * hw;
-    const dy = Math.sin(angle) * hh;
-    const t = Math.min(hw / Math.max(Math.abs(dx), 1e-3), hh / Math.max(Math.abs(dy), 1e-3));
-    return { x: cx + dx * t, y: cy + dy * t };
   };
 
   // ---------------- input (mouse / pen only) ----------------
@@ -444,108 +388,14 @@ export function initFluid(): Fluid | null {
       kick();
     });
 
-    const enter = (el: HTMLElement) => {
-      if (wrap.el === el && !wrap.leaving) return;
-      const r = el.getBoundingClientRect();
-      const cx = r.left + r.width / 2;
-      const cy = r.top + r.height / 2;
-      wrap.el = el;
-      wrap.leaving = false;
-      // follow the element's own corners: a round button gets a round ring
-      const br = getComputedStyle(el).borderTopLeftRadius;
-      const rad = br.endsWith('%') ? (parseFloat(br) / 100) * Math.min(r.width, r.height) : parseFloat(br) || 0;
-      wrap.radius = Math.max(3, rad + PAD);
-      wrap.entry = Math.atan2((mouse.y - cy) / (r.height / 2), (mouse.x - cx) / (r.width / 2));
-      wrap.at = wrap.entry;
-      // a full takeover: the drop pours itself into the ring round the element, and is gone
-      gsap.killTweensOf(wrap);
-      gsap.to(wrap, { on: 1, duration: 0.15, ease: 'power2.out' });
-      gsap.to(wrap, { p: 1, duration: 0.35, ease: 'power3.out' });
-      gsap.to(wrap, { absorb: 1, duration: 0.25, ease: 'power2.out' });
-      kick();
-    };
-    const leave = () => {
-      if (!wrap.el || wrap.leaving) return;
-      wrap.leaving = true;
-      gsap.killTweensOf(wrap);
-      // the pointer comes back at once, whole and under the cursor (no spring back from the
-      // element's edge); the ring it leaves behind drains away on its own
-      wrap.absorb = 0;
-      for (const j of [head, midJ, tail]) {
-        j.x = mouse.x;
-        j.y = mouse.y;
-        j.vx = 0;
-        j.vy = 0;
-      }
-      gsap.to(wrap, { p: 0, duration: 0.18, ease: 'power2.in' });
-      gsap.to(wrap, {
-        on: 0,
-        duration: 0.18,
-        ease: 'power2.in',
-        onComplete: () => {
-          wrap.el = null;
-          wrap.leaving = false;
-        },
-      });
-      kick();
-    };
-    // a wrapped element that is about to vanish (a closing card) lets go of the liquid
-    document.addEventListener('fluid:release', leave);
-    document.addEventListener('pointerover', (e) => {
-      if (e.pointerType === 'touch') return;
-      const el = (e.target as HTMLElement).closest<HTMLElement>('[data-magnet]');
-      if (el) enter(el);
-      else leave();
-    });
   }
 
   // ---------------- simulation (fixed sub-steps: smooth at any frame rate) ----------------
   const SUB = 1 / 240;
   const step = (dt: number) => {
-    // magnet: nearest interactive element within range (not while wrapped)
-    let best = MAGNET_RANGE;
-    let dirX = mag.x;
-    let dirY = mag.y;
-    const wrapped = wrap.el && !wrap.leaving;
-    if (!wrapped) {
-      for (const el of magnetList) {
-        const r = el.getBoundingClientRect();
-        if (r.width === 0) continue;
-        const px = Math.max(r.left, Math.min(mouse.x, r.right));
-        const py = Math.max(r.top, Math.min(mouse.y, r.bottom));
-        const d = Math.hypot(px - mouse.x, py - mouse.y);
-        if (d < best && d > 0.5) {
-          best = d;
-          dirX = (px - mouse.x) / d;
-          dirY = (py - mouse.y) / d;
-        }
-      }
-    }
-    const pull = best < MAGNET_RANGE ? Math.pow(1 - best / MAGNET_RANGE, 1.4) : 0;
-    const km = 1 - Math.exp(-dt * 10);
-    mag.amp += (pull * 5 - mag.amp) * km;
-    mag.x += (dirX - mag.x) * km;
-    mag.y += (dirY - mag.y) * km;
-
-    // where the body wants to be: the pointer, or the edge of the wrapped element
-    let tx = mouse.x + mag.x * mag.amp * 0.8;
-    let ty = mouse.y + mag.y * mag.amp * 0.8;
-    let rect: DOMRect | null = null;
-    if (wrap.el && wrap.on > 0.001) {
-      rect = wrap.el.getBoundingClientRect();
-      if (!wrap.leaving) {
-        // the bead rides the ring to wherever the pointer is, instead of staying where it
-        // arrived (eased round the shorter way, so it glides rather than jumps)
-        const hw = rect.width / 2 + PAD;
-        const hh = rect.height / 2 + PAD;
-        const want = Math.atan2((mouse.y - (rect.top + rect.height / 2)) / hh, (mouse.x - (rect.left + rect.width / 2)) / hw);
-        const da = Math.atan2(Math.sin(want - wrap.at), Math.cos(want - wrap.at));
-        wrap.at += da * (1 - Math.exp(-dt * 16));
-        const ep = edgePoint(rect, wrap.at);
-        tx = ep.x;
-        ty = ep.y;
-      }
-    }
+    // the body follows the pointer itself
+    const tx = mouse.x;
+    const ty = mouse.y;
 
     // dt is clamped >= 0 by the caller; always take at least one bounded step
     const n = Math.min(64, Math.max(1, Math.ceil(dt / SUB)));
@@ -615,16 +465,14 @@ export function initFluid(): Fluid | null {
       wob.ripple > 0.02 ||
       Math.abs(move.st) + Math.abs(move.sv) > 0.002 ||
       move.ball > 0.002;
-    return { busy: moving || mag.amp > 0.05 || wrap.on > 0.001 || flood.r > 0.5 || flood.hole > 0.05, rect, len };
+    return { busy: moving || flood.r > 0.5 || flood.hole > 0.05, len };
   };
 
   // ---------------- render ----------------
-  const render = (now: number, rect: DOMRect | null, len: number) => {
+  const render = (now: number, len: number) => {
     const time = (now - t0) / 1000;
     const s = Math.max(0, size.s);
-    // volume-ish: the drop thins as it stretches, and gives all of itself to the wrap
-    const base = R * (1 - wrap.absorb) * s;
-    const r1 = base; // the arrow keeps its size while it moves (the trail is extra, not taken from it)
+    const r1 = R * s; // the arrow keeps its size while it moves (the trail is extra, not taken from it)
     const r2 = r1 * (1 - 0.45 * Math.min(len / 30, 1));
 
     gl.disable(gl.SCISSOR_TEST);
@@ -635,12 +483,6 @@ export function initFluid(): Fluid | null {
     let y0 = Math.min(head.y, tail.y) - r1 - 40;
     let x1 = Math.max(head.x, tail.x) + r1 + 40;
     let y1 = Math.max(head.y, tail.y) + r1 + 40;
-    if (rect) {
-      x0 = Math.min(x0, rect.left - 30);
-      y0 = Math.min(y0, rect.top - 30);
-      x1 = Math.max(x1, rect.right + 30);
-      y1 = Math.max(y1, rect.bottom + 30);
-    }
     if (flood.r > 0.5) {
       x0 = 0;
       y0 = 0;
@@ -663,14 +505,6 @@ export function initFluid(): Fluid | null {
     gl.uniform2f(u.mid, midJ.x, midJ.y);
     gl.uniform3f(u.wob, Math.max(-0.35, Math.min(0.35, wob.w)), wob.angle, wob.ripple * s);
     gl.uniform3f(u.move, Math.max(-0.3, Math.min(0.45, move.st)), move.a, move.ball);
-    gl.uniform3f(u.mag, mag.x, mag.y, mag.amp * s);
-    if (rect) {
-      gl.uniform4f(u.rect, rect.left + rect.width / 2, rect.top + rect.height / 2, rect.width / 2 + PAD, rect.height / 2 + PAD);
-      gl.uniform1f(u.rectR, wrap.radius);
-    }
-    gl.uniform1f(u.rectP, wrap.p);
-    gl.uniform1f(u.entry, wrap.entry);
-    gl.uniform1f(u.rectOn, rect ? wrap.on * s : 0);
     gl.uniform3f(u.flood, flood.x, flood.y, flood.r);
     gl.uniform3f(u.hole, head.x, head.y, flood.hole);
     gl.uniform1f(u.ink, ink.v);
@@ -682,8 +516,8 @@ export function initFluid(): Fluid | null {
     // the rAF timestamp can precede the moment we were kicked: never negative
     const dt = Math.max(0, Math.min(0.12, (now - last) / 1000));
     last = now;
-    const { busy, rect, len } = step(dt);
-    render(now, rect, len);
+    const { busy, len } = step(dt);
+    render(now, len);
     raf = busy ? requestAnimationFrame(loop) : 0;
   };
   function kick() {

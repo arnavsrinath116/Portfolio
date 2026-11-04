@@ -174,6 +174,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
         </a>
         <span class="dc-paper-meta">100 pages · 4.3 MB</span>
       </div>
+      <!-- the programme it was made for, credited with its own marks -->
+      <div class="dc-made">
+        <span class="dc-label">Made for</span>
+        <span class="dc-logos">
+          <span class="dc-plate"><img src={withBase('/projects/theyyam/logos/discover-india.webp')} alt="Discover India Program" width="1038" height="597" loading="lazy" decoding="async" /></span>
+          <span class="dc-plate"><img src={withBase('/projects/theyyam/logos/flame.webp')} alt="FLAME University" width="349" height="139" loading="lazy" decoding="async" /></span>
+        </span>
+      </div>
     </div>
   </header>
 
@@ -553,6 +561,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
                   </ul>
                 </section>
               ))}
+            </div>
+            <div class="dc-made dc-made-lg">
+              <span class="dc-label">Made for</span>
+              <span class="dc-logos">
+                <span class="dc-plate"><img src={withBase('/projects/theyyam/logos/discover-india.webp')} alt="Discover India Program" width="1038" height="597" loading="lazy" decoding="async" /></span>
+                <span class="dc-plate"><img src={withBase('/projects/theyyam/logos/flame.webp')} alt="FLAME University" width="349" height="139" loading="lazy" decoding="async" /></span>
+              </span>
+              <p>The report and the film are Group 42’s project for the Discover India Program at FLAME University, <span class="dc-nw">2025–26</span>.</p>
             </div>
             <p class="dc-thanks">Research &amp; field mentor: Prof. Priya Joshi. With thanks to Dr. Rajesh Komath, and to every family in Kannur who fed us before they answered our questions.</p>
   </section>
@@ -1685,6 +1701,73 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
   .dc-person.is-me .dc-person-role {
     color: var(--dc-tungsten);
+  }
+  /* the programme's marks, each on its own white plate (their logos are drawn for white) */
+  .dc-made {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+  }
+  .dc-hero-copy .dc-made {
+    grid-column: 2;
+    margin-top: 8px;
+  }
+  .dc-logos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .dc-plate {
+    display: block;
+    padding: 6px 14px;
+    border-radius: 4px;
+    background: #fff;
+  }
+  .dc .dc-plate img {
+    width: auto;
+    height: 44px;
+  }
+  .dc-made-lg {
+    display: grid;
+    grid-template-columns: minmax(160px, 0.32fr) minmax(0, 1fr); /* the team rows' columns */
+    align-items: start;
+    gap: 16px clamp(20px, 4vw, 48px);
+    padding: clamp(24px, 4vh, 36px) 0;
+    border-bottom: 1px solid var(--dc-line);
+  }
+  .dc-made-lg .dc-plate {
+    padding: 10px 20px;
+  }
+  .dc .dc-made-lg .dc-plate img {
+    height: 56px;
+  }
+  .dc-nw {
+    white-space: nowrap;
+  }
+  .dc-made-lg p {
+    grid-column: 2;
+    max-width: 52ch;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--dc-ink-2);
+  }
+  @media (max-width: 820px) {
+    .dc-hero-copy .dc-made {
+      grid-column: auto;
+      order: 3;
+    }
+    .dc-made-lg {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .dc-made-lg p {
+      grid-column: auto;
+    }
+  }
+  @media (max-width: 420px) {
+    .dc .dc-made-lg .dc-plate img {
+      height: 44px;
+    }
   }
   .dc-thanks {
     max-width: 60ch;

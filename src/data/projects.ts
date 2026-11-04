@@ -118,7 +118,7 @@ export const projects: Project[] = [
     note: 'A documentary on Theyyam, written and shot by me',
     summary:
       'A thirteen-person field study of Theyyam in Kannur, Kerala, where a performer becomes a god, told in a report and a film made side by side. My part was the documentary: I wrote it and I shot it.',
-    cover: { src: '/projects/theyyam/cover.webp', alt: 'A Theyyam performer in red face paint and headdress', focus: '50% 35%' },
+    cover: { src: '/projects/theyyam/cover.webp', alt: 'A Theyyam performer led through the fire by two men, sparks rising, the crowd filming on phones' },
     role: 'Documentary co-lead · Writer · Camera',
     team: '13 people',
     duration: '9 days in the field · 2025–26',

@@ -190,7 +190,6 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     const article = articles.get(currentSlug)!;
     const rising = article.querySelectorAll('[data-pc-rise], .pc-body');
     gsap.killTweensOf(rising);
-    document.dispatchEvent(new Event('fluid:release'));
     announce('pm:hidden', currentSlug);
     closeBtn.style.pointerEvents = 'none';
     const target = source && document.contains(source) ? slabOf(source)!.getBoundingClientRect() : null;

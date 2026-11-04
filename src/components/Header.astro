@@ -180,7 +180,7 @@ const tabs = [
     place-items: center;
     width: 52px;
     height: 52px;
-    border-radius: 50%; /* the mercury cursor wraps it as a circle */
+    border-radius: 50%;
   }
   .cube-stage {
     --s: 22px;
@@ -288,7 +288,10 @@ const tabs = [
     letter-spacing: 0.04em;
     text-transform: uppercase;
     text-decoration: none;
-    transition: transform var(--dur-base) var(--ease-out);
+    transition:
+      transform var(--dur-base) var(--ease-out),
+      box-shadow var(--dur-base) var(--ease-out),
+      filter var(--dur-base) var(--ease-out);
   }
   .resume-ico {
     width: 12px;
@@ -301,6 +304,16 @@ const tabs = [
     transition: transform var(--dur-base) var(--ease-out);
   }
   @media (hover: hover) {
+    /* lifts, brightens, and grows a soft halo of its own colour */
+    .resume-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-fill) 28%, transparent);
+    }
+    .resume-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-fill) 28%, transparent);
+    }
     .resume-btn:hover .resume-ico {
       transform: translateY(2px);
     }
@@ -311,8 +324,6 @@ const tabs = [
   }
 
   /* the switch: a pill track with both marks, and a knob carrying the current one */
-  /* the button is the pill itself, so the mercury cursor wraps it as a pill
-     (it follows the hovered element's own corner radius) */
   .theme-switch {
     display: grid;
     place-items: center;

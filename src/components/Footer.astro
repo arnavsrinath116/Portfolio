@@ -1,6 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import { site } from '../data/site';
+import { withBase } from '../lib/url';
 const year = new Date().getFullYear();
 // opens a new Gmail draft in a new tab, already addressed to me
 const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(site.email)}`;
@@ -23,7 +24,7 @@ const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURICompon
         </a>
       </li>
       <li>
-        <a class="bracket" href={site.resume} data-magnet>Résumé <Icon name="arrow-down" /></a>
+        <a class="bracket" href={withBase(site.resume)} target="_blank" rel="noopener" data-magnet>Résumé <Icon name="arrow-down" /></a>
       </li>
       <li>
         <a class="bracket" href="#top" data-magnet data-to-top>Back to top <Icon name="arrow-up" /></a>

@@ -257,14 +257,6 @@ html.menu-open .fluid-canvas {
     transform: none;
   }
 }
-/* with the mercury cursor running, the liquid itself outlines a hovered link, so its
-   brackets stand down (they still mark keyboard focus, and hovers on touch screens) */
-@media (hover: hover) {
-  html.has-fluid .bracket:hover::before,
-  html.has-fluid .bracket:hover::after {
-    opacity: 0 !important;
-  }
-}
 .bracket:focus-visible {
   outline: none;
   color: var(--accent);

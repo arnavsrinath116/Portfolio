@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 43 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 44 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,19 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-11-04 · The Man the God Wore: credits the Discover India Program and FLAME University
+
+- Both logos, taken from the report's own title page, now sit on white plates (they're drawn for white) in two places: a small "Made for" row under the hero's slate, and a larger "Made for" block in the end credits, set on the same columns as the team rows, with a line saying the report and film are Group 42's DIP 2025–26 project.
+- Checked at 1440 and 390 wide: no overflow, and the logos stay legible on phones.
+
+## 2026-11-04 · Cursor: stays a pointer; the buttons show their own hover
+
+- People found the takeover distracting, so the cursor no longer pours itself into a ring around buttons and links, and nearby elements no longer tug it toward them. It stays the same comic arrow everywhere, with its trail, squash and click ripple. The wrap and magnet code is gone from both the script and the shader.
+- The bracket hover on nav and footer links shows again; it had been hidden while the liquid outlined links.
+- The header's Résumé pill now lifts, brightens and grows a soft halo of its own colour on hover (it used to move only its icon).
+- Fixed: the footer's Résumé link was missing the `/Portfolio` base, so it 404'd on the live site. It now opens the PDF in a new tab like the header one.
+- The Man the God Wore's work tile now uses the report's cover photograph: the performer led through the fire, sparks rising.
 
 ## 2026-11-04 · The Man the God Wore: the research and the film told as one story
 
