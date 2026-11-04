@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 42 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 43 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,15 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-11-04 · The Man the God Wore: the research and the film told as one story
+
+- The case now gives the research as much room as the documentary. After the film comes **"One study, told twice"**: the report and the film came out of the same nine days and the same field checklist. It covers my part (co-lead with Simran Vyas; writer and camera) and the kit: 11 iPhones, a gimbal, my Canon EOS R50, a Canon EOS 500D, a Sony α7 III and a GoPro Hero 7.
+- The rest follows the report's own eight chapters, from *Born of Earth, Bound by Fear* to *Belief, Still Burning*. Each chapter has a cover photo that stays pinned while the text scrolls past, swapping sides from one chapter to the next. Each one sets what the research found beside what we saw and recorded: the ritual arc, the five sounds recorded for the film, the costume diagrams and the findings.
+- Credits: the Group 42 photo from the final deck, then each team under its own title with a portrait card per person. Cards show initials until the faces cropped from the group photo are matched to names.
+- The tile's tools now list the real kit.
+- **The team's own photographs.** The hero and six of the chapter covers are now from the group's "Unique/iconic photos" folder, as are the ritual-strip frames, at full quality. These replace the scans pulled from the report PDF. The tile cover is re-cut from the original too.
+- **Read the full report.** The button opens the 100-page report in a reader over the card, with a Download button (on phones it opens in the browser's own PDF viewer). There's also a Download PDF link in the hero, and the report in the outputs list opens the reader. The web copy is compressed from 41 MB to 4.3 MB, and the signature page is blanked so no one's signature is published.
 
 ## 2026-11-03 · The Man the God Wore: the documentary case, filled in from the research
 
