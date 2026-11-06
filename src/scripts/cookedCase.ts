@@ -3,15 +3,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { sampleSpline, pointAtLength } from './guide';
 
 /**
- * The Cooked case study: a light, illustrated card that plays like a motion
- * graphic as it scrolls. Everything is driven by the card's own scroller:
- * - a green line draws itself down the margins, swooping across between
- *   blocks, with its pen tip held at the reading point;
- * - sticky scenes run scrubbed timelines (the seesaw, the thought clouds,
- *   the assumption board, the HMW, the pivot, the booking journey);
- * - smaller blocks reveal with [data-a] (up, pop, left/right, spin, par,
- *   fill, draw, stagger) and numbers count with [data-count].
- * It builds the first time the card is shown and re-measures on every show.
+ * The Cooked case study. The story reads in order (problem, brief, the app, research, design,
+ * result) and the motion follows the scroll without ever holding it:
+ * - a green line draws itself down the margins, swapping sides between blocks, its pen tip
+ *   riding at the reading point;
+ * - headings and cards rise in as they arrive, numbers count, bars fill;
+ * - a few moments play out as you scroll past them, in place: the seesaw tips, the question
+ *   lights up word by word, "delivered" is struck out, the menu flips to food-first.
+ * Nothing is pinned. With reduced motion everything is simply shown, and the line is drawn whole.
  */
 const GREEN = '#337140';
 
@@ -20,21 +19,19 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
   if (!article) return;
   let scroller: HTMLElement | null = null;
   let built = false;
+  let active = false;
 
   // the card's hero images load lazily (not with the homepage), and are fetched the moment
   // someone shows intent to open it, so the hero is ready when the card lands
+  const tile = document.querySelector<HTMLElement>('[data-open-project="cooked"]');
   const warm = () => {
     article.querySelectorAll<HTMLImageElement>('[data-ck-preload]').forEach((im) => {
       new Image().src = im.currentSrc || im.src;
     });
-    tile?.removeEventListener('pointerenter', warm);
-    tile?.removeEventListener('focus', warm);
   };
-  const tile = document.querySelector<HTMLElement>('[data-open-project="cooked"]');
   tile?.addEventListener('pointerenter', warm, { once: true });
   tile?.addEventListener('focus', warm, { once: true });
   tile?.addEventListener('touchstart', warm, { once: true, passive: true });
-  let active = false;
 
   // ---------------- green line ----------------
   const svg = article.querySelector<SVGSVGElement>('[data-ck-line]')!;
@@ -42,11 +39,10 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
   const tip = svg.querySelector<SVGCircleElement>('.ck-line-tip')!;
   const halo = svg.querySelector<SVGCircleElement>('.ck-line-halo')!;
   let total = 0;
-  // lookup table along the line: x, y, running length, and the furthest y reached so far
   let xs: number[] = [];
   let ys: number[] = [];
   let ls: number[] = [];
-  let reach: number[] = [];
+  let reach: number[] = []; // the furthest y the line has reached by each sample
 
   const offsetTop = (el: HTMLElement) => {
     let y = 0;
@@ -68,30 +64,27 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     const pad = padEl ? parseFloat(getComputedStyle(padEl).paddingLeft) : 40;
     const gutter = Math.max(11, pad * 0.42);
     const sideX = { l: gutter, r: W - gutter };
-
     const hero = article.querySelector<HTMLElement>('.ck-hero')!;
-    const pts = [{ x: W / 2, y: hero.offsetHeight - 70 }];
-    // each block the line passes: it hugs one margin alongside, then swaps sides in the gap
+    // on a narrow card there's no room to cross between blocks without cutting through the text,
+    // so the line keeps to the left margin; on wider ones it swaps sides in each gap
+    const narrow = W < 760;
+    const pts = [{ x: narrow ? sideX.l : W / 2, y: hero.offsetHeight - 30 }];
     let side: 'l' | 'r' = 'l';
-    article.querySelectorAll<HTMLElement>('[data-ck-pt], [data-ck-rail]').forEach((el) => {
-      if (el === hero) return;
+    article.querySelectorAll<HTMLElement>('.ck-chead, [data-ck-in]').forEach((el) => {
       const top = offsetTop(el);
       const h = el.offsetHeight;
       const cs = getComputedStyle(el);
-      const pt = Math.max(24, parseFloat(cs.paddingTop) * 0.8);
-      const pb = Math.max(24, parseFloat(cs.paddingBottom) * 0.8);
-      const rail = el.hasAttribute('data-ck-rail');
-      const y1 = top + (rail ? 0 : pt);
-      const y2 = top + h - (rail ? 0 : pb);
+      const y1 = top + Math.max(20, parseFloat(cs.paddingTop) * 0.8);
+      const y2 = top + h - Math.max(20, parseFloat(cs.paddingBottom) * 0.8);
       if (y2 - y1 < 20) return;
       pts.push({ x: sideX[side], y: y1 }, { x: sideX[side], y: y2 });
-      side = side === 'l' ? 'r' : 'l';
+      if (!narrow) side = side === 'l' ? 'r' : 'l';
     });
-    pts.push({ x: W / 2, y: H - 40 });
+    pts.push({ x: narrow ? sideX.l : W / 2, y: H - 40 });
     pts.sort((a, b) => a.y - b.y);
-    const s = sampleSpline(pts);
-    ({ xs, ys, ls, total } = s);
-    path.setAttribute('d', s.d);
+    const sp = sampleSpline(pts);
+    ({ xs, ys, ls, total } = sp);
+    path.setAttribute('d', sp.d);
     // dash units follow our measured length exactly, so the drawn end meets the pen tip
     path.setAttribute('pathLength', String(total));
     path.style.strokeDasharray = `${total}`;
@@ -116,16 +109,16 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
 
   const placeTip = (len: number) => {
     path.style.strokeDashoffset = `${total - len}`;
-    const p = pointAtLength({ xs, ys, ls }, len);
+    const pt = pointAtLength({ xs, ys, ls }, len);
     for (const c of [tip, halo]) {
-      c.setAttribute('cx', String(p.x));
-      c.setAttribute('cy', String(p.y));
+      c.setAttribute('cx', String(pt.x));
+      c.setAttribute('cy', String(pt.y));
     }
     tip.style.opacity = halo.style.opacity = len > 2 && len < total - 2 ? '1' : '0';
   };
 
-  // the drawn length eases toward the scroll position (native wheel scrolling moves in
-  // ~100 px steps; following it raw made the line jump)
+  // the drawn length eases toward the scroll position (wheel scrolling moves in steps; following
+  // it raw made the line jump)
   let shown = 0;
   let goal = 0;
   let raf = 0;
@@ -157,30 +150,28 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       raf = requestAnimationFrame(ease);
     }
   };
-  const drawLine = () => aim(true);
   const onScroll = () => {
     if (active) aim();
   };
 
   // ---------------- build (first show) ----------------
-  const build = () => {
-    const sc = scroller!;
+  const build = (sc: HTMLElement) => {
     sc.addEventListener('scroll', onScroll, { passive: true });
-    const ST = (trigger: Element, extra: ScrollTrigger.Vars = {}): ScrollTrigger.Vars => ({ trigger, scroller: sc, ...extra });
-    const enter = (el: Element) => ST(el, { start: 'top 94%', end: 'top 74%', scrub: 0.35 });
 
-    // the course menu appears once the hero has scrolled away
+    // the chapter rail on the right edge appears once the hero has scrolled away
     const dock = article.querySelector<HTMLElement>('[data-ck-dock]');
-    if (dock)
-      ScrollTrigger.create(
-        ST(article.querySelector('.ck-hero')!, { start: 'top -35%', end: () => `+=${sc.scrollHeight}`, toggleClass: { targets: dock, className: 'is-on' } }),
-      );
-
-    // it rests folded to its dots, and opens with every course's name while a course's header
-    // is on screen (Dessert's is its "Imagine this again"); past the header, it folds again
+    const hero = article.querySelector<HTMLElement>('.ck-hero');
+    if (dock && hero)
+      ScrollTrigger.create({
+        trigger: hero,
+        scroller: sc,
+        start: 'top -35%',
+        end: () => `+=${sc.scrollHeight}`,
+        toggleClass: { targets: dock, className: 'is-on' },
+      });
+    // it rests folded to its dots; while a chapter's heading is on screen a pill names that chapter
     const rail = dock?.querySelector<HTMLElement>('.ck-dock');
     if (rail) {
-      // the pill beside the rail carries the current name, lined up with its row
       const now = rail.querySelector<HTMLElement>('[data-dock-now]');
       const sync = () => {
         const a = rail.querySelector<HTMLElement>('a.is-active');
@@ -191,18 +182,18 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       sync();
       new MutationObserver(sync).observe(rail, { subtree: true, attributes: true, attributeFilter: ['class'] });
       const open = new Set<number>();
-      article.querySelectorAll<HTMLElement>('.ck-chead, .ck-again').forEach((h, i) =>
-        ScrollTrigger.create(
-          ST(h, {
-            start: 'top 85%',
-            end: 'bottom 15%',
-            onToggle: (self) => {
-              if (self.isActive) open.add(i);
-              else open.delete(i);
-              rail.classList.toggle('is-open', open.size > 0);
-            },
-          }),
-        ),
+      article.querySelectorAll<HTMLElement>('.ck-chead').forEach((h, i) =>
+        ScrollTrigger.create({
+          trigger: h,
+          scroller: sc,
+          start: 'top 85%',
+          end: 'bottom 15%',
+          onToggle: (self) => {
+            if (self.isActive) open.add(i);
+            else open.delete(i);
+            rail.classList.toggle('is-open', open.size > 0);
+          },
+        }),
       );
     }
 
@@ -222,7 +213,6 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
           view.scrollLeft = fx * view.scrollWidth - view.clientWidth / 2;
           view.scrollTop = fy * view.scrollHeight - view.clientHeight / 2;
         }
-        ScrollTrigger.refresh();
       };
       zoomBtn.addEventListener('click', () => setZoom(!view.classList.contains('is-zoomed')));
       let drag: { x: number; y: number; l: number; t: number; moved: boolean } | null = null;
@@ -289,13 +279,12 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       };
       kit.querySelectorAll('[data-kit-press]').forEach((b) => b.addEventListener('click', step));
 
-      // the kit's parts sit behind tabs; the open part's height eases to the new one
+      // the kit's parts sit behind tabs
       const bar = kit.querySelector<HTMLElement>('[data-kit-tabs]');
       const stage = kit.querySelector<HTMLElement>('[data-kit-stage]');
       const parts = Array.from(kit.querySelectorAll<HTMLButtonElement>('[data-kit-tab]'));
       const panels = Array.from(kit.querySelectorAll<HTMLElement>('[data-kit-panel]'));
       let part = 0;
-      let demoed = false;
       const place = () => {
         const t = parts[part];
         bar?.style.setProperty('--pw', `${t.offsetWidth}px`);
@@ -305,25 +294,8 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         // the first real placement lands in place; only later moves slide
         if (bar && !bar.dataset.set && t.offsetWidth) requestAnimationFrame(() => (bar.dataset.set = ''));
       };
-      // a part's moment as it opens: the ratios count up; the components play a short demo once
-      const opened = (panel: HTMLElement) => {
-        if (reduce) return;
-        panel.querySelectorAll<HTMLElement>('[data-kit-num]').forEach((n, k) => {
-          const v = { x: 1 };
-          gsap.to(v, { x: Number(n.dataset.kitNum), duration: 0.9, delay: 0.1 + k * 0.045, ease: 'power2.out', onUpdate: () => (n.textContent = v.x.toFixed(1)) });
-        });
-        if (panel.id !== 'kit-panel-components' || demoed) return;
-        demoed = true;
-        const nav = panel.querySelector<HTMLElement & { _pick?: (t: HTMLElement) => void }>('[data-kit-nav]');
-        const tabs = nav ? Array.from(nav.querySelectorAll<HTMLElement>('.knav-tab')) : [];
-        setTimeout(() => choices[0]?.click(), 500);
-        setTimeout(step, 800);
-        tabs.slice(1).forEach((t, k) => setTimeout(() => nav?._pick?.(t), 1100 + k * 650));
-        if (tabs[0]) setTimeout(() => nav?._pick?.(tabs[0]), 1100 + 2 * 650);
-      };
       const open = (i: number) => {
         if (i === part || !stage) return;
-        const from = stage.offsetHeight;
         part = i;
         parts.forEach((t, k) => {
           t.classList.toggle('is-on', k === i);
@@ -332,8 +304,6 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
         });
         panels.forEach((p, k) => (p.hidden = k !== i));
         place();
-        if (!reduce) gsap.fromTo(stage, { height: from }, { height: stage.offsetHeight, duration: 0.45, ease: 'power3.out', clearProps: 'height' });
-        opened(panels[i]);
       };
       parts.forEach((t, i) => t.addEventListener('click', () => open(i)));
       // arrow keys move between the tabs, as in any tab list
@@ -348,266 +318,124 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
       if (bar) new ResizeObserver(place).observe(bar);
     }
 
-    // the wordmark lands with a little bounce each time the card opens
-    const mark = article.querySelector('.ck-wordmark img');
 
-    if (reduce) {
-      buildLine();
-      drawLine();
-      return mark;
-    }
+    if (reduce) return;
 
-    // ---- generic reveals ----
-    article.querySelectorAll<HTMLElement>('[data-a]').forEach((el) => {
-      const kind = el.dataset.a;
-      // every reveal names where it ends (fromTo, not from): a re-measure while an element is
-      // still in its start pose would otherwise record that pose as its resting place
-      if (kind === 'up') gsap.fromTo(el, { y: 54, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: enter(el) });
-      else if (kind === 'pop')
-        gsap.fromTo(el, { scale: 0.55, autoAlpha: 0, rotation: gsap.utils.random(-8, 8) }, { scale: 1, autoAlpha: 1, rotation: 0, ease: 'back.out(2)', scrollTrigger: enter(el) });
-      else if (kind === 'left' || kind === 'right')
-        gsap.fromTo(
-          el,
-          { x: kind === 'left' ? -110 : 110, rotation: kind === 'left' ? -8 : 8, autoAlpha: 0 },
-          { x: 0, rotation: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: enter(el) },
-        );
-      else if (kind === 'spin')
-        gsap.fromTo(
-          el,
-          { rotation: -28, scale: 0.78, autoAlpha: 0 },
-          { rotation: 10, scale: 1, autoAlpha: 1, ease: 'none', scrollTrigger: ST(el, { start: 'top bottom', end: 'bottom top', scrub: 0.8 }) },
-        );
-      else if (kind === 'par') {
-        const s = parseFloat(el.dataset.speed || '40');
-        gsap.fromTo(el, { y: s }, { y: -s, ease: 'none', scrollTrigger: ST(el, { start: 'top bottom', end: 'bottom top', scrub: true }) });
-      } else if (kind === 'fill')
-        gsap.fromTo(el, { scaleX: 0 }, { scaleX: 1, ease: 'power2.out', scrollTrigger: ST(el, { start: 'top 94%', end: 'top 72%', scrub: 0.35 }) });
-      else if (kind === 'fill-x') gsap.fromTo(el, { scaleX: 0.15, autoAlpha: 0 }, { scaleX: 1, autoAlpha: 1, ease: 'power3.out', scrollTrigger: enter(el) });
-      else if (kind === 'stagger')
-        // played through once it's in view (not scrubbed), so a row can never rest half
-        // arrived, shrunk and out of line with its neighbours
-        gsap.fromTo(el.children, { y: 22, autoAlpha: 0, scale: 0.92 }, {
-          y: 0,
-          autoAlpha: 1,
-          scale: 1,
-          stagger: 0.07,
-          duration: 0.5,
-          ease: 'back.out(1.6)',
-          scrollTrigger: ST(el, { start: 'top 88%', toggleActions: 'play none none reverse' }),
-        });
-      else if (kind === 'draw') {
-        const tl = gsap.timeline({ scrollTrigger: ST(el, { start: 'top 90%', end: 'top 62%', scrub: 0.35 }) });
-        el.querySelectorAll<SVGGeometryElement>('path').forEach((p) => {
-          const L = p.getTotalLength();
-          gsap.set(p, { opacity: 0 }); // hide the round cap's dot until drawing starts
-          tl.set(p, { opacity: 1 }, 0.001).fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, ease: 'none', duration: 1 }, 0);
-        });
-        tl.from(el.querySelectorAll('circle'), { scale: 0, transformOrigin: 'center', ease: 'back.out(3)', duration: 0.25 });
-      }
+    const ST = (trigger: Element, extra: ScrollTrigger.Vars = {}): ScrollTrigger.Vars => ({ trigger, scroller: sc, ...extra });
+    // arrivals follow the scroll for a short stretch as the element comes up the card
+    const enter = (el: Element) => ST(el, { start: 'top 94%', end: 'top 74%', scrub: 0.35 });
+    const q = <T extends Element = HTMLElement>(root: ParentNode, sel: string) => Array.from(root.querySelectorAll<T>(sel));
+    const $ = (sel: string) => article.querySelector<HTMLElement>(sel);
+
+    // chapter heads: the course and the title rise, the doodle turns as it passes
+    q(article, '.ck-chead').forEach((h) => {
+      gsap.fromTo(q(h, '.ck-course, .ck-ctitle'), { y: 54, autoAlpha: 0 }, { y: 0, autoAlpha: 1, stagger: 0.1, ease: 'power2.out', scrollTrigger: enter(h) });
+      const art = h.querySelector('.ck-chead-art');
+      if (art)
+        gsap.fromTo(art, { rotation: -24, scale: 0.8, autoAlpha: 0 }, { rotation: 8, scale: 1, autoAlpha: 1, ease: 'none', scrollTrigger: ST(h, { start: 'top bottom', end: 'bottom top', scrub: 0.8 }) });
     });
 
-    // ---- numbers count up ----
-    article.querySelectorAll<HTMLElement>('[data-count]').forEach((el) => {
-      const to = parseFloat(el.dataset.count!);
-      const prefix = el.dataset.prefix;
-      const low = prefix ? parseFloat(prefix) : 0;
+    // headings and prose rise as they arrive
+    q(article, '.ck-ch .ck-h, .ck-ch .ck-big, .ck-ch .ck-body, .ck-ch .ck-caption, .ck-insight, .ck-kicker, .ck-grid-note, .ck-market, .ck-mood, .ck-persona-card, .ck-recipe, .ck-shift').forEach((el) =>
+      gsap.fromTo(el, { y: 44, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: enter(el) }),
+    );
+
+    // rows of cards, phones and chips: dealt in one after another once the row is in view
+    q(
+      article,
+      '.ck-who, .ck-stats, .ck-steps, .ck-phones, .ck-journey, .ck-merch-row, .ck-pantry, .ck-quotes, .ck-notes, .ck-obs, .ck-needs, .ck-dirs, .ck-sketches, .ck-chips, .ck-said, .ck-others-grid',
+    ).forEach((row) =>
+      gsap.fromTo(
+        row.children,
+        { y: 26, autoAlpha: 0, scale: 0.94 },
+        { y: 0, autoAlpha: 1, scale: 1, stagger: 0.07, duration: 0.55, ease: 'back.out(1.5)', scrollTrigger: ST(row, { start: 'top 88%', toggleActions: 'play none none reverse' }) },
+      ),
+    );
+
+    // numbers count up and bars fill as they pass
+    q(article, '.ck-pantry b, .ck-stats b').forEach((el) => {
+      const txt = el.textContent ?? '';
+      const m = txt.match(/^(\d+)(?:–(\d+))?(.*)$/);
+      if (!m) return;
+      const [, a1, a2, rest] = m;
       const o = { v: 0 };
       gsap.to(o, {
         v: 1,
         ease: 'power2.out',
-        scrollTrigger: ST(el, { start: 'top 94%', end: 'top 72%', scrub: 0.35 }),
+        scrollTrigger: ST(el, { start: 'top 94%', end: 'top 70%', scrub: 0.35 }),
         onUpdate: () => {
-          el.textContent = prefix ? `${Math.round(low * o.v)}–${Math.round(to * o.v)}` : String(Math.round(to * o.v));
+          el.textContent = a2 ? `${Math.round(+a1 * o.v)}–${Math.round(+a2 * o.v)}${rest}` : `${Math.round(+a1 * o.v)}${rest}`;
         },
       });
     });
+    q(article, '.ck-bar i').forEach((el) =>
+      gsap.fromTo(el, { scaleX: 0 }, { scaleX: 1, transformOrigin: 'left center', ease: 'power2.out', scrollTrigger: ST(el, { start: 'top 94%', end: 'top 70%', scrub: 0.35 }) }),
+    );
 
-    // ---- sticky scenes ----
-    const scene = (name: string) => article.querySelector<HTMLElement>(`[data-scene="${name}"]`);
-    const tlFor = (el: HTMLElement, extra: ScrollTrigger.Vars = {}) =>
-      gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: ST(el, { start: 'top top', end: 'bottom bottom', scrub: 0.4, ...extra }) });
-    const q = <T extends Element = HTMLElement>(root: Element, sel: string) => Array.from(root.querySelectorAll<T>(sel));
-    const hold = (tl: gsap.core.Timeline, d = 0.25) => tl.to({}, { duration: d });
-
-    // starter: imagine → tired → no control → the seesaw tips to convenience
-    const im = scene('imagine');
-    if (im) {
-      const [b1, b2, b3] = ['[data-b1]', '[data-b2]', '[data-b3]'].map((s) => im.querySelector(s)!);
-      // the opener reads at a calmer pace than the rest: each beat holds before the next
-      const tl = tlFor(im, { scrub: 0.8 });
-      tl.to(b1, { autoAlpha: 0, y: -70, duration: 1 }, 0.7)
-        .fromTo(b2, { autoAlpha: 0, y: 70 }, { autoAlpha: 1, y: 0, duration: 1 })
-        .to(b2, { autoAlpha: 0, y: -70, duration: 1 }, '+=0.8')
-        .fromTo(b3, { autoAlpha: 0, y: 70 }, { autoAlpha: 1, y: 0, duration: 1 })
-        .fromTo(im.querySelector('[data-control]'), { scale: 1 / 1.18 }, { scale: 1, duration: 0.6, ease: 'back.out(3)' })
-        .fromTo(im.querySelector('[data-seesaw]'), { autoAlpha: 0, y: 90 }, { autoAlpha: 1, y: 0, duration: 1 }, '<')
-        .to(im.querySelector('[data-beam]'), { rotation: -11, svgOrigin: '400 260', duration: 1.6, ease: 'power2.inOut' })
-        .to(im.querySelector('[data-ss-left]'), { y: 50, duration: 1.6, ease: 'power2.inOut' }, '<')
-        .to(im.querySelector('[data-ss-right]'), { y: -50, duration: 1.6, ease: 'power2.inOut' }, '<');
-      hold(tl, 0.8);
-    }
-
-    // discover: what we heard arrives as one slide: heading, figure and notes together
-    const heard = article.querySelector<HTMLElement>('[data-heard]');
-    if (heard)
-      gsap
-        .timeline({ scrollTrigger: ST(heard, { start: 'top 88%', end: 'top 50%', scrub: 0.35 }) })
-        .from(heard.querySelector('.ck-h'), { autoAlpha: 0, y: 30, duration: 0.4 })
-        .from(heard.querySelector('.ck-heard-fig'), { autoAlpha: 0, scale: 0.85, duration: 0.4 }, 0)
-        .from(q(heard, '.ck-quote'), { autoAlpha: 0, y: 40, rotation: 0, scale: 0.9, stagger: 0.06, duration: 0.45, ease: 'back.out(1.6)' }, 0.1);
-
-    // discover: twenty notes on the board, five carried forward
-    const as = scene('assumptions');
-    if (as) {
-      const notes = q(as, '[data-note]');
-      const tl = tlFor(as);
-      tl.from(notes, {
-        y: -160,
-        rotation: () => gsap.utils.random(-28, 28),
-        autoAlpha: 0,
-        duration: 0.6,
-        stagger: 0.05,
-        ease: 'back.out(1.4)',
-      })
-        .to(
-          notes.filter((n) => !n.hasAttribute('data-keep')),
-          { autoAlpha: 0.24, scale: 0.93, duration: 0.8 },
-          '+=0.3',
-        )
-        .from(q(as, '[data-tick]'), { scale: 0, autoAlpha: 0, stagger: 0.12, duration: 0.5, ease: 'back.out(3)' }, '<0.2')
-        .from(as.querySelector('[data-assume-cap]'), { autoAlpha: 0, y: 22, duration: 0.5 });
-      hold(tl);
-    }
-
-    // define: the control dial swings between the two kinds of diner, then settles
-    const sp = scene('spectrum');
-    if (sp) {
-      const track = sp.querySelector('[data-spec-track]')!;
-      // one clear move, played on its own (not tied to the scroll) as soon as the scene is in
-      // view: from control-seeker to the middle, then the verdict. Scrolling back above resets it
-      const play = gsap
-        .timeline({ paused: true })
-        .fromTo(track, { '--p': '4%' }, { '--p': '50%', duration: 1.4, ease: 'power2.inOut' })
-        .fromTo(sp.querySelector('[data-spec-verdict]'), { autoAlpha: 0, y: 26 }, { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out' }, '-=0.2');
-      ScrollTrigger.create(ST(sp, { start: 'top 55%', onEnter: () => play.play(), onLeaveBack: () => play.pause(0) }));
-      // the scene still holds on screen for a moment while it plays
-      hold(tlFor(sp), 1);
-    }
-
-    // define: the HMW lights up word by word, then the insight lands
-    const hm = scene('hmw');
-    if (hm) {
-      const tl = tlFor(hm);
-      tl.to(q(hm, '.w'), { opacity: 1, stagger: 0.1, duration: 0.25 })
-        .to(q(hm, '.w.k'), { color: GREEN, duration: 0.5 })
-        .from(hm.querySelector('[data-insight]'), { autoAlpha: 0, y: 30, duration: 0.7 });
-      hold(tl);
-    }
-
-    // define: "delivered to me" is struck out, "made for me" arrives
-    const sh = scene('shift');
-    if (sh) {
-      const tl = tlFor(sh, { scrub: 0.8 });
-      tl.from(sh.querySelector('[data-shift-a]'), { autoAlpha: 0, y: 30, duration: 0.8 })
-        .to(sh.querySelector('[data-strike]'), { scaleX: 1, duration: 1 }, '+=0.3')
-        .to(sh.querySelector('[data-shift-a]'), { opacity: 0.35, duration: 0.6 });
-      // round line caps render as dots even at zero length, so each stroke stays hidden
-      // until the moment it starts drawing
-      q<SVGPathElement>(sh, '[data-arrow], [data-arrow-head]').forEach((p) => {
+    // drawn strokes (the arrows): each path draws on as it passes
+    q(article, '[data-draw]').forEach((d) => {
+      const tl = gsap.timeline({ scrollTrigger: ST(d, { start: 'top 85%', end: 'top 55%', scrub: 0.4 }) });
+      q<SVGPathElement>(d, 'path').forEach((p) => {
         const L = p.getTotalLength();
-        gsap.set(p, { opacity: 0 });
-        tl.set(p, { opacity: 1 }).fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1 });
+        tl.fromTo(p, { strokeDasharray: L, strokeDashoffset: L }, { strokeDashoffset: 0, ease: 'none', duration: 1 });
       });
-      tl.from(sh.querySelector('[data-shift-b]'), { autoAlpha: 0, y: 34, scale: 0.9, duration: 1.1, ease: 'back.out(1.6)' });
-      hold(tl, 0.9);
-    }
+    });
 
-    // develop: ideas fly onto the wall, some get crossed out, three make it to the plate
-    const id = scene('ideas');
-    if (id) {
-      const ideas = q(id, '[data-idea]');
-      const tl = tlFor(id);
-      tl.from(ideas, {
-        x: () => gsap.utils.random(-260, 260),
-        y: () => gsap.utils.random(-220, 220),
-        rotation: () => gsap.utils.random(-45, 45),
-        scale: 0.5,
-        autoAlpha: 0,
-        stagger: 0.035,
-        duration: 0.6,
-        ease: 'power3.out',
-      })
-        .to(q(id, '[data-cut]'), { scaleX: 1, stagger: 0.2, duration: 0.4 }, '+=0.3')
-        .to(
-          ideas.filter((n) => n.classList.contains('is-cut')),
-          { opacity: 0.45, duration: 0.4 },
-          '<',
-        )
-        .from(q(id, '[data-keep-tag]'), { autoAlpha: 0, y: 10, scale: 0.6, stagger: 0.2, duration: 0.45, ease: 'back.out(2)' })
-        .from(id.querySelector('[data-ideas-cap]'), { autoAlpha: 0, y: 20, duration: 0.4 });
-      hold(tl);
-    }
+    // the problem: the seesaw tips toward convenience as you scroll past it
+    const ss = $('[data-seesaw]');
+    if (ss)
+      gsap
+        .timeline({ defaults: { ease: 'power2.inOut' }, scrollTrigger: ST(ss, { start: 'top 80%', end: 'center 45%', scrub: 0.6 }) })
+        .fromTo(ss, { y: 60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.6 })
+        .fromTo(ss.querySelector('[data-beam]'), { rotation: 0, svgOrigin: '400 260' }, { rotation: -11, svgOrigin: '400 260', duration: 1 })
+        .fromTo(ss.querySelector('[data-ss-left]'), { y: 0 }, { y: 50, duration: 1 }, '<')
+        .fromTo(ss.querySelector('[data-ss-right]'), { y: 0 }, { y: -50, duration: 1 }, '<');
 
-    // develop: feedback flips chef-first to food-first
-    const pv = scene('pivot');
-    if (pv) {
-      const a = pv.querySelector('[data-pivot-a]');
-      const b = pv.querySelector('[data-pivot-b]');
-      const toggle = pv.querySelector('.ck-toggle');
-      const tl = tlFor(pv);
-      tl.from([a, toggle, b], { autoAlpha: 0, y: 40, stagger: 0.15, duration: 0.6 })
-        .fromTo(toggle, { backgroundColor: '#14171a' }, { backgroundColor: GREEN, duration: 0.6 })
-        .to(pv.querySelector('[data-toggle-knob]'), { x: 40, duration: 0.6, ease: 'power2.inOut' }, '<')
-        .to(pv.querySelector('[data-pivot-strike]'), { scaleX: 1, duration: 0.5 }, '<0.2')
-        .to(a, { opacity: 0.4, duration: 0.5 }, '<')
-        .to(b, { boxShadow: `0 0 0 3px ${GREEN}`, scale: 1.03, duration: 0.5 }, '<')
-        .from(q(pv, '[data-pivot-chip]'), { autoAlpha: 0, y: 16, scale: 0.9, stagger: 0.1, duration: 0.4 });
-      hold(tl);
-    }
+    // the brief: the question lights up word by word, its key words turn green
+    const hm = $('[data-hmw]');
+    if (hm)
+      gsap
+        .timeline({ scrollTrigger: ST(hm, { start: 'top 85%', end: 'bottom 45%', scrub: 0.4 }) })
+        .fromTo(q(hm, '.w'), { opacity: 0.14 }, { opacity: 1, stagger: 0.1, duration: 0.25 })
+        .fromTo(q(hm, '.w.k'), { color: '#14171a' }, { color: GREEN, duration: 0.5 });
 
-    // deliver: the booking journey slides past as you scroll down
-    const jr = scene('journey');
-    if (jr) {
-      const track = jr.querySelector<HTMLElement>('[data-journey-track]')!;
-      const stage = jr.querySelector<HTMLElement>('.ck-stage')!;
-      const counter = jr.querySelector<HTMLElement>('[data-journey-i]')!;
-      const steps = track.querySelectorAll('.ck-journey-step').length;
-      const dist = () => Math.max(0, track.scrollWidth - stage.clientWidth);
-      const tl = tlFor(jr, {
-        invalidateOnRefresh: true,
-        onUpdate: (self) => {
-          const i = Math.min(steps, Math.max(1, Math.round(self.progress * 1.12 * (steps - 1)) + 1));
-          counter.textContent = String(i).padStart(2, '0');
-        },
-      });
-      tl.to(track, { x: () => -dist(), duration: 1 }).fromTo(
-        jr.querySelector('[data-journey-line]'),
-        { scaleX: 0 },
-        { scaleX: 1, duration: 1 },
-        0,
-      );
-      hold(tl, 0.12);
-    }
+    // "delivered to me" is struck out; "made for me" lands
+    const sh = $('[data-shift]');
+    if (sh)
+      gsap
+        .timeline({ scrollTrigger: ST(sh, { start: 'top 75%', end: 'bottom 55%', scrub: 0.5 }) })
+        .fromTo(sh.querySelector('[data-strike]'), { scaleX: 0 }, { scaleX: 1, duration: 1 })
+        .fromTo(sh.querySelector('.ck-shift-b'), { autoAlpha: 0, y: 24, scale: 0.92 }, { autoAlpha: 1, y: 0, scale: 1, duration: 1, ease: 'back.out(1.6)' });
 
-    // dessert: the turmeric finale opens out
-    const fin = article.querySelector<HTMLElement>('[data-finale]');
+    // research: the control dial swings from control-seeker to the middle
+    const spec = $('[data-spec] span');
+    if (spec) gsap.fromTo(spec, { left: '4%' }, { left: '50%', ease: 'power2.inOut', scrollTrigger: ST(spec, { start: 'top 85%', end: 'top 55%', scrub: 0.5 }) });
+
+    // research: the five assumptions worth testing get their ticks
+    q(article, '.ck-tick').forEach((t) =>
+      gsap.fromTo(t, { scale: 0 }, { scale: 1, ease: 'back.out(3)', scrollTrigger: ST(t, { start: 'top 82%', toggleActions: 'play none none reverse' }) }),
+    );
+
+    // design: chef-first steps back, food-first lights up
+    const pv = $('[data-pivot]');
+    if (pv)
+      gsap
+        .timeline({ scrollTrigger: ST(pv, { start: 'top 80%', end: 'bottom 60%', scrub: 0.5 }) })
+        .fromTo(pv.querySelector('.is-before'), { opacity: 1 }, { opacity: 0.6, duration: 1 })
+        .fromTo(pv.querySelector('.is-after'), { boxShadow: '0 0 0 1px rgba(20,23,26,0.12)', scale: 0.97 }, { boxShadow: `0 0 0 3px ${GREEN}`, scale: 1, duration: 1 }, '<');
+
+    // the result: the finale opens out
+    const fin = $('[data-finale]');
     if (fin)
-      gsap.fromTo(
-        fin,
-        { clipPath: 'inset(18% 22% round 28px)' },
-        { clipPath: 'inset(0% 0% round 28px)', ease: 'none', scrollTrigger: ST(fin, { start: 'top 95%', end: 'top 25%', scrub: 0.6 }) },
-      );
-
-    return mark;
+      gsap.fromTo(fin, { clipPath: 'inset(16% 20% round 28px)' }, { clipPath: 'inset(0% 0% round 28px)', ease: 'none', scrollTrigger: ST(fin, { start: 'top 95%', end: 'top 30%', scrub: 0.6 }) });
   };
 
   // ---------------- lifecycle ----------------
-  let mark: Element | null | undefined = null;
-  let rebuildTimer = 0;
+  let timer = 0;
   const remeasure = () => {
     ScrollTrigger.refresh();
     buildLine();
-    drawLine();
+    aim(true);
   };
 
   document.addEventListener('pm:shown', (e) => {
@@ -617,17 +445,18 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     active = true;
     if (!built) {
       built = true;
-      mark = build();
-      // images and late font loads change heights: re-measure the line and the scenes
+      build(sc);
+      // images and late font loads change heights: re-measure the line and the triggers
       new ResizeObserver(() => {
         if (!active) return;
-        clearTimeout(rebuildTimer);
-        rebuildTimer = window.setTimeout(remeasure, 180);
+        clearTimeout(timer);
+        timer = window.setTimeout(remeasure, 180);
       }).observe(article);
     }
     remeasure();
-    if (mark && !reduce)
-      gsap.fromTo(mark, { scale: 0.82, rotation: -5 }, { scale: 1, rotation: 0, duration: 1, ease: 'elastic.out(1, 0.55)', delay: 0.1 });
+    // the wordmark lands with a little bounce each time the card opens
+    const mark = article.querySelector('.ck-wordmark img');
+    if (mark && !reduce) gsap.fromTo(mark, { scale: 0.82, rotation: -5 }, { scale: 1, rotation: 0, duration: 1, ease: 'elastic.out(1, 0.55)', delay: 0.1 });
   });
   document.addEventListener('pm:hidden', (e) => {
     if ((e as CustomEvent<{ slug: string }>).detail.slug === 'cooked') active = false;

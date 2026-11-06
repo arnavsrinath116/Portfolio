@@ -54,7 +54,7 @@ const featured = projects.slice(0, 3);
   <!-- the rest of the set -->
   <div class="work-more">
     <a class="work-more-btn" href={withBase('/projects/')} data-magnet>
-      <span class="work-more-label">Explore more projects</span>
+      <span class="work-more-label" data-words>Explore more <span class="hl-block">projects</span></span>
       <Icon name="arrow-up-right" />
     </a>
   </div>
@@ -108,11 +108,11 @@ const featured = projects.slice(0, 3);
   }
   .panel-a {
     grid-row: 1 / span 2;
-    background: var(--slate-3);
+    background: var(--slate-4);
     min-height: clamp(420px, 62vh, 640px);
   }
   .panel-b {
-    background: var(--slate-2);
+    background: var(--slate-4);
     min-height: clamp(220px, 30vh, 300px);
   }
   .panel-c {
@@ -237,6 +237,27 @@ const featured = projects.slice(0, 3);
     transition:
       transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
       background-color 240ms ease-out;
+  }
+  /* it fades up with the scroll as it rises into view; its words then come into focus and the
+     blue fills behind "projects", scrubbed like the section headings (wordReveal.ts) */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .work-more-btn {
+        animation: work-more-in linear both;
+        animation-timeline: view();
+        animation-range: entry 0% cover 25%;
+      }
+    }
+  }
+  @keyframes work-more-in {
+    from {
+      opacity: 0;
+      translate: 0 18px;
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
+    }
   }
   .work-more-label {
     font-stretch: 125%;

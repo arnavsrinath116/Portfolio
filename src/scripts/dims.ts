@@ -10,6 +10,52 @@ import { hDim, vDim } from './dimension';
  */
 const OFFSET = 26; // distance from the object to its dimension line
 
+// canvas only takes the keyword widths, so map the computed percentage onto the nearest one
+const STRETCH: [number, string][] = [
+  [50, 'ultra-condensed'], [62.5, 'extra-condensed'], [75, 'condensed'], [87.5, 'semi-condensed'], [100, 'normal'],
+  [112.5, 'semi-expanded'], [125, 'expanded'], [150, 'extra-expanded'], [200, 'ultra-expanded'],
+];
+let ctx: CanvasRenderingContext2D | null = null;
+
+/** How far a glyph's ink sits inside its advance box, on the left and on the right */
+function bearings(ch: string, cs: CSSStyleDeclaration) {
+  ctx ??= document.createElement('canvas').getContext('2d');
+  if (!ctx) return { l: 0, r: 0 };
+  ctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const pct = parseFloat(cs.fontStretch) || 100;
+  const kw = STRETCH.reduce((a, b) => (Math.abs(b[0] - pct) < Math.abs(a[0] - pct) ? b : a))[1];
+  (ctx as CanvasRenderingContext2D & { fontStretch: string }).fontStretch = kw;
+  const m = ctx.measureText(ch);
+  return { l: -m.actualBoundingBoxLeft, r: m.width - m.actualBoundingBoxRight };
+}
+
+/**
+ * The lettering as it's seen: from the first letter's ink to the last letter's ink, and out to
+ * the edges of any highlight block, which runs a little past the word it sits behind.
+ */
+function inkBox(el: HTMLElement) {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  const rects = Array.from(range.getClientRects()).filter((q) => q.width > 0);
+  if (!rects.length) return null;
+  let l = Math.min(...rects.map((q) => q.left));
+  let r = Math.max(...rects.map((q) => q.right));
+  const text = (el.textContent ?? '').trim();
+  if (text) {
+    const cs = getComputedStyle(el);
+    const t = cs.textTransform === 'uppercase' ? text.toUpperCase() : text;
+    l += bearings(t[0], cs).l;
+    r -= bearings(t[t.length - 1], cs).r;
+  }
+  el.querySelectorAll<HTMLElement>('.hl-block').forEach((b) => {
+    const bb = b.getBoundingClientRect();
+    const pb = getComputedStyle(b, '::before');
+    l = Math.min(l, bb.left - parseFloat(pb.left || '0'));
+    r = Math.max(r, bb.right - parseFloat(pb.right || '0'));
+  });
+  return { l, r };
+}
+
 export function initDims({ reduce }: { reduce: boolean }) {
   const host = document.querySelector<HTMLElement>('[data-flow]');
   const svg = document.querySelector<SVGSVGElement>('[data-dims]');
@@ -34,14 +80,8 @@ export function initDims({ reduce }: { reduce: boolean }) {
       const dy = t && t !== 'none' ? new DOMMatrixReadOnly(t).m42 : 0;
       let r = el.getBoundingClientRect();
       if (el.hasAttribute('data-dim-text')) {
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        const rects = Array.from(range.getClientRects());
-        if (rects.length) {
-          const l = Math.min(...rects.map((q) => q.left));
-          const rr = Math.max(...rects.map((q) => q.right));
-          r = new DOMRect(l, r.top, rr - l, r.height);
-        }
+        const ink = inkBox(el);
+        if (ink) r = new DOMRect(ink.l, r.top, ink.r - ink.l, r.height);
       }
       const box = { l: r.left - f.left, r: r.right - f.left, t: r.top - f.top - dy, b: r.bottom - f.top - dy };
       const tl = gsap.timeline({ paused: true, defaults: { ease: 'none' } });

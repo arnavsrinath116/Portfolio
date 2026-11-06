@@ -85,8 +85,8 @@ const teams: { title: string; people: Member[] }[] = [
   {
     title: 'Documentary',
     people: [
-      { name: 'Simran Vyas', role: 'Documentary lead' },
-      { name: 'Arnav Srinath', role: 'Co-lead · writer & camera', me: true },
+      { name: 'Simran Vyas', role: 'Documentary POC' },
+      { name: 'Arnav Srinath', role: 'Co-POC · writer & camera', me: true },
       { name: 'Bhanu Tarun Krishna Veeramachaneni', role: 'Documentary · writing' },
     ],
   },
@@ -100,8 +100,8 @@ const teams: { title: string; people: Member[] }[] = [
   {
     title: 'Writing the report',
     people: [
-      { name: 'Srishti Sudharsan', role: 'Writing lead' },
-      { name: 'Radha Kulkarni', role: 'Writing co-lead · logistics' },
+      { name: 'Srishti Sudharsan', role: 'Writing POC' },
+      { name: 'Radha Kulkarni', role: 'Writing co-POC · logistics' },
       { name: 'Richa Sajai', role: 'Writing' },
       { name: 'Divyanshi Nigam', role: 'Writing' },
       { name: 'Nitiksha Thukrul', role: 'Writing' },
@@ -110,8 +110,8 @@ const teams: { title: string; people: Member[] }[] = [
   {
     title: 'Logistics & finance',
     people: [
-      { name: 'Muktak Joshi', role: 'Logistics lead' },
-      { name: 'Vikhyat Upadhyay', role: 'Finance lead' },
+      { name: 'Muktak Joshi', role: 'Logistics POC' },
+      { name: 'Vikhyat Upadhyay', role: 'Finance POC' },
       { name: 'Suhani Aggarwal', role: 'Finance · logistics' },
     ],
   },
@@ -203,23 +203,36 @@ const pad = (n: number) => String(n).padStart(2, '0');
     <iframe class="dc-reader-doc" title="The Man the God Wore, the full report" data-src={PAPER}></iframe>
   </dialog>
 
-  <!-- the film strip: one frame per chapter -->
-  <nav class="dc-rail" aria-label="Chapters">
-    <ol>
-      <li><a href="#dc-making" data-phase-link="making">How we made it</a></li>
-      {
-        chapters.map((c, i) => (
-          <li>
-            <a href={`#dc-${c.key}`} data-phase-link={c.key}>
-              <span class="dc-rail-no">{pad(i + 1)}</span>
-              {c.rail}
-            </a>
-          </li>
-        ))
-      }
-      <li><a href="#dc-credits" data-phase-link="credits">Credits</a></li>
-    </ol>
-  </nav>
+  <!-- the film strip on the card's right edge: one frame per chapter, names on hover -->
+  <div class="dc-rail-wrap" data-dc-rail>
+    <nav class="dc-rail" aria-label="Chapters">
+      <span class="dc-rail-now" aria-hidden="true" data-dc-rail-now></span>
+      <ol>
+        <li>
+          <a href="#dc-making" data-phase-link="making">
+            <span class="dc-rail-name">How we made it</span>
+          </a>
+        </li>
+        {
+          chapters.map((c, i) => (
+            <li>
+              <a href={`#dc-${c.key}`} data-phase-link={c.key}>
+                <span class="dc-rail-name">
+                  <span class="dc-rail-no">{pad(i + 1)}</span>
+                  {c.rail}
+                </span>
+              </a>
+            </li>
+          ))
+        }
+        <li>
+          <a href="#dc-credits" data-phase-link="credits">
+            <span class="dc-rail-name">Credits</span>
+          </a>
+        </li>
+      </ol>
+    </nav>
+  </div>
 
   <!-- ============ how we made it: one study, told twice ============ -->
   <section class="dc-reel dc-making" id="dc-making" data-phase="making" aria-labelledby="dc-making-t">
@@ -459,7 +472,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
         {c.key === 'outside' && (
           <p class="dc-shift">
             <span>Before the field</span>
-            <s>Kasaragodi Nritya, Theyyam evvam Kavyagaram: a study of folk art and tradition</s>
+            <s><span>Kasaragodi Nritya, Theyyam evvam Kavyagaram: a study of folk art and tradition</span></s>
             <span>After it</span>
             <b>The Man the God Wore</b>
           </p>
@@ -613,6 +626,52 @@ const pad = (n: number) => String(n).padStart(2, '0');
     document.addEventListener('pm:hidden', stop);
     document.addEventListener('pm:shown', (e) => {
       if ((e as CustomEvent).detail?.slug !== card.dataset.project) stop();
+    });
+  }
+
+  // the film strip appears once the hero has scrolled away, and names each new chapter briefly
+  const wrap = card?.querySelector<HTMLElement>('[data-dc-rail]');
+  const strip = wrap?.querySelector<HTMLElement>('.dc-rail');
+  const now = strip?.querySelector<HTMLElement>('[data-dc-rail-now]');
+  const hero = card?.querySelector<HTMLElement>('.dc-hero');
+  if (card && wrap && strip && now && hero) {
+    let sc: HTMLElement | null = null;
+    let last = '';
+    let quiet = 0;
+    // the tag goes as soon as the scrolling settles
+    const hush = () => {
+      clearTimeout(quiet);
+      quiet = window.setTimeout(() => strip.classList.remove('is-telling'), 450);
+    };
+    const onScroll = () => {
+      if (!sc) return;
+      if (strip.classList.contains('is-telling')) hush();
+      wrap.classList.toggle('is-on', hero.getBoundingClientRect().bottom < sc.getBoundingClientRect().top + sc.clientHeight * 0.45);
+    };
+    new MutationObserver(() => {
+      const a = strip.querySelector<HTMLElement>('a.is-active');
+      if (!a) return;
+      const label = a.querySelector<HTMLElement>('.dc-rail-name');
+      const no = label?.querySelector('.dc-rail-no')?.textContent ?? '';
+      const name = `${no} ${(label?.textContent ?? '').slice(no.length)}`.replace(/\s+/g, ' ').trim();
+      if (name === last) return;
+      last = name;
+      now.textContent = name;
+      strip.style.setProperty('--now-y', `${a.offsetTop + a.offsetHeight / 2}px`);
+      strip.classList.add('is-telling');
+      hush();
+    }).observe(strip, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    document.addEventListener('pm:shown', (e) => {
+      const d = (e as CustomEvent).detail;
+      sc?.removeEventListener('scroll', onScroll);
+      sc = d?.slug === card.dataset.project ? (d.scroller as HTMLElement) : null;
+      sc?.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    });
+    document.addEventListener('pm:hidden', () => {
+      sc?.removeEventListener('scroll', onScroll);
+      sc = null;
+      wrap.classList.remove('is-on');
     });
   }
 
@@ -1033,56 +1092,95 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
 
   /* ---------- the reels ---------- */
-  .dc-rail {
+  /* the film strip: sticks to the top of the card's scroll at zero height, and hangs a vertical
+     strip off it on the right edge at mid-card. It rests as a column of frames; the current one is
+     lit. Hovering or focusing it unrolls every chapter's name; a new chapter shows its name briefly */
+  .dc-rail-wrap {
     position: sticky;
     top: 0;
-    z-index: 5;
-    padding: 0 var(--dc-pad);
-    background: rgb(14 13 12 / 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-block: 1px solid var(--dc-line);
-  }
-  /* sprocket holes along both edges of the strip */
-  .dc-rail::before,
-  .dc-rail::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 5px;
-    background: radial-gradient(circle, rgb(236 226 206 / 0.14) 1.6px, transparent 2px) 0 50% / 16px 5px repeat-x;
+    z-index: 6;
+    height: 0;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease-out;
   }
-  .dc-rail::before {
-    top: 3px;
+  .dc-rail-wrap:global(.is-on) {
+    opacity: 1;
   }
-  .dc-rail::after {
-    bottom: 3px;
+  .dc-rail {
+    position: absolute;
+    right: clamp(10px, 1.4vw, 20px);
+    top: calc((100svh - var(--pm-inset, 20px) * 2) / 2);
+    translate: 0 -50%;
+  }
+  .dc-rail-wrap:global(.is-on) .dc-rail {
+    pointer-events: auto;
   }
   .dc-rail ol {
-    display: flex;
-    gap: 4px;
+    position: relative;
+    display: grid;
     margin: 0;
-    padding: 14px 0;
+    padding: 16px 14px;
     list-style: none;
-    overflow-x: auto;
-    scrollbar-width: none;
+    border-radius: 4px;
+    background:
+      radial-gradient(circle, rgb(236 226 206 / 0.16) 1.4px, transparent 1.9px) 4px 0 / 5px 12px repeat-y,
+      radial-gradient(circle, rgb(236 226 206 / 0.16) 1.4px, transparent 1.9px) right 4px top 0 / 5px 12px repeat-y,
+      rgb(14 13 12 / 0.9);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow:
+      0 0 0 1px var(--dc-line),
+      0 18px 36px -18px rgb(0 0 0 / 0.8);
   }
   .dc-rail a {
     display: flex;
-    align-items: baseline;
-    gap: 8px;
-    padding: 8px 14px;
-    border-radius: 3px;
-    font-size: 0.875rem;
-    font-weight: 600;
-    white-space: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 36px;
     color: var(--dc-ink-3);
     text-decoration: none;
+    white-space: nowrap;
+  }
+  /* the frame: a small exposure; the current chapter's is lit tungsten */
+  .dc-rail a::after {
+    content: '';
+    flex: none;
+    width: 12px;
+    height: 9px;
+    border-radius: 1.5px;
+    border: 1px solid rgb(236 226 206 / 0.28);
     transition:
-      color 0.2s ease-out,
-      background-color 0.2s ease-out;
+      background-color 0.25s ease-out,
+      border-color 0.25s ease-out,
+      height 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dc-rail a:global(.is-active)::after {
+    height: 16px;
+    border-color: var(--dc-tungsten);
+    background: var(--dc-tungsten);
+    box-shadow: 0 0 12px rgb(242 179 91 / 0.45);
+  }
+  .dc-rail-name {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition:
+      max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      margin 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.25s ease-out,
+      color 0.2s ease-out;
+  }
+  .dc-rail:hover .dc-rail-name,
+  .dc-rail:focus-within .dc-rail-name {
+    max-width: 220px;
+    margin-right: 12px;
+    opacity: 1;
   }
   .dc-rail-no {
     font-family: var(--font-mono);
@@ -1090,19 +1188,72 @@ const pad = (n: number) => String(n).padStart(2, '0');
     font-weight: 400;
     letter-spacing: 0.06em;
   }
-  .dc-rail a:global(.is-active) {
-    color: var(--dc-bg);
-    background: var(--dc-tungsten);
+  .dc-rail a:global(.is-active) .dc-rail-name {
+    color: var(--dc-tungsten);
   }
   @media (hover: hover) {
-    .dc-rail a:hover:not(:global(.is-active)) {
+    .dc-rail a:hover:not(:global(.is-active)) .dc-rail-name {
       color: var(--dc-ink);
+    }
+  }
+  .dc-rail a:focus-visible {
+    outline: 2px solid var(--dc-tungsten);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+  /* at a new chapter, its name alone, in a tag beside its frame; it fades out after a moment */
+  .dc-rail-now {
+    position: absolute;
+    top: var(--now-y, 50%);
+    right: calc(100% + 10px);
+    padding: 6px 11px;
+    border-radius: 3px;
+    background: var(--dc-tungsten);
+    color: var(--dc-bg);
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    translate: 6px -50%;
+    transition:
+      opacity 0.12s ease-out,
+      translate 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+      top 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .dc-rail:global(.is-telling):not(:hover):not(:focus-within) .dc-rail-now {
+    opacity: 1;
+    translate: 0 -50%;
+  }
+  @media (pointer: coarse) {
+    .dc-rail a {
+      min-height: 40px;
+    }
+  }
+  /* phones: a slimmer strip tucked into the card's edge, clear of the text */
+  @media (max-width: 560px) {
+    .dc-rail {
+      right: 3px;
+    }
+    .dc-rail ol {
+      padding: 8px 7px;
+      background:
+        radial-gradient(circle, rgb(236 226 206 / 0.16) 1.1px, transparent 1.5px) 1px 0 / 4px 10px repeat-y,
+        radial-gradient(circle, rgb(236 226 206 / 0.16) 1.1px, transparent 1.5px) right 1px top 0 / 4px 10px repeat-y,
+        rgb(14 13 12 / 0.9);
+    }
+    .dc-rail a::after {
+      width: 8px;
+      height: 7px;
+    }
+    .dc-rail a:global(.is-active)::after {
+      height: 13px;
     }
   }
 
   .dc-reel {
     padding: clamp(64px, 11vh, 120px) var(--dc-pad) 0;
-    scroll-margin-top: 64px;
+    scroll-margin-top: 0;
   }
   .dc-rhead {
     display: grid;
@@ -1226,7 +1377,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   /* ---------- the chapters: a cover that holds still while the chapter reads past it ---------- */
   .dc-ch {
     padding: clamp(80px, 13vh, 140px) var(--dc-pad) 0;
-    scroll-margin-top: 64px;
+    scroll-margin-top: 0;
   }
   .dc-ch-grid {
     display: grid;
@@ -1392,9 +1543,14 @@ const pad = (n: number) => String(n).padStart(2, '0');
     text-transform: uppercase;
     color: var(--dc-ink-3);
   }
+  /* the strike is drawn, so it can be struck out with the scroll (--strike, 0 → 1) */
   .dc-shift s {
     color: var(--dc-ink-3);
-    text-decoration-color: var(--dc-rec);
+    text-decoration: none;
+  }
+  /* on the words themselves, so it ends where they do and carries across a wrap */
+  .dc-shift s span {
+    background: linear-gradient(var(--dc-rec), var(--dc-rec)) 0 58% / calc(var(--strike, 1) * 100%) 2px no-repeat;
   }
   .dc-shift b {
     font-size: clamp(1.25rem, 2.4vw, 1.875rem);

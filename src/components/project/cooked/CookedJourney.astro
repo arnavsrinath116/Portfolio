@@ -70,7 +70,7 @@ for (let i = 0; i < pts.length - 1; i++) {
 }
 ---
 
-<div class="jm" data-a="up">
+<div class="jm">
   <div class="jm-scroll">
     <ol class="jm-grid" style={`--n:${steps.length}`}>
       {
@@ -94,12 +94,12 @@ for (let i = 0; i < pts.length - 1; i++) {
         <span class="jm-mood-k jm-mood-hi">High</span>
         <span class="jm-mood-k jm-mood-lo">Low</span>
         <div class="jm-mood-in">
-          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" data-a="draw">
+          <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
             <path class="jm-mood-line" d={d} />
           </svg>
           {
             pts.map(([x, y], i) => (
-              <span class:list={['jm-dot', { 'is-low': steps[i].mood < 2.2, 'is-high': steps[i].mood > 3.1 }]} style={`left:${(x / W) * 100}%;top:${(y / H) * 100}%`} data-a="pop" />
+              <span class:list={['jm-dot', { 'is-low': steps[i].mood < 2.2, 'is-high': steps[i].mood > 3.1 }]} style={`left:${(x / W) * 100}%;top:${(y / H) * 100}%`} />
             ))
           }
         </div>

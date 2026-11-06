@@ -215,7 +215,11 @@ html.menu-open .fluid-canvas {
   z-index: 8000;
 }
 
-/* ---------- Bracket hover: [ label ] closes in ---------- */
+/* ---------- Bracket hover: the liquid ring ----------
+   What the cursor used to pour round a link, now the hover itself: a rounded band just inside the
+   label's box (inside it, so neighbours never overlap), flat comic line art (a bold edge round a flat core) on a soft offset shadow. It runs
+   round from where the pointer came in, and back out the way it leaves (scripts/selectRing.ts
+   builds and draws it). Without the script, or with reduced motion, it simply appears. */
 .bracket {
   position: relative;
   display: inline-flex;
@@ -224,47 +228,46 @@ html.menu-open .fluid-canvas {
   padding: 0.55em 0.9em;
   transition: color var(--dur-base) var(--ease-out);
 }
-.bracket::before,
-.bracket::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 0.42em;
-  border: 1px solid currentColor;
-  opacity: 0;
-  transition:
-    transform var(--dur-base) var(--ease-out),
-    opacity var(--dur-fast) var(--ease-out);
-}
-.bracket::before {
-  left: 0;
-  border-right: 0;
-  transform: translateX(-0.9em);
-}
-.bracket::after {
-  right: 0;
-  border-left: 0;
-  transform: translateX(0.9em);
-}
 @media (hover: hover) {
   .bracket:hover {
     color: var(--accent);
-  }
-  .bracket:hover::before,
-  .bracket:hover::after {
-    opacity: 1;
-    transform: none;
   }
 }
 .bracket:focus-visible {
   outline: none;
   color: var(--accent);
 }
-.bracket:focus-visible::before,
-.bracket:focus-visible::after {
-  opacity: 1;
-  transform: none;
+.sel-ring {
+  --ring-core: #e6dcc8; /* the dark sheet: a sand band outlined in ink */
+  --ring-edge: #090a0d;
+  --ring-shadow: rgb(230 220 200 / 0.3); /* a faint sand echo: a black shadow vanishes there */
+  position: absolute;
+  z-index: -1;
+  overflow: visible;
+  pointer-events: none;
+}
+:root[data-theme='light'] .sel-ring {
+  --ring-core: #14171a; /* the light sheet: the reverse, an ink band outlined in white */
+  --ring-edge: #fff;
+  --ring-shadow: rgb(0 0 0 / 0.22);
+}
+.sel-ring path {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.sel-ring .r-sh {
+  stroke: var(--ring-shadow);
+  stroke-width: 5px;
+  transform: translate(2px, 2.5px);
+}
+.sel-ring .r-edge {
+  stroke: var(--ring-edge);
+  stroke-width: 5px;
+}
+.sel-ring .r-core {
+  stroke: var(--ring-core);
+  stroke-width: 2.2px;
 }
 
 /* ---------- Hero annotations (built by scripts/annotate.ts) ---------- */

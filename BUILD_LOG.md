@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 45 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 46 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,48 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-11-06 · Hover box: the liquid ring, without the cursor takeover
+
+- The `.bracket` hover (header sections and the footer links) is now the ring the mercury cursor used to pour round a link, with the cursor itself left as a plain pointer. A rounded band sits just inside the link's own box (so neighbouring rings never overlap, even while one drains and the next fills; the footer links get a 4 px gap for the same reason), drawn as the same flat comic line art: a bold edge round a flat core on a soft offset shadow (an ink band edged in white on the light sheet, a sand band edged in ink on the dark one).
+- It runs round from the point nearest where the pointer came in, both ways at once, until it closes; on leaving it drains back towards where the pointer left. Keyboard focus and the header's current section show it closed. With reduced motion it simply appears. New `src/scripts/selectRing.ts`; the label goes to the accent, as before.
+- The header's logo, Résumé button and light/dark switch get the ring too (`data-ring`, with its own gap). It follows each one's corners: a circle a few px outside the logo, a pill a few px outside Résumé and the switch. Résumé drops its soft halo for it (it still lifts and brightens), and keyboard focus shows the ring closed.
+- (A sketchy comic-panel version was tried first and dropped as too rough.)
+
+## 2026-11-06 · The Man the God Wore: credits say POC
+
+- In the end credits, every "lead" is now "POC": Documentary POC, Co-POC · writer & camera, Writing POC, Writing co-POC · logistics, Logistics POC, Finance POC.
+
+## 2026-11-06 · The Man the God Wore: motion, borrowed from film
+
+New `src/scripts/documentaryCase.ts`. Everything follows the scroll and plays in place; nothing pins. With reduced motion it is all simply there.
+
+- **Opening:** the viewfinder corners close in on the frame, the title card comes up and the poster settles; as you scroll on, the poster drifts and dims.
+- **Chapter photographs develop** as each chapter arrives: from a dark, desaturated crop to the full print.
+- Headings and copy rise in; the field numbers (9 days, 10+ Kavus, 35 interviews, 13 of us) count up; lists (the gaps, the three points of view, the kit, the ritual's six stages, the five sounds, the findings, the outputs, the credits) come in one after another, like cuts.
+- **Moments in place:** the old working title is struck out in red, then "The Man the God Wore" comes up; the opening verse and the pull lines light up word by word; the three costume diagrams are drawn from the crown down; the chenda photograph drifts against the list of sounds.
+
+## 2026-11-06 · Front page: The Man the God Wore takes the third slot
+
+- Selected Work now shows Cooked, the Productivity tracker and The Man the God Wore. The HMI placeholder moves to fourth, so it's only on the projects page.
+- All three project cards now share the lightest slab shade (`--slate-4`); before, each slot had its own shade and only the third card was this light.
+- The "Explore more projects" button now fades up with the scroll as it rises into view; its words then come into focus and the blue fills behind "projects" as you scroll, exactly like the section headings (it uses the same word reveal). With reduced motion it's simply there.
+- Fixed: the "Selected work" width dimension measured the text box, so it started a few px left of the S and stopped short of the blue block behind "work". It now measures what you see: from the first letter's ink to the far edge of the highlight (`dims.ts`, using the font's real glyph bounds).
+
+## 2026-11-06 · The Man the God Wore: the chapter strip moves to the right edge
+
+- The film strip that ran across the top of the card is now a vertical strip on the card's right edge, at mid-height, with sprocket holes down both sides and one small frame per chapter; the current chapter's frame is lit tungsten.
+- It appears once the hero scrolls away. Hovering or tabbing into it unrolls every chapter's name; at each new chapter a tungsten tag names it, and it goes as soon as the scrolling settles (under half a second). The strip is a little longer, with more room between frames.
+- On phones it slims down and tucks into the card's edge, clear of the text.
+
+## 2026-11-06 · Cooked: rebuilt from the ground up, problem and answer first
+
+- New order for the whole case: a hero that states the problem and what we made (with three screens and buttons to the prototype and the app), then 01 The problem, 02 The brief, 03 The app (onboarding, the ten-step booking flow, the chef side, the prototype, merch), 04 Research, 05 Design, 06 The result. The solution now starts about 4 screens in; research waits until after it.
+- Motion, reworked for the new order: the green line is back, drawing itself down the margins with its pen tip at the reading point (on phones it keeps to the left margin so it never crosses the text). Headings and cards rise in as they arrive, numbers count, bars fill, the seesaw tips, the question lights up word by word, "delivered to me" is struck out, the menu flips to food-first, and the finale opens out. All of it plays in place as you scroll: nothing is pinned, so the page is no longer stretched by long held scenes. With reduced motion it's all shown still, the line drawn whole.
+- Chapter titles renamed to fit the new order, as a meal served first and then traced back: 01 "You order in. You lose control.", 02 "Taking the order", 03 "Service", 04 "Back to the ingredients", 05 "Working out the recipe", 06 "The taste test". "Beyond the screen" (the apron, packaging, order card, badge and tee) moved out of the app chapter to the end, right after "What testers said".
+- "Beyond the screen" re-laid as two justified rows: the packaging and the order card on top, the apron, tee and badge below. Each photo's width follows its own shape, so every photo in a row is the same height, the rows end flush on both edges, and nothing is cropped or padded with white. The scroll drift that knocked the cards out of line is gone. On phones they stack full width.
+- The chapter rail stays as it was: the slim glass column of dots on the card's right edge, now naming the six new chapters. It appears once the hero scrolls away, names the current chapter while its heading is on screen, and names them all on hover.
+- Fixed: the Satoshi font was linked without the `/Portfolio` base, so the live site fell back to the system font. It's now bundled by the build.
 
 ## 2026-11-04 · The Man the God Wore: a credit fixed
 
