@@ -1,0 +1,197 @@
+---
+import Base from '../layouts/Base.astro';
+import SheetFrame from '../components/SheetFrame.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Icon from '../components/Icon.astro';
+import { site } from '../data/site';
+import { withBase } from '../lib/url';
+---
+
+<Base title={`Not on file · ${site.name}`} description="This page isn't here. It may have moved, or the link may be old.">
+  <SheetFrame />
+  <Header back />
+  <main id="main" class="nf">
+    <div class="nf-copy">
+      <p class="nf-code">Error 404 · Sheet not found</p>
+      <h1 class="nf-title" data-words="load">Not on <span class="hl-block">file</span></h1>
+      <p class="nf-note">
+        Every drawer's been checked and this sheet isn't in any of them. The link may be old, or the page has moved.
+      </p>
+      <div class="nf-actions">
+        <a class="nf-btn" href={withBase('/')} data-magnet>
+          <span class="nf-btn-label">Front page</span>
+          <Icon name="arrow-up-right" />
+        </a>
+        <a class="nf-link bracket" href={withBase('/projects/')}>All projects</a>
+      </div>
+    </div>
+
+    <figure class="nf-fig">
+      <div class="nf-stage" data-nf-stage></div>
+      <figcaption class="nf-read mono" aria-hidden="true" data-nf-read>rest</figcaption>
+    </figure>
+  </main>
+  <Footer />
+
+  <!-- The plan chest is a Hairline figure: the engine (MIT, © Lucas Marques, /hairline/LICENSE.txt) and
+       the figure run as they are; the host below mounts it the way the package does. -->
+  <script is:inline src={withBase('/hairline/kernel.js')}></script>
+  <script is:inline>
+    (function () {
+      var stage = document.querySelector('[data-nf-stage]');
+      var out = document.querySelector('[data-nf-read]');
+      window.hairline = function (figure) {
+        if (!stage || !window.HL) return;
+        HL.inject(document);
+        stage.setAttribute('data-hairline', figure.name);
+        stage.setAttribute('role', 'img');
+        stage.setAttribute('aria-label', 'A plan chest of drawers, one left half open, every drawer empty.');
+        var svg = HL.mk('svg', { viewBox: '0 0 400 320', 'aria-hidden': 'true' }, stage);
+        var text = 'rest';
+        var read = {
+          get textContent() {
+            return text;
+          },
+          set textContent(v) {
+            text = v == null ? '' : String(v);
+            out.textContent = text;
+          },
+        };
+        // the figure's own number at the middle of its range: the default stagger
+        figure.mount({ stage: stage, svg: svg, read: read }, figure.range[1]);
+      };
+    })();
+  </script>
+  <script is:inline src={withBase('/hairline/planchest.js')}></script>
+</Base>
+
+<style>
+  .nf {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+    gap: clamp(28px, 5vw, 80px);
+    align-items: center;
+    min-height: 100svh;
+    padding: calc(var(--header-h) + var(--frame) + clamp(32px, 6vh, 72px)) calc(var(--frame) + var(--gutter))
+      clamp(48px, 8vh, 96px);
+  }
+  .nf-code {
+    margin: 0 0 18px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-3);
+  }
+  .nf-title {
+    margin: 0;
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: clamp(2.4rem, 6vw, 5rem);
+    line-height: 0.95;
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .nf-note {
+    max-width: 38ch;
+    margin: 22px 0 0;
+    color: var(--sand-2);
+    line-height: 1.55;
+  }
+  .nf-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 14px 22px;
+    margin-top: clamp(28px, 5vh, 44px);
+  }
+  .nf-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 22px;
+    border-radius: var(--radius-slab);
+    background: var(--slate-2);
+    border-top: 1px solid var(--slate-edge);
+    box-shadow: var(--slab-shadow);
+    color: var(--sand);
+    text-decoration: none;
+    transition:
+      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+      background-color 240ms ease-out;
+  }
+  .nf-btn-label {
+    font-stretch: 125%;
+    font-weight: 640;
+    font-size: 1.0625rem;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+  .nf-btn :global(.icon) {
+    color: var(--accent);
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .nf-btn:hover {
+      background: var(--slate-3);
+    }
+    .nf-btn:hover :global(.icon) {
+      transform: translate(2px, -2px);
+    }
+  }
+  .nf-link {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sand-2);
+    text-decoration: none;
+  }
+
+  /* the drawing, in the site's own lines: sand for the chest, the accent for the one bright edge */
+  .nf-fig {
+    position: relative;
+    margin: 0;
+    --hairline-plate: var(--slate);
+    --hairline-hi: var(--accent);
+    --hairline-edge: color-mix(in srgb, var(--sand) 58%, var(--slate));
+    --hairline-mid: color-mix(in srgb, var(--sand) 34%, var(--slate));
+    --hairline-lo: color-mix(in srgb, var(--sand) 18%, var(--slate));
+    --hairline-stroke: 1;
+  }
+  .nf-stage {
+    width: 100%;
+    aspect-ratio: 5 / 4;
+  }
+  .nf-read {
+    position: absolute;
+    right: 6%;
+    bottom: 13%;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-variant-numeric: tabular-nums;
+    color: var(--sand-3);
+  }
+
+  @media (max-width: 760px) {
+    .nf {
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      gap: 8px;
+      min-height: 0;
+    }
+    .nf-link {
+      margin-left: -0.9em; /* the ring's padding: keep the words on the text's left edge */
+    }
+    .nf-fig {
+      order: -1;
+      width: min(100%, 420px);
+      margin-inline: auto;
+    }
+  }
+</style>
