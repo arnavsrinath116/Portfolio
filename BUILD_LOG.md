@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 48 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 49 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -25,12 +25,17 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 
 ---
 
+## 2026-11-16 · Résumé opens the PDF, nothing in between
+
+- Every Résumé link (the header button, the footer, the About timeline) opens `Arnav_Srinath_CV.pdf` itself in a new tab, where the browser's viewer shows it and offers the download. The `/resume/` page and its picture of the CV are gone.
+
 ## 2026-11-16 · The résumé: a page to read it, a button to download it
 
 - The CV (`Arnav_Srinath_CV.pdf`, one A4 page) is on the site at last: `public/cv/`, beside a 300 dpi picture of it.
 - New `/resume/` page: the page shown as a white sheet on the drawing board, with **Download PDF** (saves as `Arnav_Srinath_CV.pdf`) and **Open the PDF** (the browser's own viewer, where its links work). Tapping the sheet opens the PDF too. A picture rather than an embedded PDF, so it shows on phones, which mostly won't draw a PDF inside a page.
 - Every Résumé link now goes to that page instead of a file that wasn't there: the header button (its arrow now points out, not down), the footer and the About timeline.
 - The LinkedIn link in the footer goes to the real profile instead of linkedin.com's front page.
+- The picture is drawn straight from the PDF's vectors by macOS's own renderer at 300 dpi. The first one came out of a converter that drew the page small and stretched it, so the text was soft.
 
 ## 2026-11-15 · A 404 page: the plan chest
 

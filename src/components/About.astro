@@ -34,14 +34,14 @@ const facts = [
 ];
 // where I've studied and who I've learned from, newest first. `year` is the big label on the
 // left and `when` the line under it; a `sub` entry happened within the one above it
-const log: { year?: string; when?: string; title: string; org: string; state: string; links?: { label: string; href: string; solid?: boolean; download?: boolean }[] }[] = [
+const log: { year?: string; when?: string; title: string; org: string; state: string; links?: { label: string; href: string; solid?: boolean; download?: boolean; newTab?: boolean }[] }[] = [
   {
     year: 'Now',
     when: '2024 – 2028',
     title: 'B.Des Experience Design',
     org: 'FLAME University, Pune · minor in Business Analytics',
     state: 'now',
-    links: [{ label: 'Résumé', href: withBase(site.resume) }],
+    links: [{ label: 'Résumé', href: withBase(site.resume), newTab: true }],
   },
   {
     year: '2026',
@@ -199,7 +199,7 @@ const interests = [
                       {e.links && (
                         <p class="ab-tl-acts">
                           {e.links.map((l) => (
-                            <a class:list={['ab-pill', { 'is-solid': l.solid }]} href={l.href} download={l.download}>
+                            <a class:list={['ab-pill', { 'is-solid': l.solid }]} href={l.href} download={l.download} target={l.newTab ? '_blank' : undefined} rel={l.newTab ? 'noopener' : undefined}>
                               {l.label}
                             </a>
                           ))}
