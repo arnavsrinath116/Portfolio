@@ -50,7 +50,7 @@ const { video, title, kind } = Astro.props;
     max-height: 560px;
     width: 100%;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sq));
     background: #050506;
     border: 1px solid rgb(var(--ink-rgb) / 0.08);
   }

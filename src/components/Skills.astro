@@ -162,7 +162,7 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
     z-index: 1; /* the guiding line passes behind */
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    border-radius: var(--radius-slab);
+    border-radius: calc(var(--radius-slab) * var(--sq));
     background: var(--slate-2);
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
@@ -321,7 +321,7 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
     height: 54px;
     aspect-ratio: var(--ratio);
     padding: 3px;
-    border-radius: 3px;
+    border-radius: calc(3px * var(--sq));
     background: #f8f5ef;
     box-shadow:
       0 0 0 1px rgb(20 23 26 / 0.1),
@@ -334,17 +334,17 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
   }
   .peek.is-phone {
     height: 68px;
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sq));
   }
   .peek img {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 2px;
+    border-radius: calc(2px * var(--sq));
   }
   .peek.is-phone img {
-    border-radius: 7px;
+    border-radius: calc(7px * var(--sq));
   }
   @media (hover: hover) {
     .row:hover .peek,

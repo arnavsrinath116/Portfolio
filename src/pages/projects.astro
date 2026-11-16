@@ -156,7 +156,7 @@ const models = skills.find((s) => s.slug === '3d-modeling')?.works.filter((w) =>
     gap: clamp(18px, 3vw, 44px);
     align-items: center;
     padding: clamp(14px, 1.6vw, 20px);
-    border-radius: var(--radius-slab);
+    border-radius: calc(var(--radius-slab) * var(--sq));
     background: var(--slate-2);
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
@@ -170,7 +170,7 @@ const models = skills.find((s) => s.slug === '3d-modeling')?.works.filter((w) =>
     position: relative;
     display: block;
     aspect-ratio: 2000 / 1160;
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sq));
     overflow: hidden;
     background: #f4f5f2;
   }
@@ -189,7 +189,7 @@ const models = skills.find((s) => s.slug === '3d-modeling')?.works.filter((w) =>
     display: grid;
     place-items: center;
     border: 1px dashed rgb(var(--ink-rgb) / 0.18);
-    border-radius: 9px;
+    border-radius: calc(9px * var(--sq));
     background: var(--slate-2);
     font-family: var(--font-mono);
     font-size: 0.6875rem;
@@ -260,7 +260,7 @@ const models = skills.find((s) => s.slug === '3d-modeling')?.works.filter((w) =>
     gap: 6px;
     height: 100%;
     padding: 18px 20px;
-    border-radius: var(--radius-slab);
+    border-radius: calc(var(--radius-slab) * var(--sq));
     background: var(--slate-2);
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);

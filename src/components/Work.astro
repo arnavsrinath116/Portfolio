@@ -102,7 +102,7 @@ const featured = projects.slice(0, 3);
     grid-template-rows: 1fr auto;
     gap: 22px;
     padding: clamp(16px, 1.8vw, 24px);
-    border-radius: var(--radius-slab);
+    border-radius: calc(var(--radius-slab) * var(--sq));
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
   }
@@ -122,7 +122,7 @@ const featured = projects.slice(0, 3);
   /* dashed = not drawn yet: where the project's visual will sit */
   .panel-frame {
     border: 1px dashed rgb(var(--ink-rgb) / 0.16);
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sq));
     min-height: 90px;
   }
   /* a real cover replaces the dashed placeholder; it eases in a touch on hover */
@@ -228,7 +228,7 @@ const featured = projects.slice(0, 3);
     align-items: center;
     gap: 14px;
     padding: 14px 22px;
-    border-radius: var(--radius-slab);
+    border-radius: calc(var(--radius-slab) * var(--sq));
     background: var(--slate-2);
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);

@@ -159,7 +159,7 @@ const tri = (m: (typeof flow.marks)[number]) => {
   .cf-view {
     position: relative;
     overflow: hidden;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: #fff;
     box-shadow: 0 0 0 1px rgb(20 23 26 / 0.12);
     cursor: zoom-in;
@@ -312,7 +312,7 @@ const tri = (m: (typeof flow.marks)[number]) => {
   .k-swatch {
     width: 22px;
     height: 16px;
-    border-radius: 5px;
+    border-radius: calc(5px * var(--sq));
     border: 2px dashed;
   }
   .k-swatch.cf-group-dash {
@@ -331,6 +331,7 @@ const tri = (m: (typeof flow.marks)[number]) => {
     margin-left: auto;
     padding: 8px 16px;
     border-radius: 99px;
+    corner-shape: round;
     border: 1px solid rgb(20 23 26 / 0.2);
     background: #fff;
     color: #14171a;

@@ -95,7 +95,7 @@ const ground = (im: SkillImage) => (im.ground && im.ground in GROUND ? GROUND[im
     max-height: 560px;
     width: 100%;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sq));
     background: var(--ground, #050506); /* what the image sits on: no other frame flashing in as it loads */
     border: 1px solid rgb(var(--ink-rgb) / 0.08);
     transition: background-color 500ms ease-out;
@@ -136,6 +136,7 @@ const ground = (im: SkillImage) => (im.ground && im.ground in GROUND ? GROUND[im
     padding: 0;
     border: 1px solid rgb(255 255 255 / 0.18);
     border-radius: 50%;
+    corner-shape: round;
     background: rgb(0 0 0 / 0.35);
     color: #f1ece2;
     cursor: pointer;

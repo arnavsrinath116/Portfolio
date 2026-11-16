@@ -427,7 +427,7 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     // the result: the finale opens out
     const fin = $('[data-finale]');
     if (fin)
-      gsap.fromTo(fin, { clipPath: 'inset(16% 20% round 28px)' }, { clipPath: 'inset(0% 0% round 28px)', ease: 'none', scrollTrigger: ST(fin, { start: 'top 95%', end: 'top 30%', scrub: 0.6 }) });
+      gsap.fromTo(fin, { clipPath: 'inset(16% 20% round 28px)' }, { clipPath: 'inset(0% 0% round 0px)', ease: 'none', scrollTrigger: ST(fin, { start: 'top 95%', end: 'top 30%', scrub: 0.6 }) });
   };
 
   // ---------------- lifecycle ----------------

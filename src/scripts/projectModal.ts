@@ -60,12 +60,14 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
     scroller.style.right = scroller.style.bottom = scroller.style.width = scroller.style.height = '';
   };
 
+  // corner radii grow with --sq where corners are squircles, so they read as soft as the round ones did
+  const sq = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sq')) || 1;
   const place = (r: DOMRect, radius: number) => {
     card.style.top = `${r.top}px`;
     card.style.left = `${r.left}px`;
     card.style.width = `${r.width}px`;
     card.style.height = `${r.height}px`;
-    card.style.borderRadius = `${radius}px`;
+    card.style.borderRadius = `${radius * sq()}px`;
   };
 
   // ---- double diamond tracking inside the card's own scroll ----
@@ -165,7 +167,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
         left: end.left,
         width: end.width,
         height: end.height,
-        borderRadius: 18,
+        borderRadius: 18 * sq(),
         backgroundColor: cardBg(article),
         duration: 0.8,
         ease: 'expo.inOut',
@@ -211,7 +213,7 @@ export function initProjectModal({ lenis, reduce }: { lenis: Lenis | null; reduc
         left: target.left,
         width: target.width,
         height: target.height,
-        borderRadius: 14,
+        borderRadius: 14 * sq(),
         backgroundColor: slabColor(source),
         duration: 0.7,
         ease: 'expo.inOut',

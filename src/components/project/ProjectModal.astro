@@ -60,7 +60,7 @@ import { skills } from '../../data/skills';
     height: calc(100svh - var(--pm-inset) * 2);
     --pm-inset: clamp(10px, 3.2vw, 44px);
     background: var(--slate-3);
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     border-top: 1px solid var(--slate-edge);
     box-shadow:
       0 1px 0 rgb(255 255 255 / 0.04) inset,
@@ -90,6 +90,7 @@ import { skills } from '../../data/skills';
     width: 44px;
     height: 44px;
     border-radius: 50%;
+    corner-shape: round;
     background: var(--slate-2);
     border: 1px solid rgb(var(--ink-rgb) / 0.14);
     color: var(--sand);

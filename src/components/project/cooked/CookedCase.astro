@@ -752,6 +752,7 @@ const said = [
     padding: 13px 22px;
     border: 2px solid var(--ck-green);
     border-radius: 99px;
+    corner-shape: round;
     background: var(--ck-green);
     font-weight: 800;
     color: #fff;
@@ -806,7 +807,7 @@ const said = [
     gap: 16px;
     max-width: 600px;
     padding: clamp(24px, 3vw, 40px);
-    border-radius: 28px;
+    border-radius: calc(28px * var(--sq));
     background: rgb(255 255 255 / 0.92);
     box-shadow:
       0 0 0 1px rgb(20 23 26 / 0.06),
@@ -832,7 +833,7 @@ const said = [
     display: grid;
     gap: 4px;
     padding: 14px 16px;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sq));
     background: var(--ck-bg);
   }
   .ck-pa div:last-child {
@@ -866,6 +867,7 @@ const said = [
     gap: 8px;
     padding: 7px 13px;
     border-radius: 999px;
+    corner-shape: round;
     background: #fff;
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-size: 0.875rem;
@@ -905,6 +907,7 @@ const said = [
     gap: 8px;
     padding: 7px 12px 7px 7px;
     border-radius: 99px;
+    corner-shape: round;
     background: #fff;
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-size: 0.8125rem;
@@ -918,6 +921,7 @@ const said = [
     width: 22px;
     height: 22px;
     border-radius: 50%;
+    corner-shape: round;
     background: var(--ck-green);
     font-size: 0.75rem;
     color: #fff;
@@ -978,6 +982,7 @@ const said = [
     position: absolute;
     inset: -7px -9px;
     border-radius: 18px;
+    corner-shape: round;
     background:
       linear-gradient(150deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.12) 42%, rgb(255 255 255 / 0.04) 60%, rgb(255 255 255 / 0.22)),
       rgb(244 245 242 / 0.32);
@@ -1009,6 +1014,7 @@ const said = [
     width: 8px;
     height: 8px;
     border-radius: 99px;
+    corner-shape: round;
     background: rgb(20 23 26 / 0.22);
     transition:
       height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
@@ -1044,6 +1050,7 @@ const said = [
     right: calc(100% + 18px);
     padding: 6px 12px;
     border-radius: 12px;
+    corner-shape: round;
     background:
       linear-gradient(150deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.12) 50%, rgb(255 255 255 / 0.22)),
       rgb(244 245 242 / 0.32);
@@ -1088,7 +1095,7 @@ const said = [
   .ck-dock a:focus-visible {
     outline: 2px solid var(--ck-green);
     outline-offset: 1px;
-    border-radius: 6px;
+    border-radius: calc(6px * var(--sq));
   }
 
   /* ---------- chapters ---------- */
@@ -1203,7 +1210,7 @@ const said = [
     display: grid;
     gap: 10px;
     padding: 16px;
-    border-radius: 20px;
+    border-radius: calc(20px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
@@ -1236,6 +1243,7 @@ const said = [
     display: block;
     height: 8px;
     border-radius: 99px;
+    corner-shape: round;
     background: var(--ck-rule);
     overflow: hidden;
   }
@@ -1244,12 +1252,13 @@ const said = [
     width: calc(var(--to) * 100%);
     height: 100%;
     border-radius: inherit;
+    corner-shape: inherit;
     background: var(--ck-green);
   }
   .ck-market {
     margin-top: 24px;
     padding: 16px 18px;
-    border-radius: 16px;
+    border-radius: calc(16px * var(--sq));
     background: var(--ck-turmeric-tint);
     font-weight: 600;
   }
@@ -1301,7 +1310,7 @@ const said = [
     justify-items: start;
     gap: 14px;
     padding: clamp(22px, 3vw, 36px);
-    border-radius: 24px;
+    border-radius: calc(24px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
@@ -1318,6 +1327,7 @@ const said = [
     top: 52%;
     height: 3px;
     border-radius: 3px;
+    corner-shape: round;
     background: var(--ck-ink);
     transform-origin: left center;
   }
@@ -1339,7 +1349,7 @@ const said = [
     display: grid;
     gap: 14px;
     padding: clamp(22px, 3vw, 36px);
-    border-radius: 24px;
+    border-radius: calc(24px * var(--sq));
     background: var(--ck-green);
     color: #fff;
   }
@@ -1368,6 +1378,7 @@ const said = [
     width: 28px;
     height: 28px;
     border-radius: 50%;
+    corner-shape: round;
     background: rgb(255 255 255 / 0.16);
     font-size: 0.875rem;
     font-weight: 800;
@@ -1432,7 +1443,7 @@ const said = [
     height: auto;
     aspect-ratio: var(--r);
     object-fit: cover;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
   @media (max-width: 620px) {
@@ -1441,7 +1452,7 @@ const said = [
     }
     .ck-merch img {
       flex: none;
-      border-radius: 14px;
+      border-radius: calc(14px * var(--sq));
     }
   }
 
@@ -1456,7 +1467,7 @@ const said = [
     display: grid;
     gap: 2px;
     padding: 18px 20px;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-weight: 600;
@@ -1483,7 +1494,7 @@ const said = [
     align-content: space-between;
     gap: 14px;
     padding: 20px;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
@@ -1509,7 +1520,7 @@ const said = [
   .ck-note {
     position: relative;
     padding: 16px 18px;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-weight: 600;
@@ -1525,6 +1536,7 @@ const said = [
     margin-left: 6px;
     padding: 1px 8px;
     border-radius: 99px;
+    corner-shape: round;
     background: var(--ck-ink);
     font-size: 0.6875rem;
     font-weight: 800;
@@ -1541,6 +1553,7 @@ const said = [
     width: 24px;
     height: 24px;
     border-radius: 50%;
+    corner-shape: round;
     background: var(--ck-green);
     font-size: 0.8125rem;
     font-weight: 900;
@@ -1557,7 +1570,7 @@ const said = [
     align-content: start;
     gap: 12px;
     padding: 20px 16px;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-weight: 700;
@@ -1587,7 +1600,7 @@ const said = [
     align-items: center;
     margin-bottom: 28px;
     padding: clamp(20px, 3vw, 32px);
-    border-radius: 24px;
+    border-radius: calc(24px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
@@ -1625,6 +1638,7 @@ const said = [
   .ck-chips li {
     padding: 7px 13px;
     border-radius: 99px;
+    corner-shape: round;
     background: var(--ck-green-soft);
     font-size: 0.875rem;
     font-weight: 700;
@@ -1639,6 +1653,7 @@ const said = [
     position: relative;
     height: 12px;
     border-radius: 99px;
+    corner-shape: round;
     background: linear-gradient(90deg, var(--ck-green), var(--ck-turmeric));
   }
   .ck-spec-track span {
@@ -1649,6 +1664,7 @@ const said = [
     height: 26px;
     border: 4px solid var(--ck-ink);
     border-radius: 50%;
+    corner-shape: round;
     background: #fff;
     translate: -50% -50%;
   }
@@ -1676,7 +1692,7 @@ const said = [
     align-items: center;
     gap: 14px;
     padding: 14px 16px;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-size: 1.0625rem;
@@ -1689,6 +1705,7 @@ const said = [
     width: 30px;
     height: 30px;
     border-radius: 50%;
+    corner-shape: round;
     background: var(--ck-turmeric);
     font-weight: 900;
   }
@@ -1704,7 +1721,7 @@ const said = [
     align-content: start;
     gap: 10px;
     padding: 22px;
-    border-radius: 20px;
+    border-radius: calc(20px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     color: var(--ck-ink-2);
@@ -1744,7 +1761,7 @@ const said = [
   }
   .ck-sketches img {
     width: 100%;
-    border-radius: 14px;
+    border-radius: calc(14px * var(--sq));
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
   @media (max-width: 620px) {
@@ -1769,6 +1786,7 @@ const said = [
   .ck-cut-tag {
     padding: 2px 9px;
     border-radius: 99px;
+    corner-shape: round;
     background: var(--ck-ink);
     font-size: 0.75rem;
     color: #fff;
@@ -1787,7 +1805,7 @@ const said = [
     flex: none;
     width: 14px;
     height: 14px;
-    border-radius: 3px;
+    border-radius: calc(3px * var(--sq));
     background: rgb(229 72 77 / 0.25);
   }
   .ck-pivot {
@@ -1801,7 +1819,7 @@ const said = [
     display: grid;
     gap: 8px;
     padding: clamp(20px, 3vw, 30px);
-    border-radius: 22px;
+    border-radius: calc(22px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     color: var(--ck-ink-2);
@@ -1849,7 +1867,7 @@ const said = [
   }
   .ck-mood {
     width: 100%;
-    border-radius: 20px;
+    border-radius: calc(20px * var(--sq));
   }
 
   /* ---------- 06 the result ---------- */
@@ -1860,7 +1878,7 @@ const said = [
   }
   .ck-said li {
     padding: clamp(20px, 3vw, 28px);
-    border-radius: 20px;
+    border-radius: calc(20px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-size: clamp(1.15rem, 1.8vw, 1.45rem);
@@ -1882,7 +1900,7 @@ const said = [
     place-items: center;
     gap: 14px;
     padding: clamp(56px, 10vw, 120px) 24px;
-    border-radius: 28px;
+    border-radius: calc(28px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     overflow: hidden;
@@ -1921,7 +1939,7 @@ const said = [
     gap: 6px;
     padding: 20px 22px;
     border: 0;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: var(--ck-card);
     box-shadow: 0 0 0 1px var(--ck-rule);
     font: inherit;

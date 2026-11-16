@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 49 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 50 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,12 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-11-16 · Squircles: continuous corners everywhere
+
+- Every rounded corner on the site is now a squircle, the continuous curve Apple uses, instead of a quarter circle: cards, buttons, images, phone frames, chips, the case-study panels and the project card itself as it opens. One rule in `global.css` (`corner-shape: squircle` on everything).
+- Circles and capsules stay true circles and pills: every `50%` / `99px` radius says `corner-shape: round`, as do the controls whose radius is half their height (Résumé, the theme switch, the tab switchers, the chapter rails and their labels, small bars). A scan of every page for pill-shaped squircles came back with only the phone frames and app icons, which are meant to be squircles.
+- A squircle hugs its corner more closely than a circle of the same radius, so where squircles are drawn every radius grows by `--sq` (1.6, in `tokens.css`) to keep the corners as soft as before; the opening project card reads the same factor. Browsers without `corner-shape` (Safari and Firefox for now) keep the old round corners at the old radii.
 
 ## 2026-11-16 · Résumé opens the PDF, nothing in between
 

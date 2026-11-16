@@ -44,7 +44,7 @@ const h = ih ?? (framed ? 920 : 874);
   .ph-grid {
     position: absolute;
     inset: 0;
-    border-radius: calc(var(--ph-w, 236px) * 0.12);
+    border-radius: calc(calc(var(--ph-w, 236px) * 0.12) * var(--sq));
     overflow: hidden;
     pointer-events: none;
     /* row grid: one stretched row inset 48px top and bottom */
@@ -66,7 +66,7 @@ const h = ih ?? (framed ? 920 : 874);
     display: block;
     width: 100%;
     height: auto;
-    border-radius: calc(var(--ph-w, 236px) * 0.12);
+    border-radius: calc(calc(var(--ph-w, 236px) * 0.12) * var(--sq));
     background: #fff;
     box-shadow:
       0 0 0 5px #14171a,

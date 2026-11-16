@@ -345,6 +345,7 @@ const parts = [
     max-width: 100%;
     padding: 5px;
     border-radius: 26px;
+    corner-shape: round;
     background: #fff;
     box-shadow: 0 10px 22px -14px rgb(20 23 26 / 0.4), 0 0 0 1px #ececec;
   }
@@ -355,6 +356,7 @@ const parts = [
     width: var(--pw, 0px);
     height: var(--ph, 0px);
     border-radius: 99px;
+    corner-shape: round;
     background: var(--k-ink);
     transform: translate(var(--px, 0px), var(--py, 0px));
   }
@@ -373,6 +375,7 @@ const parts = [
     padding: 11px 18px;
     border: 0;
     border-radius: 99px;
+    corner-shape: round;
     background: none;
     font: inherit;
     font-size: 0.9375rem;
@@ -447,7 +450,7 @@ const parts = [
     gap: 16px;
   }
   .kit-col {
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: #fff;
     box-shadow: 0 0 0 1px var(--ck-rule);
     overflow: hidden;
@@ -484,7 +487,7 @@ const parts = [
     grid-row: span 2;
     width: 34px;
     height: 34px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sq));
     background: var(--c);
     box-shadow: inset 0 0 0 1px rgb(20 23 26 / 0.1);
   }
@@ -519,7 +522,7 @@ const parts = [
     gap: 14px;
   }
   .kit-ratio {
-    border-radius: 16px;
+    border-radius: calc(16px * var(--sq));
     overflow: hidden;
     background: #fff;
     box-shadow: 0 0 0 1px var(--ck-rule);
@@ -558,6 +561,7 @@ const parts = [
   .kit-badge {
     padding: 3px 9px;
     border-radius: 99px;
+    corner-shape: round;
     font-size: 0.6875rem;
     font-weight: 800;
     letter-spacing: 0.06em;
@@ -576,7 +580,7 @@ const parts = [
 
   /* ---- type ---- */
   .kit-type {
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: #fff;
     box-shadow: 0 0 0 1px var(--ck-rule);
     overflow: hidden;
@@ -618,6 +622,7 @@ const parts = [
     justify-self: start;
     padding: 3px 10px;
     border-radius: 99px;
+    corner-shape: round;
     background: #f5f5f5;
     font-weight: 600;
   }
@@ -631,7 +636,7 @@ const parts = [
 
   /* ---- buttons ---- */
   .kit-btns {
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: #fff;
     box-shadow: 0 0 0 1px var(--ck-rule);
     padding: 6px 22px;
@@ -660,7 +665,7 @@ const parts = [
   }
   .kb {
     border: 0;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sq));
     font-family: inherit;
     font-weight: 700;
     cursor: pointer;
@@ -682,7 +687,7 @@ const parts = [
   }
   .kb-sm {
     padding: 7px 16px;
-    border-radius: 8px;
+    border-radius: calc(8px * var(--sq));
     font-size: 0.8125rem;
   }
   .kb-primary {
@@ -735,7 +740,7 @@ const parts = [
     align-content: start;
     gap: 16px;
     padding: 22px;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: #fafafa;
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
@@ -760,6 +765,7 @@ const parts = [
     padding: 14px 34px;
     border: 0;
     border-radius: 99px;
+    corner-shape: round;
     font: inherit;
     font-size: 1.0625rem;
     font-weight: 700;
@@ -797,6 +803,7 @@ const parts = [
     width: 10px;
     height: 10px;
     border-radius: 99px;
+    corner-shape: round;
     background: #c9c9c9;
     transition:
       width 0.4s cubic-bezier(0.22, 1, 0.36, 1),
@@ -819,6 +826,7 @@ const parts = [
     padding: 16px;
     border: 0;
     border-radius: 99px;
+    corner-shape: round;
     font: inherit;
     font-size: 1.0625rem;
     font-weight: 600;
@@ -855,7 +863,7 @@ const parts = [
     gap: 16px;
     padding: 16px 18px;
     border: 0;
-    border-radius: 18px;
+    border-radius: calc(18px * var(--sq));
     background: #fff;
     box-shadow: inset 0 0 0 1.5px #dcdcdc;
     font: inherit;
@@ -885,6 +893,7 @@ const parts = [
     width: 46px;
     height: 46px;
     border-radius: 50%;
+    corner-shape: round;
     background: var(--k-ink);
     transition: background-color 0.25s ease-out;
   }
@@ -923,6 +932,7 @@ const parts = [
     grid-template-columns: 1.6fr 1fr 1fr;
     padding: 6px;
     border-radius: 99px;
+    corner-shape: round;
     background: #fff;
     box-shadow: 0 10px 22px -14px rgb(20 23 26 / 0.4), 0 0 0 1px #ececec;
   }
@@ -933,6 +943,7 @@ const parts = [
     left: 6px;
     width: var(--pw, 40%);
     border-radius: 99px;
+    corner-shape: round;
     background: var(--k-ink);
     transform: translateX(var(--px, 0px));
     transition:

@@ -168,7 +168,7 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     display: block;
     width: clamp(150px, 17vw, 260px);
     aspect-ratio: 2000 / 1160;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sq));
     overflow: hidden;
     background: var(--slate-2);
     box-shadow: var(--slab-shadow);

@@ -68,7 +68,7 @@ const { prototype, title, kind } = Astro.props;
     height: clamp(560px, 82vh, 860px);
     width: 100%;
     overflow: hidden;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--sq));
     border: 1px solid rgb(var(--ink-rgb) / 0.08);
     background:
       radial-gradient(120% 90% at 50% 40%, rgb(var(--ink-rgb) / 0.05), transparent 60%),
@@ -111,6 +111,7 @@ const { prototype, title, kind } = Astro.props;
     transform: translateX(-50%);
     border: 0;
     border-radius: 999px;
+    corner-shape: round;
     background: var(--accent-fill);
     color: var(--on-accent);
     font: inherit;

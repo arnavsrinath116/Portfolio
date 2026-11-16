@@ -66,7 +66,7 @@ const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURICompon
     align-items: end;
     padding: clamp(28px, 4vw, 56px);
     background: var(--slate-3);
-    border-radius: var(--radius-slab);
+    border-radius: calc(var(--radius-slab) * var(--sq));
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
   }

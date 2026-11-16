@@ -225,7 +225,7 @@ const parts = [
   .pf-who,
   .pf-more {
     padding: clamp(22px, 3vw, 40px);
-    border-radius: 28px;
+    border-radius: calc(28px * var(--sq));
     background: #fff;
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
@@ -250,6 +250,7 @@ const parts = [
     height: auto;
     aspect-ratio: 1;
     border-radius: 50%;
+    corner-shape: round;
     object-fit: cover;
     box-shadow:
       0 0 0 4px #fff,
@@ -290,6 +291,7 @@ const parts = [
     width: 34px;
     height: 34px;
     border-radius: 50%;
+    corner-shape: round;
     background: var(--ck-green-soft);
   }
   .pf-ico svg {
@@ -312,7 +314,7 @@ const parts = [
   .pf-insight {
     margin: 22px 0 0;
     padding: 18px 20px;
-    border-radius: 16px;
+    border-radius: calc(16px * var(--sq));
     background: var(--ck-turmeric-tint);
     font-size: 1rem;
     font-weight: 700;
@@ -336,6 +338,7 @@ const parts = [
     max-width: 100%;
     padding: 5px;
     border-radius: 26px;
+    corner-shape: round;
     background: var(--ck-bg);
     box-shadow: 0 0 0 1px var(--ck-rule);
   }
@@ -346,6 +349,7 @@ const parts = [
     width: var(--pw, 0px);
     height: var(--ph, 0px);
     border-radius: 99px;
+    corner-shape: round;
     background: var(--ck-ink);
     transform: translate(var(--px, 0px), var(--py, 0px));
   }
@@ -360,6 +364,7 @@ const parts = [
     padding: 10px 16px;
     border: 0;
     border-radius: 99px;
+    corner-shape: round;
     background: none;
     font: inherit;
     font-size: 0.9375rem;
@@ -428,6 +433,7 @@ const parts = [
     width: 8px;
     height: 8px;
     border-radius: 50%;
+    corner-shape: round;
     background: var(--ck-turmeric);
   }
   .pf-brands {
@@ -438,6 +444,7 @@ const parts = [
   .pf-brands li {
     padding: 8px 14px;
     border-radius: 99px;
+    corner-shape: round;
     background: var(--ck-bg);
     box-shadow: 0 0 0 1px var(--ck-rule);
     font-size: 0.875rem;

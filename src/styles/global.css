@@ -6,6 +6,10 @@
 *::before,
 *::after {
   box-sizing: border-box;
+  /* squircles: every rounded corner is a continuous curve, as in Apple's UI, rather than a quarter
+     circle. Circles and capsules (50%, 99px) say corner-shape: round where they're set, so they stay
+     true circles and pills. Browsers without corner-shape keep plain rounded corners. */
+  corner-shape: squircle;
 }
 
 html {
