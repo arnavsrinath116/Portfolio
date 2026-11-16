@@ -60,9 +60,9 @@ const tabs = [
     </nav>
 
     <!-- the one thing a reviewer reaches for first: always in the top bar -->
-    <a class="resume-btn" href={withBase(site.resume)} target="_blank" rel="noopener" data-magnet data-ring="5">
+    <a class="resume-btn" href={withBase(site.resume)} data-magnet data-ring="5">
       Résumé
-      <svg class="resume-ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M6 1.5v7M3 5.5 6 8.5 9 5.5M2 10.5h8"></path></svg>
+      <svg class="resume-ico" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5"></path></svg>
     </a>
 
     <!-- light / dark: a switch, moon on the dark side, sun on the light -->
@@ -308,7 +308,7 @@ const tabs = [
       transform: translateY(0);
     }
     .resume-btn:hover .resume-ico {
-      transform: translateY(2px);
+      transform: translate(1.5px, -1.5px);
     }
   }
   /* focus shows the ring closed */
