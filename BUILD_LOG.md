@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 50 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 51 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,20 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-11-18 · Cooked: true phone corners, sourced numbers, a labelled journey map and a stakeholder map
+- **Why:** a professor's review. The numbers had no visible source and the $55.58B figure sat in the problem as if it were our own research. The journey map's mood line didn't say what high and low meant. Some phone screens had the wrong corners.
+- **Phone corners:**
+  - The screens are exported with a round 55 px corner on a 402 px width, transparent outside it. `Phone.astro` now clips them as a true circle a hair wider (14% across, the same length down, `corner-shape: round`) and drops the white background that showed through.
+  - "Book a chef, food first" set `--ph-w: 100%`, which turned the radius into a percentage of both sides and stretched the corners tall. Fixed by the same change.
+  - Prototype poster: the corner is now `14% / 6.44%`, so the dark corners baked into two exports are clipped. The phones are capped by the stage's height (container units) as well as its width, so the middle screen is never cut off at the top.
+- **Where the numbers come from:**
+  - "The numbers" is now "What the market says": secondary research from 6 market reports, the sources listed in full, and a note that they're separate surveys that overlap, so they don't add up to 100. The 60% reads "settle for worse food when they order in".
+  - Under "Who's at the table": 4 people interviewed, 11 questions each, linking to the research.
+  - The research opens with primary (4 interviews, 11 questions, 20 assumptions) and secondary (6 market reports, the $55.58B market, moved here) side by side.
+- **Journey map:** a key column, held on the left while it scrolls, names each row. The mood line has an axis (good: relieved, in control; neutral, dashed; bad: stressed, guilty), and each point is named: Relieved, Overwhelmed, Frustrated, Uneasy, Content, Guilty. `--ck-turmeric-deep` was never defined, so the low dots and minus badges were white; it's now set.
+- **Stakeholder map:** "Who else has a seat", before the persona. Three rings round the meal (on the plate, at the table, around the kitchen) with a key saying what each stakeholder wants.
+- **Checked:** headless screenshots at 1440 and 390 of the hero, the ten-step booking flow, the prototype poster, the numbers, the research counts, the stakeholder map and the journey map; the site builds.
 
 ## 2026-11-16 · Squircles: continuous corners everywhere
 

@@ -15,9 +15,13 @@ import { withBase } from '../../../lib/url';
 const { src, alt, framed = false, w: iw, h: ih, grid = false, class: cls } = Astro.props;
 const w = iw ?? (framed ? 466 : 402);
 const h = ih ?? (framed ? 920 : 874);
+// the screens are exported with a round 55px corner on a 402px width (13.7%) and transparent outside it.
+// Clip a hair wider, as a true circle at any size: 14% across, the same length down
+const ry = ((14 * w) / h).toFixed(3);
+const style = [`--ph-r: 14% / ${ry}%`, grid && `--gw:${w};--gh:${h}`].filter(Boolean).join(';');
 ---
 
-<figure class:list={['ph', { 'ph-framed': framed }, cls]} style={grid ? `--gw:${w};--gh:${h}` : undefined}>
+<figure class:list={['ph', { 'ph-framed': framed }, cls]} style={style}>
   <img src={withBase(`/projects/cooked/${src}.webp`)} alt={alt} width={w} height={h} loading="lazy" decoding="async" />
   {
     grid && (
@@ -44,7 +48,8 @@ const h = ih ?? (framed ? 920 : 874);
   .ph-grid {
     position: absolute;
     inset: 0;
-    border-radius: calc(calc(var(--ph-w, 236px) * 0.12) * var(--sq));
+    border-radius: var(--ph-r);
+    corner-shape: round; /* the screen's own corner is round, not a squircle */
     overflow: hidden;
     pointer-events: none;
     /* row grid: one stretched row inset 48px top and bottom */
@@ -66,8 +71,8 @@ const h = ih ?? (framed ? 920 : 874);
     display: block;
     width: 100%;
     height: auto;
-    border-radius: calc(calc(var(--ph-w, 236px) * 0.12) * var(--sq));
-    background: #fff;
+    border-radius: var(--ph-r);
+    corner-shape: round; /* the screen's own corner is round, not a squircle */
     box-shadow:
       0 0 0 5px #14171a,
       0 0 0 6px rgb(20 23 26 / 0.4),

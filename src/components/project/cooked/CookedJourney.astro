@@ -13,6 +13,7 @@ const steps = [
     high: 'Relief at not having to cook',
     low: 'Guilt about feeding the family outside food again',
     mood: 3,
+    feel: 'Relieved',
   },
   {
     t: 'Deciding what to eat',
@@ -21,6 +22,7 @@ const steps = [
     high: 'Her few trusted places make it quicker',
     low: 'Decision fatigue: lots of options, none like home',
     mood: 1.9,
+    feel: 'Overwhelmed',
   },
   {
     t: 'Ordering',
@@ -29,6 +31,7 @@ const steps = [
     high: 'Checkout takes a minute',
     low: '“Most apps aren’t accommodating of specific requests”',
     mood: 2.4,
+    feel: 'Frustrated',
   },
   {
     t: 'Waiting',
@@ -37,6 +40,7 @@ const steps = [
     high: 'It arrives fast',
     low: 'No look into the kitchen: oil, spice and hygiene stay unknown',
     mood: 2,
+    feel: 'Uneasy',
   },
   {
     t: 'Eating',
@@ -45,6 +49,7 @@ const steps = [
     high: 'Hunger solved, no dishes to wash',
     low: 'Too oily, and the taste changes from order to order',
     mood: 3.4,
+    feel: 'Content',
   },
   {
     t: 'After the meal',
@@ -53,14 +58,19 @@ const steps = [
     high: 'Reordering a dish she already trusts',
     low: 'A rating doesn’t change how it’s made, so the guilt stays',
     mood: 1.6,
+    feel: 'Guilty',
   },
 ];
 
-// the mood line: one point per step, mood 1 (low) to 4 (high), as a smooth curve
+// the mood line: one point per step, mood 1 (feels bad) to 4 (feels good), 2.5 neutral, as a smooth curve
 // drawn at about the band's on-screen proportions, so stretching it to fit barely distorts it
 const W = 1200;
 const H = 100;
 const pts = steps.map((s, i) => [((i + 0.5) / steps.length) * W, H - ((s.mood - 1) / 3) * (H - 16) - 8]);
+// a feeling's name goes above a peak and below a dip, so it never sits on the line
+const peak = (i: number) => steps[i].mood >= (steps[i - 1]?.mood ?? -1) && steps[i].mood >= (steps[i + 1]?.mood ?? -1);
+const yOf = (m: number) => H - ((m - 1) / 3) * (H - 16) - 8;
+const mid = yOf(2.5);
 let d = `M${pts[0][0]} ${pts[0][1]}`;
 for (let i = 0; i < pts.length - 1; i++) {
   const [p0, p1, p2, p3] = [pts[i - 1] ?? pts[i], pts[i], pts[i + 1], pts[i + 2] ?? pts[i + 1]];
@@ -73,9 +83,25 @@ for (let i = 0; i < pts.length - 1; i++) {
 <div class="jm">
   <div class="jm-scroll">
     <ol class="jm-grid" style={`--n:${steps.length}`}>
+      <!-- what each row is, down the left -->
+      <li class="jm-rowk" style="--r:1">
+        <b>The steps</b>
+        <span class="jm-rowk-d">What she does, and the apps and things she touches</span>
+      </li>
+      <li class="jm-rowk jm-rowk-mood" style="--r:2">
+        <b>How she feels</b>
+        <span class="jm-axis jm-axis-hi">Good<small>relieved, in control</small></span>
+        <span class="jm-axis jm-axis-mid">Neutral</span>
+        <span class="jm-axis jm-axis-lo">Bad<small>stressed, guilty</small></span>
+      </li>
+      <li class="jm-rowk" style="--r:3">
+        <b>Highs and lows</b>
+        <span><i class="jm-k-hi">+</i> what works for her<br /><i class="jm-k-lo">−</i> what lets her down</span>
+      </li>
+
       {
         steps.map((s, i) => (
-          <li class="jm-step" style={`--c:${i + 1}`}>
+          <li class="jm-step" style={`--c:${i + 2}`}>
             <p class="jm-no">{String(i + 1).padStart(2, '0')}</p>
             <h4 class="jm-t">{s.t}</h4>
             <p class="jm-d">{s.d}</p>
@@ -89,17 +115,22 @@ for (let i = 0; i < pts.length - 1; i++) {
         ))
       }
 
-      <!-- the mood line, under all six steps -->
-      <li class="jm-mood" aria-hidden="true">
-        <span class="jm-mood-k jm-mood-hi">High</span>
-        <span class="jm-mood-k jm-mood-lo">Low</span>
-        <div class="jm-mood-in">
+      <!-- the mood line, under all six steps: good at the top, bad at the bottom, neutral dashed through the middle -->
+      <li class="jm-mood">
+        <p class="jm-sr">How she feels at each step: {steps.map((s, i) => `${i + 1}, ${s.t}: ${s.feel}`).join('; ')}.</p>
+        <div class="jm-mood-in" aria-hidden="true">
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+            <path class="jm-mood-mid" d={`M0 ${mid} H${W}`} />
             <path class="jm-mood-line" d={d} />
           </svg>
           {
             pts.map(([x, y], i) => (
-              <span class:list={['jm-dot', { 'is-low': steps[i].mood < 2.2, 'is-high': steps[i].mood > 3.1 }]} style={`left:${(x / W) * 100}%;top:${(y / H) * 100}%`} />
+              <span
+                class:list={['jm-dot', { 'is-low': steps[i].mood < 2.5, 'is-high': steps[i].mood > 2.5, 'is-under': !peak(i) }]}
+                style={`left:${(x / W) * 100}%;top:${(y / H) * 100}%`}
+              >
+                <em>{steps[i].feel}</em>
+              </span>
             ))
           }
         </div>
@@ -107,7 +138,7 @@ for (let i = 0; i < pts.length - 1; i++) {
 
       {
         steps.map((s, i) => (
-          <li class="jm-hl" style={`--c:${i + 1}`}>
+          <li class="jm-hl" style={`--c:${i + 2}`}>
             <p class="jm-high">
               <span aria-hidden="true">+</span>
               <span class="jm-sr">High: </span>
@@ -129,6 +160,7 @@ for (let i = 0; i < pts.length - 1; i++) {
 <style>
   .jm {
     --jm-col: minmax(170px, 1fr);
+    --jm-key: 132px;
   }
   .jm-scroll {
     overflow-x: auto;
@@ -138,10 +170,10 @@ for (let i = 0; i < pts.length - 1; i++) {
   }
   .jm-grid {
     display: grid;
-    grid-template-columns: repeat(var(--n), var(--jm-col));
+    grid-template-columns: var(--jm-key) repeat(var(--n), var(--jm-col));
     grid-auto-flow: dense;
     column-gap: 14px;
-    min-width: 1040px;
+    min-width: 1190px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -202,12 +234,96 @@ for (let i = 0; i < pts.length - 1; i++) {
     font-weight: 700;
   }
 
-  /* the mood line: a band across every column, high at the top, low at the bottom */
+  /* the row keys: what each band of the map is, held on the left as the map scrolls */
+  .jm-rowk {
+    grid-row: var(--r);
+    grid-column: 1;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 18px 12px 18px 0;
+    background: var(--ck-bg);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--ck-ink-3);
+  }
+  .jm-rowk b {
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ck-ink);
+  }
+  .jm-rowk i {
+    display: inline-grid;
+    place-items: center;
+    width: 14px;
+    height: 14px;
+    margin-right: 4px;
+    border-radius: 50%;
+    corner-shape: round;
+    font-style: normal;
+    font-weight: 900;
+    font-size: 0.625rem;
+    color: #fff;
+  }
+  .jm-k-hi {
+    background: var(--ck-green);
+  }
+  .jm-k-lo {
+    background: var(--ck-turmeric-deep);
+  }
+  /* the mood row's key is the chart's axis: good, neutral, bad, level with the band */
+  .jm-rowk-mood {
+    position: sticky;
+    padding: 0 12px 0 0;
+    display: block;
+  }
+  .jm-rowk-mood b {
+    position: absolute;
+    top: 0;
+    left: 0;
+    white-space: nowrap;
+  }
+  .jm-axis {
+    position: absolute;
+    right: 12px;
+    display: grid;
+    justify-items: end;
+    font-size: 0.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    text-align: right;
+    transform: translateY(-50%);
+  }
+  .jm-axis small {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--ck-ink-3);
+  }
+  /* the band's line box is inset 22px; these sit where mood 4, 2.5 and 1 fall in it */
+  .jm-axis-hi {
+    top: calc(22px + (100% - 44px) * 0.08);
+    color: var(--ck-green);
+  }
+  .jm-axis-mid {
+    top: calc(22px + (100% - 44px) * 0.5);
+    color: var(--ck-ink-3);
+  }
+  .jm-axis-lo {
+    top: calc(22px + (100% - 44px) * 0.92);
+    color: var(--ck-turmeric-deep);
+  }
+
+  /* the mood line: a band across every step column, good at the top, bad at the bottom */
   .jm-mood {
     position: relative;
     grid-row: 2;
-    grid-column: 1 / -1;
-    height: 130px;
+    grid-column: 2 / -1;
+    height: 184px;
     border-radius: 0;
     background:
       linear-gradient(to bottom, rgb(51 113 64 / 0.08), transparent 45%, transparent 55%, rgb(244 182 63 / 0.16)),
@@ -217,7 +333,15 @@ for (let i = 0; i < pts.length - 1; i++) {
   /* the line and its dots share one box, so each dot sits on the line */
   .jm-mood-in {
     position: absolute;
-    inset: 14px 0;
+    inset: 22px 0;
+  }
+  .jm-mood-mid {
+    fill: none;
+    stroke: var(--ck-ink-3);
+    stroke-width: 1;
+    stroke-dasharray: 4 5;
+    vector-effect: non-scaling-stroke;
+    opacity: 0.6;
   }
   .jm-mood svg {
     position: absolute;
@@ -249,21 +373,21 @@ for (let i = 0; i < pts.length - 1; i++) {
   .jm-dot.is-low {
     background: var(--ck-turmeric-deep);
   }
-  .jm-mood-k {
+  /* the feeling, named beside its dot: above a peak, below a dip */
+  .jm-dot em {
     position: absolute;
-    left: 12px;
-    font-size: 0.6875rem;
+    left: 50%;
+    bottom: calc(100% + 6px);
+    transform: translateX(-50%);
+    font-style: normal;
+    font-size: 0.75rem;
     font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--ck-ink);
   }
-  .jm-mood-hi {
-    top: 10px;
-    color: var(--ck-green);
-  }
-  .jm-mood-lo {
-    bottom: 10px;
-    color: var(--ck-turmeric-deep);
+  .jm-dot.is-under em {
+    top: calc(100% + 6px);
+    bottom: auto;
   }
 
   /* highs and lows, under each step */
@@ -330,6 +454,37 @@ for (let i = 0; i < pts.length - 1; i++) {
   @media (max-width: 1120px) {
     .jm-hint {
       display: block;
+    }
+  }
+  /* on a phone the keys shrink to a narrow rail, so a step still fits beside them */
+  @media (max-width: 620px) {
+    .jm {
+      --jm-key: 78px;
+      --jm-col: 200px;
+    }
+    .jm-grid {
+      column-gap: 10px;
+      min-width: 0;
+    }
+    .jm-rowk {
+      padding-right: 6px;
+      font-size: 0.625rem;
+    }
+    .jm-rowk-d {
+      display: none;
+    }
+    .jm-rowk b {
+      font-size: 0.5625rem;
+      white-space: normal !important;
+    }
+    .jm-rowk-mood b {
+      right: 6px;
+    }
+    .jm-axis {
+      right: 6px;
+    }
+    .jm-axis small {
+      display: none;
     }
   }
 </style>

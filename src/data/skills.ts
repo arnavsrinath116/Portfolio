@@ -206,7 +206,7 @@ export const skills: Skill[] = [
             'https://embed.figma.com/proto/CtrcTrgGn4vdgXafiUQdLL/UI-Kit-Food?node-id=563-4552&starting-point-node-id=563%3A4552&scaling=contain&content-scaling=fixed&hide-ui=1&embed-host=portfolio',
           link: 'https://www.figma.com/proto/CtrcTrgGn4vdgXafiUQdLL/UI-Kit-Food?node-id=563-4552&starting-point-node-id=563%3A4552&scaling=scale-down',
           aspect: '402 / 874',
-          corner: '12.8% / 5.9%',
+          corner: '14% / 6.44%',
           screens: [
             { src: '/skills/ui-design/cooked-onboarding.webp', alt: 'Cooked onboarding: “Expert Chefs with 5 star reviews” over a chef plating a dish' },
             { src: '/skills/ui-design/cooked-home.webp', alt: 'Cooked home: a search bar, Find Chefs and Search Dishes, and recent meals to repeat' },

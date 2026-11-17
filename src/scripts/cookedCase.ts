@@ -336,14 +336,14 @@ export function initCookedCase({ reduce }: { reduce: boolean }) {
     });
 
     // headings and prose rise as they arrive
-    q(article, '.ck-ch .ck-h, .ck-ch .ck-big, .ck-ch .ck-body, .ck-ch .ck-caption, .ck-insight, .ck-kicker, .ck-grid-note, .ck-market, .ck-mood, .ck-persona-card, .ck-recipe, .ck-shift').forEach((el) =>
+    q(article, '.ck-ch .ck-h, .ck-ch .ck-big, .ck-ch .ck-body, .ck-ch .ck-caption, .ck-insight, .ck-kicker, .ck-grid-note, .ck-prov, .ck-source, .ck-mood, .ck-persona-card, .ck-recipe, .ck-shift').forEach((el) =>
       gsap.fromTo(el, { y: 44, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: enter(el) }),
     );
 
     // rows of cards, phones and chips: dealt in one after another once the row is in view
     q(
       article,
-      '.ck-who, .ck-stats, .ck-steps, .ck-phones, .ck-journey, .ck-merch-row, .ck-pantry, .ck-quotes, .ck-notes, .ck-obs, .ck-needs, .ck-dirs, .ck-sketches, .ck-chips, .ck-said, .ck-others-grid',
+      '.ck-who, .ck-stats, .ck-stake-key, .ck-steps, .ck-phones, .ck-journey, .ck-merch-row, .ck-pantry, .ck-quotes, .ck-notes, .ck-obs, .ck-needs, .ck-dirs, .ck-sketches, .ck-chips, .ck-said, .ck-others-grid',
     ).forEach((row) =>
       gsap.fromTo(
         row.children,

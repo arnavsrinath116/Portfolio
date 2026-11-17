@@ -50,7 +50,7 @@ const heroShots = [
 const stats = [
   { n: '80–90%', t: 'default to convenience-first', to: 0.9 },
   { n: '70%', t: 'want more control', to: 0.7 },
-  { n: '60%+', t: 'compromise on food quality when ordering', to: 0.6 },
+  { n: '60%+', t: 'settle for worse food when they order in', to: 0.6 },
 ];
 
 const hmw = 'How might we give people the same confidence they feel eating home‑cooked food, even when someone else is cooking it?';
@@ -92,6 +92,34 @@ const assumptions = [
   { t: 'People get lost in choices while ordering' },
   { t: 'Existing apps don’t balance convenience with culture', keep: true },
 ];
+
+// everyone with a stake in a home-cooked booking, by how close they sit to the meal.
+// a: where the name sits on its ring, in degrees clockwise from the top
+const stakeRings = [
+  { k: 'On the plate', d: 'Who the booking is between', people: [
+    { n: 'The diner', w: 'A say in how it’s made, without the effort', a: 0 },
+    { n: 'The home chef', w: 'Steady bookings, fair pay, and trust up front', a: 180 },
+  ] },
+  { k: 'At the table', d: 'Who lives with the result', people: [
+    { n: 'Family', w: 'Food that tastes like home', a: 300 },
+    { n: 'Cooked', w: 'Trust on both sides, so both come back', a: 60 },
+    { n: 'Ratings & reviews', w: 'Honest signals for the next booking', a: 160 },
+  ] },
+  { k: 'Around the kitchen', d: 'Who shapes it from outside', people: [
+    { n: 'Delivery apps', w: 'The habit we’re up against', a: 330 },
+    { n: 'Restaurants & cloud kitchens', w: 'Fast, but no say in how it’s made', a: 30 },
+    { n: 'Grocers', w: 'The ingredients the chef cooks with', a: 95 },
+    { n: 'FSSAI', w: 'Hygiene rules a home chef has to meet', a: 145 },
+    { n: 'Housing societies', w: 'Letting a chef through the gate', a: 215 },
+    { n: 'Payment partners', w: 'Paying a person, safely', a: 265 },
+  ] },
+];
+const stakeR = [0, 25.5, 40.5]; // where each ring's names sit, % of the plate from its centre
+const stakeAt = (ring: number, a: number) => {
+  const r = stakeR[ring];
+  const t = ((a - 90) * Math.PI) / 180;
+  return ring === 0 ? `left:50%;top:${a === 0 ? 43 : 57}%` : `left:${(50 + r * Math.cos(t)).toFixed(2)}%;top:${(50 + r * Math.sin(t)).toFixed(2)}%`;
+};
 
 const needs = ['Home-like comfort', 'To know, without being too involved', 'Trust & safety', 'Guilt-free eating'];
 
@@ -221,9 +249,11 @@ const said = [
           <figure><img src={img('pro')} alt="" width="400" height="420" loading="lazy" /><figcaption>Working professionals</figcaption></figure>
           <figure><img src={img('parent')} alt="" width="400" height="417" loading="lazy" /><figcaption>Parents</figcaption></figure>
         </div>
+        <p class="ck-prov">Who we interviewed: <b>4</b> people across both groups, <b>11</b> questions each. <a href="#cooked-research" data-jump>What they told us</a></p>
       </div>
       <div>
-        <h4 class="ck-h">The numbers</h4>
+        <h4 class="ck-h">What the market says</h4>
+        <p class="ck-prov ck-prov-top">Secondary research · <b>6</b> market reports, 2025–26</p>
         <ul class="ck-stats">
           {
             stats.map((s) => (
@@ -235,8 +265,10 @@ const said = [
             ))
           }
         </ul>
-        <p class="ck-market"><b>$55.58B</b> India’s food delivery market, still climbing <small>2024 → 2034 · IMARC, Nexdigm</small></p>
-        <p class="ck-source">NielsenIQ · IMARC · Kadence · Market Xcel · Expert Market Research · IBEF</p>
+        <p class="ck-prov">Separate surveys that overlap, so they don’t add up to 100.</p>
+        <p class="ck-source">
+          <b>Sources</b> NielsenIQ, Global Health &amp; Wellness 2025 · IMARC Group, India Food Delivery Market 2026 · Kadence, India Consumer Segments · Market Xcel, Buying Behaviour India 2025 · Expert Market Research · IBEF, Cloud Kitchens 2025
+        </p>
       </div>
     </div>
   </section>
@@ -344,12 +376,23 @@ const said = [
       <img class="ck-chead-art" src={img('doodles-turmeric')} alt="" width="900" height="900" loading="lazy" />
     </header>
 
-    <ul class="ck-pantry" data-ck-in>
-      <li><b>4</b>interviews</li>
-      <li><b>11</b>questions</li>
-      <li><b>20</b>assumptions</li>
-      <li><b>6</b>market reports</li>
-    </ul>
+    <div class="ck-larder" data-ck-in>
+      <div>
+        <p class="ck-larder-k">Primary · what we gathered ourselves</p>
+        <ul class="ck-pantry">
+          <li><b>4</b>interviews</li>
+          <li><b>11</b>questions</li>
+          <li><b>20</b>assumptions</li>
+        </ul>
+      </div>
+      <div>
+        <p class="ck-larder-k">Secondary · what the reports say</p>
+        <ul class="ck-pantry">
+          <li><b>6</b>market reports</li>
+          <li class="ck-pantry-market"><b>$55.58B</b>India’s food delivery market, still climbing to 2034 <small>IMARC, Nexdigm</small></li>
+        </ul>
+      </div>
+    </div>
 
     <div class="ck-block" data-ck-in>
       <h4 class="ck-h">What we heard</h4>
@@ -397,6 +440,50 @@ const said = [
         </li>
         <li><img src={img('wok')} alt="" width="359" height="359" loading="lazy" />Home recipes are loved most</li>
       </ul>
+    </div>
+
+    <div class="ck-block" data-ck-in>
+      <div class="ck-bhead">
+        <h4 class="ck-h">Who else has a seat</h4>
+        <p class="ck-body">A booking is between two people, but plenty of others shape it. The closer to the plate, the more say they have over the meal.</p>
+      </div>
+      <div class="ck-stake">
+        <figure class="ck-stake-plate" role="img" aria-label="Stakeholder map: three rings around the meal. On the plate: the diner and the home chef. At the table: family, Cooked, ratings and reviews. Around the kitchen: delivery apps, restaurants and cloud kitchens, grocers, FSSAI, housing societies, payment partners.">
+          <span class="ck-stake-ring r3" aria-hidden="true"></span>
+          <span class="ck-stake-ring r2" aria-hidden="true"></span>
+          <span class="ck-stake-ring r1" aria-hidden="true"></span>
+          {
+            stakeRings.map((ring, ri) =>
+              ring.people.map((p) => (
+                <span class:list={['ck-stake-name', `n${ri + 1}`]} style={stakeAt(ri, p.a)} aria-hidden="true">
+                  {p.n}
+                </span>
+              )),
+            )
+          }
+        </figure>
+        <ol class="ck-stake-key">
+          {
+            stakeRings.map((ring, ri) => (
+              <li class={`k${ri + 1}`}>
+                <p class="ck-stake-k">
+                  <i aria-hidden="true" />
+                  {ring.k}
+                  <span>{ring.d}</span>
+                </p>
+                <ul>
+                  {ring.people.map((p) => (
+                    <li>
+                      <b>{p.n}</b>
+                      {p.w}
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
     </div>
 
     <div class="ck-block" data-ck-in>
@@ -621,6 +708,7 @@ const said = [
     --ck-green-deep: #285a33;
     --ck-green-soft: rgb(51 113 64 / 0.12);
     --ck-turmeric: #f4b63f;
+    --ck-turmeric-deep: #c2830f; /* the turmeric dark enough to carry white: lows, bad moods */
     --ck-turmeric-tint: #fbe6b3;
     --ck-pad: clamp(22px, 6vw, 96px);
     --ck-card: #fff;
@@ -1255,28 +1343,42 @@ const said = [
     corner-shape: inherit;
     background: var(--ck-green);
   }
-  .ck-market {
-    margin-top: 24px;
-    padding: 16px 18px;
-    border-radius: calc(16px * var(--sq));
-    background: var(--ck-turmeric-tint);
-    font-weight: 600;
-  }
-  .ck-market b {
-    display: block;
-    font-size: 1.6rem;
-    font-weight: 900;
-  }
-  .ck-market small {
-    display: block;
-    margin-top: 4px;
-    font-size: 0.8125rem;
+  .ck-source {
+    margin-top: 18px;
+    font-size: 0.75rem;
+    line-height: 1.55;
     color: var(--ck-ink-3);
   }
-  .ck-source {
+  .ck-source b {
+    margin-right: 6px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ck-ink-2);
+  }
+  /* where a block's facts come from: one quiet line, the count in green */
+  .ck-prov {
     margin-top: 14px;
     font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.5;
     color: var(--ck-ink-3);
+  }
+  .ck-prov-top {
+    margin: -6px 0 18px;
+  }
+  .ck-prov b {
+    font-weight: 900;
+    color: var(--ck-green);
+  }
+  .ck-prov a {
+    color: var(--ck-ink);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--ck-turmeric);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
   }
 
   /* ---------- 02 the brief ---------- */
@@ -1457,11 +1559,43 @@ const said = [
   }
 
   /* ---------- 04 research ---------- */
+  /* what went into the research: our own on the left, the reports on the right */
+  .ck-larder {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2.4fr);
+    gap: 12px 20px;
+    padding: clamp(28px, 4vh, 40px) var(--ck-pad) 0;
+  }
+  .ck-larder-k {
+    margin-bottom: 10px;
+    font-size: 0.6875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ck-ink-3);
+  }
   .ck-pantry {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    grid-auto-flow: column;
     gap: 12px;
-    padding: clamp(28px, 4vh, 40px) var(--ck-pad) 0;
+  }
+  .ck-pantry-market {
+    background: var(--ck-turmeric-tint) !important;
+    box-shadow: none !important;
+  }
+  .ck-pantry-market b {
+    color: var(--ck-ink) !important;
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem) !important;
+  }
+  .ck-pantry-market small {
+    font-size: 0.75rem;
+    color: var(--ck-ink-3);
+  }
+  @media (max-width: 820px) {
+    .ck-larder {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
   .ck-pantry li {
     display: grid;
@@ -1481,7 +1615,124 @@ const said = [
   }
   @media (max-width: 620px) {
     .ck-pantry {
+      grid-auto-flow: row;
       grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .ck-pantry-market {
+      grid-column: 1 / -1;
+    }
+  }
+
+  /* the stakeholder map: three rings round the meal, like a plate seen from above */
+  .ck-stake {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+  }
+  .ck-stake-plate {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 1;
+    width: 100%;
+    max-width: 560px;
+    justify-self: center;
+  }
+  .ck-stake-ring {
+    position: absolute;
+    border-radius: 50%;
+    corner-shape: round;
+  }
+  .ck-stake-ring.r3 {
+    inset: 2%;
+    background: var(--ck-card);
+    box-shadow: 0 0 0 1px var(--ck-rule);
+  }
+  .ck-stake-ring.r2 {
+    inset: 17%;
+    background: var(--ck-turmeric-tint);
+    box-shadow: 0 0 0 1px rgb(244 182 63 / 0.4);
+  }
+  .ck-stake-ring.r1 {
+    inset: 32%;
+    background: #e3ece0;
+    box-shadow: 0 0 0 1px rgb(51 113 64 / 0.3);
+  }
+  .ck-stake-name {
+    position: absolute;
+    translate: -50% -50%;
+    max-width: 22%;
+    padding: 5px 10px;
+    border-radius: 99px;
+    corner-shape: round;
+    background: #fff;
+    box-shadow: 0 0 0 1px var(--ck-rule), 0 6px 14px -8px rgb(20 23 26 / 0.3);
+    font-size: clamp(0.625rem, 1vw, 0.75rem);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+  }
+  .ck-stake-name.n1 {
+    max-width: none;
+    background: var(--ck-green);
+    box-shadow: none;
+    font-size: clamp(0.6875rem, 1.1vw, 0.875rem);
+    font-weight: 800;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .ck-stake-key {
+    display: grid;
+    gap: 22px;
+  }
+  .ck-stake-k {
+    display: grid;
+    grid-template-columns: 14px minmax(0, 1fr);
+    column-gap: 10px;
+    align-items: center;
+    font-size: 1.0625rem;
+    font-weight: 800;
+  }
+  .ck-stake-k i {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    corner-shape: round;
+  }
+  .k1 .ck-stake-k i {
+    background: var(--ck-green);
+  }
+  .k2 .ck-stake-k i {
+    background: var(--ck-turmeric);
+  }
+  .k3 .ck-stake-k i {
+    background: var(--ck-card);
+    box-shadow: 0 0 0 1.5px var(--ck-ink-3);
+  }
+  .ck-stake-k span {
+    grid-column: 2;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ck-ink-3);
+  }
+  .ck-stake-key ul {
+    display: grid;
+    gap: 6px;
+    margin-top: 10px;
+    padding-left: 24px;
+  }
+  .ck-stake-key ul li {
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--ck-ink-2);
+  }
+  .ck-stake-key ul b {
+    margin-right: 6px;
+    color: var(--ck-ink);
+  }
+  @media (max-width: 900px) {
+    .ck-stake {
+      grid-template-columns: minmax(0, 1fr);
     }
   }
   .ck-quotes {

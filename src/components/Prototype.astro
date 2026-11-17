@@ -8,6 +8,8 @@ interface Props {
   kind: string;
 }
 const { prototype, title, kind } = Astro.props;
+const aspect = prototype.aspect ?? '440 / 956';
+const [aw, ah] = aspect.split('/').map((n) => parseFloat(n));
 ---
 
 <!-- a Figma prototype: a poster of its screens until Play is pressed, then the live prototype in place.
@@ -16,7 +18,7 @@ const { prototype, title, kind } = Astro.props;
   class="pt"
   data-proto={prototype.embed}
   data-title={`${title} prototype`}
-  style={`--pt-aspect: ${prototype.aspect ?? '440 / 956'}; --pt-r: ${prototype.corner ?? '14px'}`}
+  style={`--pt-aspect: ${aspect}; --pt-ar: ${(aw / ah).toFixed(4)}; --pt-r: ${prototype.corner ?? '14px'}`}
 >
   <div class="pt-stage">
     <div class="pt-poster" data-pt-poster>
@@ -84,21 +86,24 @@ const { prototype, title, kind } = Astro.props;
     justify-content: center;
     gap: 4%;
     padding: 3% 0 10%; /* room under the phones for the Play button */
+    container-type: size;
     transition: opacity 400ms ease-out;
   }
   /* sized by width, so three always fit across; the tall frame leaves them room */
   .pt-phone {
-    width: 24%;
+    /* as wide as a quarter of the stage, but never taller than it: the whole screen always shows */
+    width: min(24%, calc(84cqh * var(--pt-ar)));
     height: auto;
     aspect-ratio: var(--pt-aspect);
     object-fit: cover;
     border-radius: var(--pt-r); /* clips any rounded corners baked into the export, too */
+    corner-shape: round;
     box-shadow:
       0 0 0 1px rgb(var(--ink-rgb) / 0.12),
       0 18px 40px -18px rgb(0 0 0 / 0.45);
   }
   .pt-phone:nth-of-type(2) {
-    width: 28%;
+    width: min(28%, calc(98cqh * var(--pt-ar)));
   }
   .pt-play {
     position: absolute;
@@ -203,7 +208,7 @@ const { prototype, title, kind } = Astro.props;
     }
     .pt-phone:nth-of-type(2) {
       display: block;
-      width: 58%;
+      width: min(58%, calc(98cqh * var(--pt-ar)));
     }
   }
 </style>
