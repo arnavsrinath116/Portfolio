@@ -1,5 +1,4 @@
 ---
-import Icon from './Icon.astro';
 import { projects } from '../data/projects';
 import { withBase } from '../lib/url';
 
@@ -11,7 +10,7 @@ const featured = projects.slice(0, 3);
 
 <section class="work" id="work" aria-labelledby="work-title" data-work>
   <div class="work-head" data-guide-a>
-    <h2 id="work-title" class="work-title" data-dim="w-top" data-dim-text data-words>Selected <span class="hl-block">work</span></h2>
+    <h2 id="work-title" class="work-title" data-dim="w-top" data-dim-text data-words>Selected work</h2>
     <p class="work-note">
       Three case studies, each told through the <span class="hl">Double Diamond</span>: discover, define, develop, deliver.
       Open one to read it.
@@ -40,11 +39,6 @@ const featured = projects.slice(0, 3);
             <p class="panel-disc">{p.discipline}</p>
             <h3 class="panel-title">{p.title}</h3>
             <p class="panel-note">{p.note}</p>
-            <p class="panel-status">
-              <span class="status-dot" aria-hidden="true" />
-              Open case study
-              <Icon name="arrow-up-right" />
-            </p>
           </div>
         </a>
       ))
@@ -53,10 +47,7 @@ const featured = projects.slice(0, 3);
 
   <!-- the rest of the set -->
   <div class="work-more">
-    <a class="work-more-btn" href={withBase('/projects/')} data-magnet>
-      <span class="work-more-label" data-words>Explore more <span class="hl-block">projects</span></span>
-      <Icon name="arrow-up-right" />
-    </a>
+    <a class="work-more-link bracket" href={withBase('/projects/')} data-magnet>All projects</a>
   </div>
 </section>
 
@@ -165,14 +156,6 @@ const featured = projects.slice(0, 3);
     color: var(--sand-2);
     font-size: 0.9375rem;
   }
-  .panel-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 6px;
-    font-size: 0.8125rem;
-    color: var(--sand-3);
-  }
   /* the whole slab is the link: lift and light on hover */
   a.panel {
     --rise: 0px; /* scroll entrance (guide.ts) */
@@ -193,25 +176,10 @@ const featured = projects.slice(0, 3);
         0 36px 64px -18px rgb(0 0 0 / 0.65),
         0 10px 20px -8px rgb(0 0 0 / 0.45);
     }
-    a.panel:hover .panel-status {
-      color: var(--accent);
-    }
   }
   a.panel:focus-visible {
     outline-offset: 4px;
   }
-  .panel-status :global(.icon) {
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-  a.panel:hover .panel-status :global(.icon) {
-    transform: translate(2px, -2px);
-  }
-  .status-dot {
-    width: 6px;
-    height: 6px;
-    border: 1px solid var(--accent);
-  }
-
   /* under the grid: a quiet line, and the way into the full set */
   .work-more {
     position: relative;
@@ -223,61 +191,18 @@ const featured = projects.slice(0, 3);
     gap: 16px 32px;
     margin-top: clamp(24px, 4vh, 40px);
   }
-  .work-more-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 22px;
-    border-radius: calc(var(--radius-slab) * var(--sq));
-    background: var(--slate-2);
-    border-top: 1px solid var(--slate-edge);
-    box-shadow: var(--slab-shadow);
-    color: var(--sand);
-    text-decoration: none;
-    transition:
-      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 240ms ease-out;
-  }
-  /* it fades up with the scroll as it rises into view; its words then come into focus and the
-     blue fills behind "projects", scrubbed like the section headings (wordReveal.ts) */
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      .work-more-btn {
-        animation: work-more-in linear both;
-        animation-timeline: view();
-        animation-range: entry 0% cover 25%;
-      }
-    }
-  }
-  @keyframes work-more-in {
-    from {
-      opacity: 0;
-      translate: 0 18px;
-    }
-    to {
-      opacity: 1;
-      translate: 0 0;
-    }
-  }
-  .work-more-label {
-    font-stretch: 125%;
-    font-weight: 640;
-    font-size: 1.0625rem;
-    letter-spacing: -0.01em;
+  /* the way into the full set: a plain link in the nav's lettering */
+  .work-more-link {
+    margin-right: -0.9em; /* the bracket padding: the word lines up with the grid's edge */
+    font-size: 0.875rem;
+    font-weight: 560;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-  }
-  .work-more-btn :global(.icon) {
-    color: var(--accent);
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-  @media (hover: hover) {
-    .work-more-btn:hover {
-      transform: translateY(-3px);
-      background: var(--slate-3);
-    }
-    .work-more-btn:hover :global(.icon) {
-      transform: translate(2px, -2px);
-    }
+    color: var(--sand);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.4em;
+    text-decoration-color: rgb(var(--ink-rgb) / 0.35);
   }
 
   @media (max-width: 860px) {

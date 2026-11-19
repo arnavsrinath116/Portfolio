@@ -17,7 +17,7 @@ export interface Phase {
 
 export interface Project {
   slug: string;
-  discipline: 'Product' | 'UX' | 'UX/UI' | 'HMI' | 'Research';
+  discipline: 'Product' | 'UX' | 'UX/UI' | 'HMI' | 'Research' | 'Interaction';
   title: string;
   /** one line under the title on the work tile */
   note: string;
@@ -86,7 +86,7 @@ export const projects: Project[] = [
     discipline: 'Product',
     title: 'Productivity tracker',
     note: 'Tinkering with Tech',
-    cover: { src: '/projects/tracker/final-1.webp', alt: 'The productivity tracker: a black box with a wood front and two ultrasonic sensor eyes', focus: '50% 42%' },
+    cover: { src: '/projects/tracker/cover.webp', alt: 'The productivity tracker: a render of the black box with a wood front and two ultrasonic sensor eyes, sound waves rippling out toward its name', focus: '62% 50%' },
     summary: 'A desk device that gives students a small physical push to finish their assignments.',
     role: 'Role TBD',
     team: 'Solo',
@@ -105,26 +105,28 @@ export const projects: Project[] = [
     summary:
       'A thirteen-person field study of Theyyam in Kannur, Kerala, where a performer becomes a god, told in a report and a film made side by side. My part was the documentary: I wrote it and I shot it.',
     cover: { src: '/projects/theyyam/cover.webp', alt: 'A Theyyam performer led through the fire by two men, sparks rising, the crowd filming on phones' },
-    role: 'Documentary co-lead · Writer · Camera',
+    role: 'Documentary co-lead, writer and camera',
     team: '13 people',
-    duration: '9 days in the field · 2025–26',
+    duration: '9 days in the field, 2025–26',
     tools: ['11 iPhones', 'Gimbal', 'Canon EOS R50', 'Canon EOS 500D', 'Sony α7 III', 'GoPro Hero 7'],
     phases: phases(),
     outcome: 'A documentary, a 100-page report and a final presentation for FLAME University’s Discover India Program.',
     learnings: 'What you would do differently next time.',
   },
   {
-    slug: 'hmi',
-    discipline: 'HMI',
-    title: 'HMI project',
-    note: 'Controls and the interface between',
-    summary: 'One-line summary of the HMI project: what it is and who it is for.',
-    role: 'Role TBD',
-    team: 'Team TBD',
-    duration: 'Duration TBD',
-    tools: ['Figma', 'Fusion 360'],
+    // CIID summer school, July 2026: a screenless device for passing notes in class, built in a team of three
+    slug: 'blackbox',
+    discipline: 'Interaction',
+    title: 'BlackBox',
+    note: 'Passing notes, without a screen',
+    cover: { src: '/projects/blackbox/cover.webp', alt: 'BlackBox: the logo beside a render of the black casing, its lid lifted and the LED matrix lit red inside', focus: '62% 50%' },
+    summary: 'A screenless box for passing notes to a friend in class: turn the dial, tap twice, and their box buzzes and lights up red.',
+    role: 'MicroPython, electronics, wiring and the laser-cut enclosure',
+    team: '3 people',
+    duration: '1 week, July 2026',
+    tools: ['Arduino Nano ESP32', 'MicroPython', 'ESP-NOW', 'Laser cutting', 'Fusion 360', '3D printing'],
     phases: phases(),
-    outcome: 'What happened in the end: results you can honestly state.',
-    learnings: 'What you would do differently next time.',
+    outcome: 'Two working boxes that send icons to each other over ESP-NOW, shown with a short film at CIID.',
+    learnings: 'Define every state up front: the code is the product’s structure, not just its wiring.',
   },
 ];

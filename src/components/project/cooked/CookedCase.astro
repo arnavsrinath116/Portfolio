@@ -19,14 +19,11 @@ const img = (n: string) => withBase(`/projects/cooked/${n}.webp`);
 // the same clickable Figma prototype the UI design skill shows
 const proto = skills.find((s) => s.slug === 'ui-design')?.works.find((w) => w.title === 'Cooked app')?.prototype;
 
-// facts shown in the hero; placeholders stay hidden until they're real
-const facts = [
-  ['Discipline', project.discipline],
-  ['Duration', project.duration],
-  ['Role', project.role],
-  ['Team', project.team],
-  ['Tools', project.tools.join(' · ')],
-].filter(([, v]) => v && !/TBD/i.test(v));
+// the facts, said once in a plain line under the story; placeholders stay hidden until they're real
+const phrase = (list: string[]) => (list.length < 2 ? list.join('') : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`);
+const factLine = [project.discipline, project.duration, project.role, project.team, phrase(project.tools)]
+  .filter((v) => v && !/TBD/i.test(v))
+  .join(', ');
 
 // The story runs in one order: the problem, the brief we set ourselves, the app we made, how we
 // got there (research, then design), and how it landed. The answer is never more than a scroll away
@@ -137,7 +134,7 @@ const wires = [
   { src: 'ui-wf2-cuisine', cap: 'Cuisine', alt: 'Mid-fi wireframe: select cuisine' },
 ];
 
-const changes = ['Hourly pricing, 1–1.5 h minimum', 'Basic · Expert · Gourmet cooks', 'Pure-veg cook filter', 'Fewer onboarding steps', 'Visible ID & hygiene checks', '“What to avoid” cut as redundant'];
+const changes = ['Hourly pricing, 1–1.5 h minimum', 'Basic, Expert and Gourmet cooks', 'Pure-veg cook filter', 'Fewer onboarding steps', 'Visible ID & hygiene checks', '“What to avoid” cut as redundant'];
 
 const said = [
   ['Loved', 'customise your dish', ''],
@@ -158,19 +155,11 @@ const said = [
       <p class="ck-kicker">A UX/UI case study</p>
       <h2 class="ck-wordmark" id="cooked-title"><img src={img('wordmark')} alt="Cooked!" width="1600" height="347" loading="lazy" data-ck-preload /></h2>
       <p class="ck-tag">Your food, your way</p>
-      <dl class="ck-pa">
-        <div>
-          <dt>The problem</dt>
-          <dd>Ordering in means giving up a say in how your food is made: the oil, the spice, the hygiene.</dd>
-        </div>
-        <div>
-          <dt>What we made</dt>
-          <dd>Cooked, an app to book a home chef who cooks the dish you pick <em>your way</em>. Set up once and kept for every order.</dd>
-        </div>
-      </dl>
-      <dl class="ck-facts">
-        {facts.map(([k, v]) => <div><dt>{k}</dt><dd>{v}</dd></div>)}
-      </dl>
+      <p class="ck-lede">
+        Ordering in means giving up a say in how your food is made: the oil, the spice, the hygiene. Cooked lets you book a home
+        chef who cooks the dish you pick your way, set up once and kept for every order.
+      </p>
+      <p class="ck-factline">{factLine}</p>
       <div class="ck-hero-acts">
         {proto && <a class="ck-btn" href="#cooked-proto" data-jump data-magnet>Try the prototype</a>}
         <a class="ck-btn ck-btn-ghost" href="#cooked-app" data-jump data-magnet>See the app</a>
@@ -232,7 +221,7 @@ const said = [
           </g>
           <g transform="translate(0 50)" data-ss-left>
             <text x="137" y="196" class="ss-big">Convenience</text>
-            <text x="137" y="222" class="ss-small">quick · easy · no thinking</text>
+            <text x="137" y="222" class="ss-small">quick, easy, no thinking</text>
           </g>
           <g transform="translate(0 -50)" data-ss-right>
             <text x="663" y="196" class="ss-big ss-green">Control</text>
@@ -253,7 +242,7 @@ const said = [
       </div>
       <div>
         <h4 class="ck-h">What the market says</h4>
-        <p class="ck-prov ck-prov-top">Secondary research · <b>6</b> market reports, 2025–26</p>
+        <p class="ck-prov ck-prov-top">Secondary research: <b>6</b> market reports, 2025–26</p>
         <ul class="ck-stats">
           {
             stats.map((s) => (
@@ -267,7 +256,7 @@ const said = [
         </ul>
         <p class="ck-prov">Separate surveys that overlap, so they don’t add up to 100.</p>
         <p class="ck-source">
-          <b>Sources</b> NielsenIQ, Global Health &amp; Wellness 2025 · IMARC Group, India Food Delivery Market 2026 · Kadence, India Consumer Segments · Market Xcel, Buying Behaviour India 2025 · Expert Market Research · IBEF, Cloud Kitchens 2025
+          <b>Sources</b> NielsenIQ, Global Health &amp; Wellness 2025; IMARC Group, India Food Delivery Market 2026; Kadence, India Consumer Segments; Market Xcel, Buying Behaviour India 2025; Expert Market Research; IBEF, Cloud Kitchens 2025
         </p>
       </div>
     </div>
@@ -378,7 +367,7 @@ const said = [
 
     <div class="ck-larder" data-ck-in>
       <div>
-        <p class="ck-larder-k">Primary · what we gathered ourselves</p>
+        <p class="ck-larder-k">Primary: what we gathered ourselves</p>
         <ul class="ck-pantry">
           <li><b>4</b>interviews</li>
           <li><b>11</b>questions</li>
@@ -386,7 +375,7 @@ const said = [
         </ul>
       </div>
       <div>
-        <p class="ck-larder-k">Secondary · what the reports say</p>
+        <p class="ck-larder-k">Secondary: what the reports say</p>
         <ul class="ck-pantry">
           <li><b>6</b>market reports</li>
           <li class="ck-pantry-market"><b>$55.58B</b>India’s food delivery market, still climbing to 2034 <small>IMARC, Nexdigm</small></li>
@@ -499,7 +488,7 @@ const said = [
             <li>Checks ingredients &amp; prep</li>
             <li>Wants a look into the kitchen</li>
           </ul>
-          <p class="ck-persona-meta">Archetype: Ananya, 32 · Mumbai · long workdays · husband + 1 child · orders in 3–5× a week</p>
+          <p class="ck-persona-meta">Archetype: Ananya, 32, in Mumbai. Long workdays, a husband and one child, orders in 3–5 times a week</p>
         </div>
       </div>
       <CookedPersona />
@@ -545,7 +534,7 @@ const said = [
     <div class="ck-block" data-ck-in>
       <div class="ck-bhead">
         <h4 class="ck-h">Three directions</h4>
-        <p class="ck-caption"><b>3</b> directions · <b>1</b> made it to the plate</p>
+        <p class="ck-caption"><b>3</b> directions, <b>1</b> made it to the plate</p>
       </div>
       <ul class="ck-dirs">
         {
@@ -589,7 +578,7 @@ const said = [
           ))
         }
       </div>
-      <p class="ck-grid-note"><span aria-hidden="true"></span>Home’s layout grid: 4 columns · 24 px margins · 20 px gutters · 48 px top &amp; bottom</p>
+      <p class="ck-grid-note"><span aria-hidden="true"></span>Home’s layout grid: 4 columns, 24 px margins, 20 px gutters, 48 px top &amp; bottom</p>
     </div>
 
     <div class="ck-block" data-ck-in>
@@ -911,60 +900,17 @@ const said = [
     color: var(--ck-green);
     letter-spacing: -0.01em;
   }
-  /* the problem and the answer, stated up front */
-  .ck-pa {
-    display: grid;
-    gap: 12px;
-    width: 100%;
-  }
-  .ck-pa div {
-    display: grid;
-    gap: 4px;
-    padding: 14px 16px;
-    border-radius: calc(14px * var(--sq));
-    background: var(--ck-bg);
-  }
-  .ck-pa div:last-child {
-    background: var(--ck-green-soft);
-  }
-  .ck-pa dt {
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ck-ink-3);
-  }
-  .ck-pa div:last-child dt {
-    color: var(--ck-green);
-  }
-  .ck-pa dd {
+  /* the problem and the answer, said up front in one paragraph */
+  .ck-lede {
+    max-width: 44ch;
     font-size: 1.0625rem;
-    font-weight: 600;
-    line-height: 1.4;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--ck-ink-2);
   }
-  .ck-pa em {
-    font-weight: 800;
-  }
-  .ck-facts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .ck-facts div {
-    display: flex;
-    gap: 8px;
-    padding: 7px 13px;
-    border-radius: 999px;
-    corner-shape: round;
-    background: #fff;
-    box-shadow: 0 0 0 1px var(--ck-rule);
-    font-size: 0.875rem;
-  }
-  .ck-facts dt {
+  .ck-factline {
+    font-size: 0.9375rem;
     color: var(--ck-ink-3);
-  }
-  .ck-facts dd {
-    font-weight: 700;
   }
   .ck-hero-acts {
     display: flex;

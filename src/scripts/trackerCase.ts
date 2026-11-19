@@ -621,7 +621,7 @@ export function initTrackerCase({ reduce }: { reduce: boolean }) {
       gsap
         .timeline({ delay: 0.35 })
         .fromTo(article.querySelectorAll('.tk-dot'), { scale: 0 }, { scale: 1, duration: 0.35, stagger: 0.1, ease: 'back.out(3)' })
-        .fromTo(leads, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, stagger: 0.1, ease: 'power2.out' }, 0.15)
+        .fromTo(leads, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, stagger: 0.1, ease: 'power2.out', clearProps: 'strokeDasharray,strokeDashoffset' }, 0.15)
         .fromTo(article.querySelectorAll('.tk-callout'), { autoAlpha: 0, x: -6 }, { autoAlpha: 1, x: 0, duration: 0.35, stagger: 0.1, ease: 'power2.out' }, 0.45);
     }
   });

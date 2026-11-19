@@ -1,5 +1,4 @@
 ---
-import Icon from './Icon.astro';
 import { projects } from '../data/projects';
 import { withBase } from '../lib/url';
 
@@ -21,7 +20,6 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
 
     <!-- a glimpse of the work below, cut by the bottom of the sheet; it carries the scroll cue -->
     <a class="peek" href="#work" data-reveal data-peek aria-label="Selected work, below">
-      <span class="peek-label"><span class="cue-arrow"><Icon name="arrow-down" /></span>Next · Selected work</span>
       <span class="peek-row">
         {
           peeks.map((p) => (
@@ -115,21 +113,6 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     pointer-events: none;
   }
 
-  /* the arrow keeps nudging downward: there's more */
-  .cue-arrow {
-    display: inline-grid;
-    animation: cue-nudge 1.8s var(--ease-inout) infinite;
-  }
-  @keyframes cue-nudge {
-    0%,
-    100% {
-      transform: translateY(-2px);
-    }
-    50% {
-      transform: translateY(4px);
-    }
-  }
-
   /* the peek: the covers of the work below, half off the foot of the sheet, bottom left */
   .peek {
     --gone: 0;
@@ -144,20 +127,6 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     text-decoration: none;
     opacity: calc(1 - var(--gone));
     transform: translateY(calc(var(--gone) * -24px));
-  }
-  .peek-label {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--sand-3);
-    transition: color var(--dur-base) var(--ease-out);
-  }
-  .peek-label :global(.icon) {
-    color: var(--accent);
   }
   .peek-row {
     display: flex;
@@ -183,9 +152,6 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
     object-position: 30% 50%;
   }
   @media (hover: hover) {
-    .peek:hover .peek-label {
-      color: var(--accent);
-    }
     .peek:hover .peek-card {
       transform: translateY(-14px);
     }
@@ -216,11 +182,6 @@ const peeks = projects.filter((p) => p.cover).slice(0, 2);
   }
   :global(html[data-theme='light']) .hero-jet {
     filter: none;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .cue-arrow {
-      animation: none;
-    }
   }
 
   /* narrower screens: the heading sits in normal flow, centred */

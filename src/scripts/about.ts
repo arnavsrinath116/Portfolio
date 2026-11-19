@@ -27,7 +27,7 @@ export function initAbout({ reduce }: { reduce: boolean }) {
     });
     dashes.forEach((d, k) => d.classList.toggle('is-on', k === i));
     if (url) url.textContent = slugs[i];
-    if (next) next.textContent = i < n - 1 ? `Next · ${names[i + 1]} →` : `Back to · ${names[0]} ↺`;
+    if (next) next.textContent = i < n - 1 ? `Next: ${names[i + 1]}` : `Back to ${names[0]}`;
     document.dispatchEvent(new CustomEvent('about:chapter', { detail: i }));
   };
 

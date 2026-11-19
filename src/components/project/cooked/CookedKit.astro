@@ -15,7 +15,7 @@ const columns = [
     tokens: [
       ['bg-base', '#F9F9F9', 'page', true],
       ['bg-surface', '#FFFFFF', 'card background'],
-      ['bg-raised', '#F5F5F5', 'nav · input background', true],
+      ['bg-raised', '#F5F5F5', 'nav, input background', true],
       ['bg-overlay', '#EEEEEE', 'hover'],
       ['border-subtle', '#EBEBEB', 'dividers'],
       ['border-default', '#E0E0E0', 'inputs', true],
@@ -25,10 +25,10 @@ const columns = [
     title: 'Green',
     note: 'interactive elements only',
     tokens: [
-      ['green-50', '#EBF7F0', 'tint · focus ring'],
-      ['green-100', '#C6E8D4', 'tag bg · active nav'],
-      ['green-300', '#45A96E', 'borders · icons'],
-      ['green-500', '#0D733B', 'buttons · nav', true],
+      ['green-50', '#EBF7F0', 'tint, focus ring'],
+      ['green-100', '#C6E8D4', 'tag bg, active nav'],
+      ['green-300', '#45A96E', 'borders, icons'],
+      ['green-500', '#0D733B', 'buttons, nav', true],
       ['green-700', '#085228', 'hover state'],
       ['green-900', '#042E16', 'text on green'],
     ],
@@ -37,12 +37,12 @@ const columns = [
     title: 'Amber & text',
     note: 'accent and the text scale',
     tokens: [
-      ['amber-500', '#FFB300', 'CTA · accent', true],
-      ['amber-300', '#FFC933', 'icons · tags'],
+      ['amber-500', '#FFB300', 'CTA, accent', true],
+      ['amber-300', '#FFC933', 'icons, tags'],
       ['amber-50', '#FFF8E1', 'tint surface'],
       ['tx-primary', '#1A1A1A', 'headings', true],
       ['tx-secondary', '#4A4A4A', 'body'],
-      ['tx-muted', '#888888', 'labels · hints'],
+      ['tx-muted', '#888888', 'labels, hints'],
     ],
   },
 ] as const;
@@ -78,16 +78,16 @@ const pairs = [
 
 // ---- type scale: each step set in a real Cooked line ----
 const type = [
-  ['Display', 'display-2xl', 60, 68, 700, 'Hero · splash', 'Book a chef'],
+  ['Display', 'display-2xl', 60, 68, 700, 'Hero, splash', 'Book a chef'],
   ['', 'display-xl', 48, 52, 700, 'Display heading', 'Book a chef'],
   ['', 'display-lg', 40, 48, 700, 'Screen title', 'Your food, your way'],
   ['Heading', 'heading-md', 32, 40, 600, 'Section heading', 'Your food, your way'],
   ['', 'heading-sm', 24, 32, 600, 'Card title', 'Customise your dish'],
-  ['', 'title', 20, 28, 500, 'List title · label', 'Customise your dish'],
+  ['', 'title', 20, 28, 500, 'List title, label', 'Customise your dish'],
   ['Body', 'body-lg', 16, 24, 400, 'Primary body', 'Choose spice, oil and ingredients, then a chef who cooks it your way.'],
   ['', 'body-md', 12, 20, 400, 'Secondary body', 'Choose spice, oil and ingredients, then a chef who cooks it your way.'],
-  ['', 'caption', 12, 16, 400, 'Caption · meta', 'Estimated response time: 5–15 minutes'],
-  ['Utility', 'label', 8, 12, 500, 'Badge · chip · overline', 'VEGETARIAN'],
+  ['', 'caption', 12, 16, 400, 'Caption, meta', 'Estimated response time: 5–15 minutes'],
+  ['Utility', 'label', 8, 12, 500, 'Badge, chip, overline', 'VEGETARIAN'],
 ] as const;
 
 // ---- buttons ----
@@ -112,10 +112,10 @@ const navs = [
 ] as const;
 
 const parts = [
-  { key: 'colour', label: 'Colour', note: 'White surfaces · green for interaction only · amber accent' },
-  { key: 'contrast', label: 'Contrast', note: 'WCAG 2.1 · AA ≥ 4.5 · AAA ≥ 7 · calculated from the token values' },
-  { key: 'type', label: 'Type', note: 'Satoshi · 10 steps' },
-  { key: 'buttons', label: 'Buttons', note: '5 variants · 3 sizes · disabled and danger states' },
+  { key: 'colour', label: 'Colour', note: 'White surfaces, green for interaction only, amber accent' },
+  { key: 'contrast', label: 'Contrast', note: 'WCAG 2.1: AA at 4.5 or more, AAA at 7 or more, calculated from the token values' },
+  { key: 'type', label: 'Type', note: 'Satoshi, 10 steps' },
+  { key: 'buttons', label: 'Buttons', note: '5 variants, 3 sizes, disabled and danger states' },
   { key: 'components', label: 'Components', note: 'Tap them' },
 ];
 ---

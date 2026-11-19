@@ -10,7 +10,7 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 | **Time spent** | **~24 h 55 min** of active build time over 12 days (2026-10-12 → 2026-10-23), all in Claude Code. "Active" counts the time between messages, leaving out any gap longer than 15 minutes |
 | **Usage** | Claude Pro plan, **no extra paid usage**. At the last update (2026-10-23 08:08 UTC): **66%** of the current 5-hour limit and **55%** of this week's limit |
 | **Tokens** | About **2.40 M** tokens written by Claude, and about **1.51 B** tokens of context re-read from the prompt cache, across more than 220 messages from you |
-| **Commits** | 51 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
+| **Commits** | 52 on `main` (first `ad09e6f`, 2026-10-12), plus this update |
 | **Site size** | About **34 MB** built: case-study images 6 MB, skill work 22 MB (including the 20 MB film), the Music room 1.2 MB, code 1.6 MB, 3D models 1.3 MB |
 
 *Pro plans don't bill per request, so there's no dollar figure. The plan-limit percentages are the closest measure of credits used. Update these numbers at the end of each session.*
@@ -24,6 +24,24 @@ Newest entries at the top. Add an entry whenever a meaningful chunk of work land
 *Pro plans don't bill per request, so there's no dollar "credits" figure; the plan-limit percentages are the closest measure. Update these numbers at the end of each session.*
 
 ---
+
+## 2026-11-19 · BlackBox case study, and the template tells taken out across the site
+- **BlackBox:** the fourth case study replaces the HMI placeholder (`blackbox/BlackboxCase.astro`, `scripts/blackboxCase.ts`).
+  - Five chapters in STAR order, numbered like Cooked: 01 The problem, 02 The brief, 03 What we made, 04 How I built it, 05 What I learned.
+  - A red signal line runs down the card as you read. It's routed like a circuit trace and only crosses sides in the gap before a chapter.
+  - A note simulator, a frame-by-frame scrub of the film, the Mon–Fri build log, the laser-cut sheet drawn as it cuts, and an exploded stack of the box's layers.
+  - The opening is shorter: a smaller hero and the problem told as three small steps in one row.
+- **Projects page:** the "Models & side builds" section is gone.
+- **Tracker:** a new cover and hero render.
+- **Template tells, from an audit of the whole site:**
+  - **Highlight boxes:** only the hero name keeps its blue box. It's off every other heading and off the second line of the About sub-heads.
+  - **Footer:** the email is now the headline, with one line above it. The live clock and the outlined name are gone (`clock.ts` and `footer.ts` removed). The A.S. cube mark sits beside the © line.
+  - **Facts grids:** About, Cooked, Tracker, Documentary, BlackBox and the skill sheets each say their facts in one plain line. Cooked's Problem / What we made boxes are now one paragraph.
+  - **Labels:** small mono capitals with "·" are now sentence-case text, and every "·" in the copy is a comma, "and" or a colon. Mono stays only on real readouts: pin labels, timecode, file size, log dates.
+  - **Codes:** S-01, P-01, T-01, O-01, "01 · About me", "05 works" and "04 sheets" are all gone.
+  - **Arrows:** ↗ appears only on links that leave the site. Cards are the link, so "Open case study" is gone. "Explore more projects" is now a plain "All projects" link.
+  - **Skills thumbnails:** they still show only on hover, as before.
+- **Checked:** headless screenshots at 1440 and 390 of the home page, About, the footer, the projects page, 404, all four case-study heroes and a skill sheet. No console errors; the site builds.
 
 ## 2026-11-18 · Cooked: true phone corners, sourced numbers, a labelled journey map and a stakeholder map
 - **Why:** a professor's review. The numbers had no visible source and the $55.58B figure sat in the problem as if it were our own research. The journey map's mood line didn't say what high and low meant. Some phone screens had the wrong corners.

@@ -1,0 +1,3231 @@
+---
+import { withBase } from '../../../lib/url';
+import type { Project } from '../../../data/projects';
+import { projects } from '../../../data/projects';
+import type { SkillModel } from '../../../data/skills';
+import ModelViewer from '../../ModelViewer.astro';
+import { code, sheet, parts } from './data';
+
+interface Props {
+  project: Project;
+}
+const { project } = Astro.props;
+const others = projects.filter((p) => p.slug !== project.slug);
+const img = (n: string) => withBase(`/projects/blackbox/${n}.webp`);
+const vid = (n: string) => withBase(`/projects/blackbox/${n}.mp4`);
+
+// BlackBox: a week at CIID's "Design That Plays Back", in a team of three. A screenless box for
+// passing notes in class, built on an Arduino Nano ESP32 in MicroPython and laser-cut from ply.
+// The page tells it the way the film does: one note, passed across a classroom. Everything here comes
+// from the team's deck and film, the code files and screenshots from the week (their own timestamps
+// date the build log), the final code (finalcodeciid.py) and the laser-cut drawing (box (1).dxf).
+// My part: the MicroPython code, the electronics and wiring, and the laser-cut enclosure.
+
+// the LED matrix sat upside down in the box, so the code draws every icon upside down;
+// on the page they are shown the way they lit up on the box: the right way round
+const upright = (rows: readonly string[]) => [...rows].reverse().join('');
+const ICONS = {
+  icon_sword: upright(code.icon_sword),
+  icon_robot: upright(code.icon_robot),
+  icon_cat: upright(code.icon_cat),
+  q_message1: upright(code.q_message1),
+  icon_coffee: upright(code.icon_coffee),
+  q_message3: upright(code.q_message3),
+  reply_ok: upright(code.reply_ok),
+};
+const dots = Array.from({ length: 64 }, (_, i) => i);
+
+
+// the problem, as the film opens: three frames of one classroom
+const story = [
+  { src: 'desk', alt: 'A student writing at a classroom desk, smiling at something he wants to share', t: 'Something to tell a friend across the room.' },
+  { src: 'look', alt: 'The student turning round in his chair towards a friend at the back of the class', t: 'Turn round to say it, and the whole class sees.' },
+  { src: 'friend', alt: 'The friend at the back of the class looking up from her laptop', t: 'Reach for a phone, and its screen lights up the room.' },
+];
+
+// the box in use, frame by frame from the film: the sender, the friend's box, the reply
+const SEQ = 22;
+const seqFrames = Array.from({ length: SEQ }, (_, i) => withBase(`/projects/blackbox/seq/${String(i).padStart(2, '0')}.webp`));
+const beats = [
+  { t: 'Turn, tap.', d: 'The dial picks a friend, then a message. Two taps on the pad send it.', from: 0, to: 9 },
+  { t: 'Glow.', d: 'Their box buzzes once, and the icon lights up through the white top.', from: 9, to: 18 },
+  { t: 'Reply.', d: 'One tap answers with a thumbs up.', from: 18, to: SEQ },
+];
+
+// the week, in the order the files say it happened: each time is a file's own timestamp
+type Entry = { at: string; file?: string; t: string; code?: string };
+const week: { day: string; date: string; items: Entry[] }[] = [
+  {
+    day: 'Mon',
+    date: '13 Jul',
+    items: [
+      {
+        at: '16:59',
+        file: '1stCIIDpy',
+        t: 'First MicroPython: the board’s own LED fades up and down, and two buttons switch its colours.',
+        code: 'for i in range(100):\n  lamp.brightness = i\n  sleep_ms(50)',
+      },
+    ],
+  },
+  {
+    day: 'Tue',
+    date: '14 Jul',
+    items: [
+      { at: '10:16', file: 'screenshot', t: 'A strip of eight pixels, all lit one colour.', code: 'pixels.set_all_rgb(r, g, b, brightness)\npixels.show()' },
+      {
+        at: '12:07',
+        file: '2ndCIID',
+        t: 'A tilt sensor: turn the board upside down and a servo swings.',
+        code: 'z = round(acceleration[2])\nif z == -1:\n  print("Upside Down")',
+      },
+      { at: '19:22', file: 'Music', t: 'A sound player. It never went in the box, which had to stay silent.' },
+    ],
+  },
+  {
+    day: 'Wed',
+    date: '15 Jul',
+    items: [
+      { at: '14:16', file: 'screenshot', t: 'The touch pad, printing every touch.', code: 'if touch_sensor.value() == 1:\n    print("Digital Touch Detected!")' },
+      { at: '15:51', file: 'button-VIB', t: 'A button that sets off the vibration motor.', code: "if event == Button.PRESSED:\n    print('button pressed')\n    motor.value(1)" },
+      { at: '16:04', file: 'colorful_gerbil.py', t: 'The first message from one board to another, over ESP-NOW.', code: 'host, message = manager.get_message()' },
+      { at: '18:41', file: 'dot matrix', t: 'The 8 × 8 matrix counts from 0 to 9.' },
+      {
+        at: '19:10',
+        file: 'newq',
+        t: 'Everything at once. Turn to pick a code from 0 to 9, touch to send it, and the other box buzzes.',
+        code: 'esp.send_message(PEER, str(val_new))',
+      },
+    ],
+  },
+  {
+    day: 'Thu',
+    date: '16 Jul',
+    items: [
+      { at: '10:50', file: 'FinalCode1', t: 'The numbers give way to icons, drawn as text in the code.', code: 'def display_icon(display, icon, fill_char = "#"):' },
+      { at: '19:29', file: 'box (1).dxf', t: 'The box, drawn flat for the laser cutter.' },
+    ],
+  },
+  {
+    day: 'Fri',
+    date: '17 Jul',
+    items: [
+      { at: '13:58', file: 'finalcodeciid.py', t: 'The final code: three modes, two taps to send, one tap to reply.' },
+      { at: 'Show', t: 'Two boxes talking, shown with the film and the deck.' },
+    ],
+  },
+];
+
+// the parts, with the pins they use in finalcodeciid.py
+const pins = [
+  { name: '8×8 LED matrix', chip: 'MAX7219', d: 'Shows the icons through the white top.', pins: ['SPI 1', 'D10'], wire: '#ff3b30' },
+  { name: 'Rotary encoder', chip: 'with push switch', d: 'Turn to browse, press to switch modes.', pins: ['D8', 'D9', 'D7'], wire: '#f6c343' },
+  { name: 'Touch sensor', chip: 'capacitive pad', d: 'Counts one tap or two.', pins: ['A2'], wire: '#4c8dff' },
+  { name: 'Vibration motor', chip: 'coin motor', d: 'One second of buzz when a note arrives: felt, not heard.', pins: ['GPIO 1'], wire: '#3fbf6a' },
+  { name: 'ESP-NOW radio', chip: 'on the board', d: 'Box to box, with no Wi-Fi network and no phone in between.', pins: ['built in'], wire: '#b07cff', air: true },
+];
+
+// Wednesday's notes were numbers; Thursday's were icons. A 7 as an 8×8 matrix draws it, and the coffee cup
+const seven = ['.######.', '......##', '.....##.', '....##..', '...##...', '...##...', '...##...', '........'].join('');
+const coffee = ICONS.icon_coffee;
+
+// the exchange, as the code runs it on both boxes
+const seq: { side: 'you' | 'friend' | 'msg'; t: string; d?: string; dir?: 'r' | 'l' }[] = [
+  { side: 'you', t: 'Turn the dial', d: 'friend_icons' },
+  { side: 'you', t: 'Press the dial', d: 'MESSAGE_MODE' },
+  { side: 'you', t: 'Turn again', d: 'message_icons' },
+  { side: 'you', t: 'Tap twice', d: 'send "c"' },
+  { side: 'msg', t: '"c"', dir: 'r' },
+  { side: 'friend', t: 'Buzz, show coffee', d: 'REPLY_MODE' },
+  { side: 'friend', t: 'Tap once', d: 'send "t"' },
+  { side: 'msg', t: '"t"', dir: 'l' },
+  { side: 'you', t: 'Buzz, show thumbs up', d: 'REPLY_MODE' },
+];
+
+const learnings = [
+  { t: 'Precision matters.', d: 'One wrong character in the code and the box doesn’t do its one job. Small slips have real effects.' },
+  { t: 'Prototyping is its own skill.', d: 'Sizing it, fitting everything inside, and keeping it simple to look at took as much thought as the idea.' },
+  { t: 'Define everything first.', d: 'Every mode, every tap and every message had to be decided before the code could hold together.' },
+  { t: 'Code is structure.', d: 'Writing it showed me the how and why behind the product. End-to-end design is built, not just drawn.' },
+];
+
+// the second casing, drawn for 3D printing after CIID; the same model the 3D modelling sheet shows
+const casing: SkillModel = { src: '/models/blackbox.glb', size: [64, 64, 72], parts: 6, fade: ['Shell', 'Lid'] };
+
+// ---------------- the laser-cut drawing ----------------
+// The sheet: both faces side by side, the 354 mm band below them, shortened with a break the way a long
+// part is drawn, so it sits under the faces instead of running off the side.
+const F = parts.face;
+const B = parts.band;
+const GAP = 10;
+const ROW = F.w * 2 + GAP; // the width of the two faces, and of the broken band under them
+const KEEP = (ROW - GAP) / 2; // how much of each end of the band is shown
+const BY = F.h + 14; // where the band row starts
+const sheetW = ROW;
+const sheetH = BY + B.h;
+// a drafting break: a zigzag across the band where it's cut short
+const zig = (x: number) => {
+  const y0 = BY - 3;
+  const y1 = BY + B.h + 3;
+  const m = (y0 + y1) / 2;
+  return `M${x} ${y0}V${m - 6}l-2.6 3 5.2 3-2.6 3V${y1}`;
+};
+
+// The layers: the same parts as they stack, drawn in isometric. Plan (x, y) and height z in mm.
+const pts = (d: string) =>
+  d
+    .split(/[ML]/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s) => s.split(/\s+/).map(Number) as [number, number]);
+const facePts = pts(F.d);
+const C30 = Math.cos(Math.PI / 6);
+const iso = (x: number, y: number, z: number) => [(x - y) * C30, (x + y) * 0.5 - z];
+const isoPath = (p: [number, number][], z: number) =>
+  'M' + p.map(([x, y]) => iso(x, y, z).map((v) => v.toFixed(2)).join(' ')).join('L') + 'Z';
+const BAND_H = 41; // the band's height between the tabs
+const ring = Array.from({ length: 11 }, (_, i) => isoPath(facePts, (i * BAND_H) / 10));
+// the matrix board sits under the white top, centred
+const MX = (F.w - 32) / 2;
+const MY = (F.h - 32) / 2;
+const matrixBoard = isoPath(
+  [
+    [MX - 2, MY - 2],
+    [MX + 34, MY - 2],
+    [MX + 34, MY + 34],
+    [MX - 2, MY + 34],
+  ],
+  0,
+);
+const matrixDots = Array.from({ length: 64 }, (_, i) => {
+  const cx = MX + 2 + (i % 8) * 4;
+  const cy = MY + 2 + Math.floor(i / 8) * 4;
+  const [x, y] = iso(cx, cy, 0);
+  return { x: x.toFixed(2), y: y.toFixed(2), on: coffee[i] === '#' };
+});
+// where each layer's leader starts: its far right corner
+// the band, split into its cut paths: the outline, and the hinge cuts in the two ends the sheet shows
+const bandOutline = B.d.split('M').filter(Boolean).map((d) => 'M' + d.trim());
+const hingeCuts = B.hinges.split('M').filter(Boolean).map((d) => 'M' + d.trim());
+const shownHinges = hingeCuts.filter((d) => {
+  const x = parseFloat(d.slice(1));
+  return x < KEEP || x > B.w - KEEP;
+});
+const SHIFT = KEEP + GAP - (B.w - KEEP); // moves the band's far end to sit beside its near end
+// numbered callouts for the stack: where each layer's leader starts, before it's pulled apart
+const callout = (x: number, y: number, z: number) => iso(x, y, z).map((v) => +v.toFixed(1));
+const layers = [
+  { n: 1, k: -136, at: callout(F.w, F.h * 0.25, BAND_H), label: 'White top', note: 'turns bare LEDs into soft pixels' },
+  { n: 2, k: -64, at: callout(MX + 34, MY + 10, BAND_H - 6), label: '8 × 8 LED matrix', note: 'MAX7219, mounted upside down' },
+  { n: 3, k: 0, at: callout(F.w, F.h * 0.4, BAND_H * 0.5), label: 'Ply band', note: '354 mm, four rows of living hinges' },
+  { n: 4, k: 40, at: callout(F.w, F.h * 0.4, 0), label: 'Ply base', note: 'finger joints lock the band to it' },
+];
+const KX = 128; // the x where the callout numbers sit
+
+const chapters = [
+  ['class', 'The problem'],
+  ['idea', 'The brief'],
+  ['box', 'What we made'],
+  ['build', 'How I built it'],
+  ['after', 'What I learned'],
+];
+const no = (key: string) => String(chapters.findIndex(([k]) => k === key) + 1).padStart(2, '0');
+const label = (key: string) => chapters.find(([k]) => k === key)![1];
+---
+
+<article class="bb" data-project={project.slug} data-theme="led" data-card-bg="#0a0a0a" aria-labelledby="bb-title" hidden data-bb>
+  <!-- the signal: a red line that runs down the card as you read, its tip a lit LED -->
+  <svg class="bb-line" aria-hidden="true" data-bb-line><path class="bb-line-glow"></path><path class="bb-line-path"></path><circle class="bb-line-halo" r="14"></circle><circle class="bb-line-tip" r="4.5"></circle></svg>
+
+  <!-- ============ the box, lit ============ -->
+  <header class="bb-hero">
+    <div class="bb-hero-copy">
+      <h2 class="bb-title" id="bb-title">
+        <img src={img('logo')} alt="BlackBox" width="550" height="325" decoding="async" />
+      </h2>
+      <p class="bb-tag">Secret notes, reimagined.</p>
+      <p class="bb-lede">
+        A screenless box for passing notes in class. Turn the dial, tap twice, and your friend’s box buzzes once and lights up. Three of
+        us built two working boxes in a week at CIID. <em>I wrote the code, wired the electronics and laser-cut the box.</em>
+      </p>
+      <p class="bb-slate">Design That Plays Back at CIID, July 2026. With Ramanik and Srishti.</p>
+      <div class="bb-acts">
+        <a class="bb-btn" href="#bb-try" data-jump data-magnet>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5"></circle><path d="M12 4.5V9"></path></svg>
+          Pass a note
+        </a>
+        <a class="bb-btn bb-btn-ghost" href="#bb-film" data-jump data-magnet>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"></path></svg>
+          Watch the film
+        </a>
+      </div>
+    </div>
+    <figure class="bb-reel" data-bb-reel>
+      <img
+        src={img('render')}
+        alt="The second BlackBox casing, rendered from its CAD: a black shell with the lid lifted, the LED matrix lit red inside"
+        width="1120"
+        height="1160"
+        decoding="async"
+      />
+    </figure>
+  </header>
+
+  <!-- the chapter rail: a column of LEDs on the card's right edge; the current chapter's is lit -->
+  <div class="bb-rail-wrap" data-bb-rail>
+    <nav class="bb-rail" aria-label="Chapters">
+      <span class="bb-rail-now" aria-hidden="true" data-bb-rail-now></span>
+      <ol>
+        {
+          chapters.map(([k, name]) => (
+            <li>
+              <a href={`#bb-${k}`} data-phase-link={k}>
+                <span class="bb-rail-name">{name}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
+  </div>
+
+  <!-- ===================== in class ===================== -->
+  <section class="bb-ch" id="bb-class" data-phase="class" aria-labelledby="bb-class-t">
+    <header class="bb-chead" data-bb-chead>
+      <p class="bb-course"><i aria-hidden="true"></i><span>{no('class')}</span>{label('class')}</p>
+      <h3 class="bb-ctitle" id="bb-class-t">Talking gets you caught.</h3>
+    </header>
+
+    <div class="bb-block" data-bb-in>
+      <p class="bb-big bb-lead-line">You have something to tell a friend on the other side of the room, in the middle of a lesson.</p>
+    </div>
+
+    <ol class="bb-block bb-story" data-bb-in>
+      {
+        story.map((s, i) => (
+          <li class="bb-frame" style={`--i:${i}`}>
+            <figure>
+              <span class="bb-frame-pic">
+                <img src={img(s.src)} alt={s.alt} width="1600" height="900" loading="lazy" decoding="async" />
+              </span>
+              <figcaption>
+                <span class="bb-frame-n">{i + 1}</span>
+                <span class="bb-frame-t">{s.t}</span>
+              </figcaption>
+            </figure>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="bb-block" data-bb-in>
+      <p class="bb-verdict">There was no quiet way to reach a friend in class.</p>
+    </div>
+  </section>
+
+  <!-- ===================== the brief ===================== -->
+  <section class="bb-ch" id="bb-idea" data-phase="idea" aria-labelledby="bb-idea-t">
+    <header class="bb-chead" data-bb-chead>
+      <p class="bb-course"><i aria-hidden="true"></i><span>{no('idea')}</span>{label('idea')}</p>
+      <h3 class="bb-ctitle" id="bb-idea-t">Bring back the passed note.</h3>
+    </header>
+
+    <div class="bb-block bb-idea" data-bb-in>
+      <div class="bb-idea-copy">
+        <p class="bb-big">A passed note is silent, private and meant for one person.</p>
+        <p class="bb-body">
+          The week at CIID, <b>Design That Plays Back</b>, asked for a physical device with no screen, built with an Arduino and
+          MicroPython. Ours would keep everything a paper note gets right and lose the paper: something you could use without looking down at
+          it, that nobody else in the room would notice.
+        </p>
+      </div>
+      <figure class="bb-idea-fig">
+        <img src={img('idea')} alt="The student in class with a finger raised, an idea lightbulb drawn beside him" width="1600" height="900" loading="lazy" decoding="async" />
+      </figure>
+    </div>
+
+    <div class="bb-block" data-bb-in>
+      <ul class="bb-rules" aria-label="Three rules for the box">
+        <li><i aria-hidden="true"></i>No screen.</li>
+        <li><i aria-hidden="true"></i>No sound.</li>
+        <li><i aria-hidden="true"></i>No getting caught.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ===================== the box ===================== -->
+  <section class="bb-ch" id="bb-box" data-phase="box" aria-labelledby="bb-box-t">
+    <header class="bb-chead" data-bb-chead>
+      <p class="bb-course"><i aria-hidden="true"></i><span>{no('box')}</span>{label('box')}</p>
+      <h3 class="bb-ctitle" id="bb-box-t">Turn. Tap. Glow.</h3>
+    </header>
+
+    <!-- the box in use: the film's frames play as you scroll past -->
+    <div class="bb-block bb-play" data-bb-in data-bb-play data-frames={JSON.stringify(seqFrames)}>
+      <figure class="bb-play-fig">
+        <img src={seqFrames[0]} alt="From the film: a hand taps the touch pad beside the box, and a pixel icon glows red through its white top" width="1120" height="630" loading="lazy" decoding="async" data-bb-frame />
+        <figcaption><span>From the film</span><span data-bb-frame-n>01 / {SEQ}</span></figcaption>
+      </figure>
+      <ol class="bb-beats">
+        {
+          beats.map((b) => (
+            <li data-from={b.from / SEQ} data-to={b.to / SEQ}>
+              <b>{b.t}</b>
+              <span>{b.d}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <!-- try it: the two boxes, running the code's own logic -->
+    <div class="bb-block" id="bb-try" data-bb-in>
+      <div class="bb-bhead">
+        <h4 class="bb-h">Pass one yourself.</h4>
+        <p class="bb-body">
+          These two boxes run the logic of the code we shipped: the same icons, the same three modes, the same taps. Turn your dial, press
+          it, turn it again, then tap your pad twice.
+        </p>
+      </div>
+      <div class="bb-sim" data-bb-sim data-icons={JSON.stringify(ICONS)}>
+        <div class="bb-sim-stage">
+          {
+            (['you', 'friend'] as const).map((who) => (
+              <div class="bb-dev" data-dev={who}>
+                <div class="bb-dev-box">
+                  <span class="bb-ply" aria-hidden="true" />
+                  <span class="bb-frost">
+                    <span class="bb-matrix" role="img" aria-label={who === 'you' ? 'Your box’s display: blank' : 'Your friend’s box’s display: blank'} data-matrix>
+                      {dots.map(() => (
+                        <i />
+                      ))}
+                    </span>
+                  </span>
+                  <span class="bb-buzz" aria-hidden="true" />
+                  <button
+                    type="button"
+                    class="bb-knob"
+                    role="slider"
+                    aria-label={who === 'you' ? 'Your dial: drag or use arrow keys to turn, Enter to press' : 'Your friend’s dial: drag or use arrow keys to turn, Enter to press'}
+                    aria-valuemin="0"
+                    aria-valuemax="2"
+                    aria-valuenow="0"
+                    data-knob>
+                    <span />
+                  </button>
+                </div>
+                <button type="button" class="bb-pad" aria-label={who === 'you' ? 'Your touch pad: tap once or twice' : 'Your friend’s touch pad: tap once or twice'} data-pad>
+                  <span aria-hidden="true" />
+                </button>
+                <p class="bb-dev-name">{who === 'you' ? 'Your box' : 'Your friend’s box'}</p>
+              </div>
+            ))
+          }
+          <div class="bb-air" aria-hidden="true">
+            <span>ESP-NOW</span>
+            <i data-signal />
+          </div>
+        </div>
+
+        <div class="bb-sim-foot">
+          <div class="bb-steps-wrap">
+            <ol class="bb-steps" data-steps>
+              <li data-step="turn">Turn your dial to pick a friend.</li>
+              <li data-step="press">Press your dial.</li>
+              <li data-step="browse">Turn it again to pick a message.</li>
+              <li data-step="send">Tap your pad twice to send it.</li>
+              <li data-step="reply">On their box, tap once to reply.</li>
+            </ol>
+            <button type="button" class="bb-reset" data-reset>Start again</button>
+          </div>
+          <div class="bb-serial">
+            <p class="bb-serial-h"><span>Serial monitor</span><span>what the code prints</span></p>
+            <ol aria-live="polite" data-log></ol>
+          </div>
+        </div>
+      </div>
+      <p class="bb-note">
+        In the build we showed, every message arrives as coffee: we wired that one end to end. The other two were drawn and could be
+        browsed, but not yet sent.
+      </p>
+    </div>
+
+    <!-- the film: the whole story, and the ending the note was for -->
+    <div class="bb-block bb-film-block" id="bb-film" data-bb-in>
+      <div class="bb-bhead">
+        <h4 class="bb-h">The whole story, in forty seconds.</h4>
+        <p class="bb-body">The film we showed with the two boxes: a note across the room, a coffee cup on a white top, and the drinks it was for.</p>
+      </div>
+      <figure class="bb-film">
+        <video src={vid('film')} poster={img('cheers-film')} controls playsinline preload="none" aria-label="The BlackBox film" data-bb-film></video>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===================== the build ===================== -->
+  <section class="bb-ch" id="bb-build" data-phase="build" aria-labelledby="bb-build-t">
+    <header class="bb-chead" data-bb-chead>
+      <p class="bb-course"><i aria-hidden="true"></i><span>{no('build')}</span>{label('build')}</p>
+      <h3 class="bb-ctitle" id="bb-build-t">Five days, one part at a time.</h3>
+    </header>
+
+    <div class="bb-block" data-bb-in>
+      <p class="bb-big bb-lead-line">Each part had to work on its own before it joined the rest. The files from the week still show the order it happened in.</p>
+    </div>
+
+    <!-- the build log: every time here is a file's own timestamp -->
+    <ol class="bb-block bb-log" data-bb-in data-bb-log>
+      {
+        week.map((w) => (
+          <li class="bb-day">
+            <p class="bb-day-h">
+              <b>{w.day}</b>
+              <span>{w.date}</span>
+            </p>
+            <ol class="bb-day-list">
+              {w.items.map((e) => (
+                <li class="bb-entry">
+                  <i class="bb-entry-led" aria-hidden="true" />
+                  <span class="bb-entry-at">{e.at}</span>
+                  <div class="bb-entry-body">
+                    <p>{e.t}</p>
+                    {e.file && <span class="bb-entry-file">{e.file}</span>}
+                    {e.code && <pre class="bb-entry-code"><code>{e.code}</code></pre>}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </li>
+        ))
+      }
+    </ol>
+
+    <!-- inside: the pin map -->
+    <div class="bb-block" id="bb-inside" data-bb-in>
+      <div class="bb-bhead">
+        <h4 class="bb-h">Five parts, one board.</h4>
+        <p class="bb-body">Everything runs on an Arduino Nano ESP32. I wired each part to the pins below, the same ones the code names.</p>
+      </div>
+      <ul class="bb-pins">
+        {
+          pins.map((p) => (
+            <li class:list={{ 'is-air': p.air }} style={`--wire:${p.wire}`}>
+              <span class="bb-part">
+                <b>{p.name}</b>
+                <span class="bb-chip">{p.chip}</span>
+                <span class="bb-part-d">{p.d}</span>
+              </span>
+              <span class="bb-wire" aria-hidden="true">
+                <i />
+              </span>
+              <span class="bb-pinset" aria-label={`Pins: ${p.pins.join(', ')}`}>
+                {p.pins.map((n) => (
+                  <code>{n}</code>
+                ))}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <!-- pixels: numbers first, then icons -->
+    <div class="bb-block" id="bb-pixels" data-bb-in>
+      <div class="bb-bhead">
+        <h4 class="bb-h">From numbers to icons.</h4>
+        <p class="bb-body">
+          Wednesday night’s box sent a number from 0 to 9, a secret code you’d have to agree on first. By Thursday morning the numbers were
+          gone, and the box drew pictures you could read at a glance, out of the corner of your eye.
+        </p>
+      </div>
+      <div class="bb-morph" data-bb-morph>
+        <span class="bb-morph-grid" role="img" aria-label="The 8 × 8 matrix showing the number 7, then the coffee cup that replaced it">
+          {
+            dots.map((i) => (
+              <i class:list={{ a: seven[i] === '#', b: coffee[i] === '#' }} />
+            ))
+          }
+        </span>
+        <p class="bb-morph-cap">
+          <span class="bb-morph-a">Wed 19:10, <b>7</b></span>
+          <span class="bb-morph-b">Thu 10:50, <b>coffee</b></span>
+        </p>
+      </div>
+      <ul class="bb-sheet" aria-label="The sixteen icons drawn for BlackBox">
+        {
+          sheet.map((rows) => (
+            <li>
+              {rows
+                .join('')
+                .split('')
+                .map((c) => (
+                  <i class:list={{ on: c === '#' }} />
+                ))}
+            </li>
+          ))
+        }
+      </ul>
+      <div class="bb-flip" data-bb-flip>
+        <div class="bb-flip-copy">
+          <p class="bb-big">In the code, an icon is just text.</p>
+          <p>
+            A <code>#</code> is a lit LED and a <code>.</code> is a dark one. The matrix sat upside down in the box, so every icon in the code
+            is drawn upside down too: the box turns it the right way round.
+          </p>
+        </div>
+        <div class="bb-flip-pair">
+          <pre class="bb-ascii" aria-label="icon_coffee, as written in the code"><span class="bb-ascii-h">icon_coffee = """</span>
+{code.icon_coffee.join('\n')}
+<span class="bb-ascii-h">"""</span></pre>
+          <span class="bb-arrow" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M4 12h15M14 7l5 5-5 5"></path></svg>
+          </span>
+          <span class="bb-flip-led" role="img" aria-label="The coffee icon lit on the matrix, the right way up">
+            <span class="bb-flip-grid" data-flip-grid>
+              {
+                code.icon_coffee
+                  .join('')
+                  .split('')
+                  .map((c) => <i class:list={{ on: c === '#' }} />)
+              }
+            </span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- the box: the cut sheet, then how its parts stack -->
+    <div class="bb-block" id="bb-cut" data-bb-in>
+      <div class="bb-bhead">
+        <h4 class="bb-h">Cut flat, bent round.</h4>
+        <p class="bb-body">
+          I drew the box as three flat parts for the laser cutter: two rounded faces and one long band. Rows of short cuts let the ply band
+          bend round the corners, and finger joints lock it to the faces.
+        </p>
+      </div>
+      <div class="bb-cutrow">
+        <figure class="bb-sheetfig" data-bb-cut>
+          <svg viewBox={`-6 -18 ${sheetW + 12} ${sheetH + 44}`} role="img" aria-label="The laser-cut sheet: the two rounded faces side by side, and the 354 mm band below them, drawn shortened with a break">
+            <defs>
+              <clipPath id="bb-band-l"><rect x="-2" y="-4" width={KEEP + 2} height={B.h + 8}></rect></clipPath>
+              <clipPath id="bb-band-r"><rect x={B.w - KEEP} y="-4" width={KEEP + 2} height={B.h + 8}></rect></clipPath>
+            </defs>
+            {
+              [0, F.w + GAP].map((x, i) => (
+                <g transform={`translate(${x} 0)`} style={`--a:${i * 0.22};--b:${0.3 + i * 0.22}`}>
+                  <path class="bb-cut-base bb-cut-face" d={F.d} />
+                  <path class="bb-cut-line" d={F.d} pathLength="1" />
+                </g>
+              ))
+            }
+            {
+              [
+                { clip: 'bb-band-l', dx: 0, a: 0.5 },
+                { clip: 'bb-band-r', dx: SHIFT, a: 0.62 },
+              ].map((h) => (
+                <g transform={`translate(${h.dx} ${BY})`}>
+                  <g clip-path={`url(#${h.clip})`} style={`--a:${h.a};--b:${h.a + 0.32}`}>
+                    {bandOutline.map((d) => (
+                      <>
+                        <path class="bb-cut-base" d={d} />
+                        <path class="bb-cut-line" d={d} pathLength="1" />
+                      </>
+                    ))}
+                    {shownHinges.map((d) => (
+                      <>
+                        <path class="bb-cut-base" d={d} />
+                        <path class="bb-cut-line" d={d} pathLength="1" />
+                      </>
+                    ))}
+                  </g>
+                </g>
+              ))
+            }
+            <path class="bb-cut-break" d={zig(KEEP + 2.5) + zig(KEEP + GAP - 2.5)}></path>
+            <g class="bb-dim">
+              <path d={`M0 -8H${F.w}M0 -11V-5M${F.w} -11V-5`}></path>
+              <text x={F.w / 2} y="-12">{Math.round(F.w)} × {Math.round(F.h)} mm</text>
+              <path d={`M0 ${sheetH + 9}H${sheetW}M0 ${sheetH + 6}V${sheetH + 12}M${sheetW} ${sheetH + 6}V${sheetH + 12}`}></path>
+              <text x={sheetW / 2} y={sheetH + 20}>band {Math.round(B.w)} mm, drawn short</text>
+            </g>
+          </svg>
+          <figcaption>
+            <span>box (1).dxf</span>
+            <span>3 parts, 4 mm ply</span>
+          </figcaption>
+        </figure>
+
+        <figure class="bb-stack" data-bb-stack>
+          <svg viewBox="-92 -184 236 334" role="img" aria-label="How the cut parts stack, pulled apart: the white top, the LED matrix, the ply band bent round, and the ply base">
+            <g class="bb-layer" style="--k:40">
+              <path class="bb-l-ply" d={isoPath(facePts, 0)}></path>
+            </g>
+            <g class="bb-layer" style="--k:0">
+              {ring.map((d, i) => <path class:list={['bb-l-ring', { 'is-edge': i === 0 || i === ring.length - 1 }]} d={d} />)}
+            </g>
+            <g class="bb-layer" style="--k:-64">
+              <g transform={`translate(0 ${-(BAND_H - 6)})`}>
+                <path class="bb-l-board" d={matrixBoard}></path>
+                {matrixDots.map((d) => <circle class:list={['bb-l-dot', { on: d.on }]} cx={d.x} cy={d.y} r="0.95" />)}
+              </g>
+            </g>
+            <g class="bb-layer" style="--k:-136">
+              <path class="bb-l-top" d={isoPath(facePts, BAND_H)}></path>
+            </g>
+            {
+              layers.map((l) => (
+                <g class="bb-key-m" style={`--k:${l.k}`}>
+                  <path d={`M${l.at[0] + 3} ${l.at[1]}H${KX - 7}`} />
+                  <circle cx={KX} cy={l.at[1]} r="6" />
+                  <text x={KX} y={l.at[1]}>{l.n}</text>
+                </g>
+              ))
+            }
+          </svg>
+          <ol class="bb-stack-key">
+            {
+              layers.map((l) => (
+                <li>
+                  <span aria-hidden="true">{l.n}</span>
+                  <span>
+                    <b>{l.label}</b> <em>{l.note}</em>
+                  </span>
+                </li>
+              ))
+            }
+          </ol>
+        </figure>
+      </div>
+      <figure class="bb-box-photo">
+        <img src={img('boxoff')} alt="The finished box on a desk: a ply band bent round the corners, a white top, and the dial on its side" width="1600" height="900" loading="lazy" decoding="async" />
+        <figcaption><b>The finished box.</b> The band bent round the faces, the white top on, the dial through the side.</figcaption>
+      </figure>
+    </div>
+
+    <!-- one system -->
+    <div class="bb-block" id="bb-system" data-bb-in>
+      <div class="bb-bhead">
+        <h4 class="bb-h">Then it all had to work together.</h4>
+        <p class="bb-body">
+          The hard part was integration: the dial, the matrix, the touch pad and the motor in one loop, and two boxes that each have to send
+          and listen at once. This is one exchange, as the code runs it on both ends.
+        </p>
+      </div>
+      <div class="bb-sys">
+        <ol class="bb-seq" data-bb-seq>
+          <li class="bb-lane" aria-hidden="true">Your box</li>
+          <li class="bb-lane" aria-hidden="true">Friend’s box</li>
+          {
+            seq.map((s) => (
+              <li class:list={['bb-ev', `is-${s.side}`, s.dir && `to-${s.dir}`]}>
+                {s.side === 'msg' ? (
+                  <span class="bb-msg">
+                    <code>{s.t}</code>
+                    <i aria-hidden="true" />
+                  </span>
+                ) : (
+                  <>
+                    <b>{s.t}</b>
+                    <code>{s.d}</code>
+                  </>
+                )}
+              </li>
+            ))
+          }
+        </ol>
+        <figure class="bb-loop">
+          <pre><code><span class="k">while</span> True:
+    check_message()       <span class="c"># anything from the other box?</span>
+    button.update()       <span class="c"># the dial's push switch</span>
+    touch_button.update() <span class="c"># one tap or two</span>
+
+    val_new = r.value()   <span class="c"># where the dial is</span>
+    <span class="k">if</span> val_old != val_new:
+        ...               <span class="c"># redraw the icon</span>
+
+    sleep_ms(<span class="n">10</span>)</code></pre>
+          <figcaption>The heart of finalcodeciid.py. Every ten milliseconds, each box listens, reads its controls and redraws.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== afterwards ===================== -->
+  <section class="bb-ch" id="bb-after" data-phase="after" aria-labelledby="bb-after-t">
+    <header class="bb-chead" data-bb-chead>
+      <p class="bb-course"><i aria-hidden="true"></i><span>{no('after')}</span>{label('after')}</p>
+      <h3 class="bb-ctitle" id="bb-after-t">What the box taught me.</h3>
+    </header>
+
+    <ol class="bb-block bb-learn" data-bb-in>
+      {
+        learnings.map((l) => (
+          <li>
+            <b>{l.t}</b>
+            <p>{l.d}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="bb-block bb-v2" data-bb-in>
+      <div class="bb-v2-copy">
+        <h4 class="bb-h">Version two, printed.</h4>
+        <p class="bb-body">
+          Two months on, I redrew the casing in Fusion 360 for 3D printing: a 64 mm shell and lid, with docks inside for the Nano, the matrix,
+          the touch pad and the motor. It is printed; this is the model. Turn on Opacity to see inside.
+        </p>
+      </div>
+      <ModelViewer model={casing} title="BlackBox casing, version two" />
+    </div>
+
+    <div class="bb-block" data-bb-in>
+      <figure class="bb-team">
+        <img src={img('team')} alt="Team BlackBox: Ramanik, Arnav and Srishti" width="1800" height="1013" loading="lazy" decoding="async" />
+        <figcaption>
+          <b>Team BlackBox</b>
+          <span>Ramanik, Arnav and Srishti. The film and the deck were my teammates’ work; the code, the wiring and the box were mine.</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <nav class="bb-others pc-others" aria-label="Other case studies">
+    <p class="bb-course"><i aria-hidden="true"></i>Next project</p>
+    <div class="bb-others-grid">
+      {
+        others.map((o) => (
+          <button type="button" class="bb-other" data-switch-project={o.slug} data-magnet>
+            <span>{o.discipline}</span>
+            <b>{o.title}</b>
+          </button>
+        ))
+      }
+    </div>
+  </nav>
+</article>
+
+<script>
+  const card = document.querySelector<HTMLElement>('[data-bb]');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------------- the film: stops when the card closes or switches ----------------
+  const film = card?.querySelector<HTMLVideoElement>('[data-bb-film]');
+  if (card && film) {
+    document.addEventListener('pm:shown', (e) => {
+      if ((e as CustomEvent).detail?.slug !== card.dataset.project) film.pause();
+    });
+    document.addEventListener('pm:hidden', () => film.pause());
+  }
+
+  // ---------------- the rail: on once the hero has gone, names each new chapter briefly ----------------
+  const wrap = card?.querySelector<HTMLElement>('[data-bb-rail]');
+  const strip = wrap?.querySelector<HTMLElement>('.bb-rail');
+  const now = strip?.querySelector<HTMLElement>('[data-bb-rail-now]');
+  const hero = card?.querySelector<HTMLElement>('.bb-hero');
+  if (card && wrap && strip && now && hero) {
+    let sc: HTMLElement | null = null;
+    let last = '';
+    let quiet = 0;
+    const hush = () => {
+      clearTimeout(quiet);
+      quiet = window.setTimeout(() => strip.classList.remove('is-telling'), 450);
+    };
+    const onScroll = () => {
+      if (!sc) return;
+      if (strip.classList.contains('is-telling')) hush();
+      wrap.classList.toggle('is-on', hero.getBoundingClientRect().bottom < sc.getBoundingClientRect().top + sc.clientHeight * 0.45);
+    };
+    new MutationObserver(() => {
+      const a = strip.querySelector<HTMLElement>('a.is-active');
+      if (!a) return;
+      const label = a.querySelector<HTMLElement>('.bb-rail-name');
+      const n = label?.querySelector('.bb-rail-no')?.textContent ?? '';
+      const name = `${n} ${(label?.textContent ?? '').slice(n.length)}`.replace(/\s+/g, ' ').trim();
+      if (name === last) return;
+      last = name;
+      now.textContent = name;
+      strip.style.setProperty('--now-y', `${a.offsetTop + a.offsetHeight / 2}px`);
+      strip.classList.add('is-telling');
+      hush();
+    }).observe(strip, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    document.addEventListener('pm:shown', (e) => {
+      const d = (e as CustomEvent).detail;
+      sc?.removeEventListener('scroll', onScroll);
+      sc = d?.slug === card.dataset.project ? (d.scroller as HTMLElement) : null;
+      sc?.addEventListener('scroll', onScroll, { passive: true });
+      onScroll();
+    });
+    document.addEventListener('pm:hidden', () => {
+      sc?.removeEventListener('scroll', onScroll);
+      sc = null;
+      wrap.classList.remove('is-on');
+    });
+  }
+
+  // ---------------- the two boxes ----------------
+  // the logic is finalcodeciid.py's, line for line: three modes, a bounded dial (0–2), a press that
+  // switches to messages, a double tap that sends "c", an incoming note that buzzes for a second,
+  // shows its icon and waits for a single tap, which sends "t". The serial monitor prints what the
+  // code prints.
+  const sim = card?.querySelector<HTMLElement>('[data-bb-sim]');
+  if (sim) {
+    const ICONS = JSON.parse(sim.dataset.icons!) as Record<string, string>;
+    const FRIENDS = ['icon_sword', 'icon_robot', 'icon_cat'];
+    const MESSAGES = ['q_message1', 'icon_coffee', 'q_message3'];
+    const ICON_MAP: Record<string, string> = { c: 'icon_coffee', t: 'reply_ok' };
+    const NAMES: Record<string, string> = {
+      icon_sword: 'a sword',
+      icon_robot: 'a robot',
+      icon_cat: 'a cat',
+      q_message1: 'message one',
+      icon_coffee: 'a coffee cup',
+      q_message3: 'message three',
+      reply_ok: 'a thumbs up',
+    };
+    const SELECTION = 0;
+    const MESSAGE = 1;
+    const REPLY = 2;
+    const log = sim.querySelector<HTMLOListElement>('[data-log]')!;
+    const signal = sim.querySelector<HTMLElement>('[data-signal]')!;
+    const steps = Array.from(sim.querySelectorAll<HTMLElement>('[data-step]'));
+    const done = new Set<string>();
+
+    type Box = {
+      who: 'you' | 'friend';
+      el: HTMLElement;
+      dots: HTMLElement[];
+      matrix: HTMLElement;
+      knob: HTMLElement;
+      mode: number;
+      val: number;
+      taps: number;
+      timer: number;
+      buzz: number;
+      other?: Box;
+    };
+    const make = (who: 'you' | 'friend'): Box => {
+      const el = sim.querySelector<HTMLElement>(`[data-dev="${who}"]`)!;
+      const matrix = el.querySelector<HTMLElement>('[data-matrix]')!;
+      return { who, el, matrix, dots: Array.from(matrix.children) as HTMLElement[], knob: el.querySelector<HTMLElement>('[data-knob]')!, mode: SELECTION, val: 0, taps: 0, timer: 0, buzz: 0 };
+    };
+    const you = make('you');
+    const friend = make('friend');
+    you.other = friend;
+    friend.other = you;
+
+    const print = (b: Box, line: string) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${b.who === 'you' ? 'you' : 'friend'}</span>`;
+      li.append(document.createTextNode(line));
+      li.className = `is-${b.who}`;
+      log.append(li);
+      while (log.children.length > 7) log.firstElementChild?.remove();
+    };
+    const label = (b: Box, icon: string | null) =>
+      b.matrix.setAttribute('aria-label', `${b.who === 'you' ? 'Your box’s' : 'Your friend’s box’s'} display: ${icon ? NAMES[icon] : 'blank'}`);
+    const draw = (b: Box, icon: string | null) => {
+      const bits = icon ? ICONS[icon] : '';
+      b.dots.forEach((d, i) => d.classList.toggle('on', bits[i] === '#'));
+      b.matrix.classList.toggle('is-lit', !!icon);
+      label(b, icon);
+    };
+    const tick = () => {
+      const order = ['turn', 'press', 'browse', 'send', 'reply'];
+      const next = order.find((k) => !done.has(k));
+      steps.forEach((s) => {
+        s.classList.toggle('is-done', done.has(s.dataset.step!));
+        s.classList.toggle('is-now', s.dataset.step === next);
+      });
+    };
+    const setKnob = (b: Box, drag = 0) => {
+      b.knob.style.setProperty('--turn', `${b.val * 48 + drag}deg`);
+      b.knob.setAttribute('aria-valuenow', String(b.val));
+      b.knob.setAttribute('aria-valuetext', (b.mode === MESSAGE ? MESSAGES : FRIENDS)[b.val].replace(/^(icon_|q_)/, '').replace('_', ' '));
+    };
+
+    const turn = (b: Box, dir: number) => {
+      const v = Math.max(0, Math.min(2, b.val + dir)); // RANGE_BOUNDED, 0 to 2
+      if (v === b.val) return;
+      b.val = v;
+      print(b, `result = ${v}`);
+      if (b.mode !== MESSAGE) {
+        print(b, 'In selection mode');
+        draw(b, FRIENDS[v]);
+        if (b === you) done.add('turn');
+      } else {
+        print(b, 'In message mode');
+        draw(b, MESSAGES[v]);
+        if (b === you) done.add('browse');
+      }
+      setKnob(b);
+      tick();
+    };
+    const press = (b: Box) => {
+      print(b, 'button pressed');
+      print(b, 'button released');
+      b.mode = MESSAGE;
+      b.knob.classList.add('is-pressed');
+      setTimeout(() => b.knob.classList.remove('is-pressed'), 160);
+      if (b === you) done.add('press');
+      setKnob(b);
+      tick();
+    };
+    const vibrate = (b: Box) => {
+      if (reduce) {
+        b.el.classList.add('is-ping');
+        setTimeout(() => b.el.classList.remove('is-ping'), 1000);
+        return;
+      }
+      clearTimeout(b.buzz);
+      b.el.classList.remove('is-buzz');
+      void b.el.offsetWidth;
+      b.el.classList.add('is-buzz');
+      b.buzz = window.setTimeout(() => b.el.classList.remove('is-buzz'), 1000); // sleep_ms(1000)
+    };
+    const receive = (b: Box, msg: string) => {
+      print(b, `Friend: ${msg}`);
+      const icon = ICON_MAP[msg];
+      if (icon) {
+        draw(b, icon);
+        b.mode = REPLY;
+        setKnob(b);
+      }
+      vibrate(b);
+    };
+    const send = (b: Box, msg: string) => {
+      const to = b.other!;
+      const go = () => receive(to, msg);
+      if (reduce) return go();
+      signal.textContent = msg;
+      signal.animate(
+        b === you
+          ? [{ left: '0%', opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.85 }, { left: '100%', opacity: 0 }]
+          : [{ left: '100%', opacity: 0 }, { opacity: 1, offset: 0.15 }, { opacity: 1, offset: 0.85 }, { left: '0%', opacity: 0 }],
+        { duration: 520, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      ).onfinish = go;
+    };
+    const touch = (b: Box, n: number) => {
+      print(b, `${b.mode} ${n}`); // print(mode, tap_count)
+      if (b.mode === MESSAGE && n === 2) {
+        print(b, 'Sending message: c');
+        b.mode = SELECTION;
+        draw(b, null);
+        if (b === you) done.add('send');
+        send(b, 'c');
+      } else if (b.mode === REPLY && n === 1) {
+        b.mode = SELECTION;
+        draw(b, null);
+        if (b === friend && done.has('send')) done.add('reply');
+        send(b, 't');
+      }
+      setKnob(b);
+      tick();
+    };
+    // MultiClickButton(max_time_between_clicks=350): the taps are counted once they stop
+    const tap = (b: Box) => {
+      b.taps += 1;
+      clearTimeout(b.timer);
+      b.timer = window.setTimeout(() => {
+        const n = b.taps;
+        b.taps = 0;
+        touch(b, n);
+      }, 350);
+    };
+
+    [you, friend].forEach((b) => {
+      const pad = b.el.querySelector<HTMLButtonElement>('[data-pad]')!;
+      pad.addEventListener('click', () => {
+        pad.classList.remove('is-tap');
+        void pad.offsetWidth;
+        pad.classList.add('is-tap');
+        tap(b);
+      });
+
+      // the dial: drag it round (or along) to turn, click it to press; arrows and Enter from the keyboard
+      const STEP = 26;
+      let px = 0;
+      let py = 0;
+      let acc = 0;
+      let travel = 0;
+      let held = false;
+      b.knob.addEventListener('pointerdown', (e) => {
+        held = true;
+        px = e.clientX;
+        py = e.clientY;
+        acc = 0;
+        travel = 0;
+        b.knob.setPointerCapture(e.pointerId);
+        b.knob.classList.add('is-held');
+      });
+      b.knob.addEventListener('pointermove', (e) => {
+        if (!held) return;
+        const d = e.clientX - px - (e.clientY - py); // right or up turns it on
+        px = e.clientX;
+        py = e.clientY;
+        acc += d;
+        travel += Math.abs(d);
+        while (acc >= STEP) {
+          acc -= STEP;
+          turn(b, 1);
+        }
+        while (acc <= -STEP) {
+          acc += STEP;
+          turn(b, -1);
+        }
+        setKnob(b, (acc / STEP) * 18);
+      });
+      const release = () => {
+        if (!held) return;
+        held = false;
+        b.knob.classList.remove('is-held');
+        if (travel < 6) press(b);
+        setKnob(b);
+      };
+      b.knob.addEventListener('pointerup', release);
+      b.knob.addEventListener('pointercancel', () => {
+        held = false;
+        b.knob.classList.remove('is-held');
+        setKnob(b);
+      });
+      b.knob.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowUp') turn(b, 1);
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') turn(b, -1);
+        else if (e.key === 'Enter' || e.key === ' ') press(b);
+        else return;
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      // a click from the keyboard or a screen reader arrives without a pointer
+      b.knob.addEventListener('click', (e) => {
+        if ((e as PointerEvent).pointerType === '' || e.detail === 0) press(b);
+      });
+    });
+
+    const reset = () => {
+      [you, friend].forEach((b) => {
+        clearTimeout(b.timer);
+        clearTimeout(b.buzz);
+        Object.assign(b, { mode: SELECTION, val: 0, taps: 0 });
+        b.el.classList.remove('is-buzz', 'is-ping');
+        draw(b, null);
+        setKnob(b);
+      });
+      done.clear();
+      log.replaceChildren();
+      tick();
+    };
+    sim.querySelector('[data-reset]')?.addEventListener('click', reset);
+    reset();
+  }
+</script>
+
+<style>
+  .bb {
+    --bb-bg: #0a0a0a;
+    --bb-panel: #121212;
+    --bb-panel-2: #181818;
+    --bb-line: rgb(255 255 255 / 0.1);
+    --bb-ink: #f3f1ed;
+    --bb-ink-2: #bdb9b2;
+    --bb-ink-3: #8c8881;
+    --bb-led: #ff3b30;
+    --bb-led-soft: rgb(255 59 48 / 0.5);
+    --bb-ply: #d6b17c;
+    --bb-ply-2: #b98c55;
+    --bb-frost: #efece6;
+    --bb-pad: clamp(24px, 6vw, 96px);
+    --bb-wide: 125%;
+    position: relative;
+    color: var(--bb-ink);
+    background: var(--bb-bg);
+    overflow-x: clip;
+  }
+  .bb em {
+    font-style: normal;
+    color: var(--bb-ink);
+    background: linear-gradient(transparent 62%, rgb(255 59 48 / 0.38) 62%);
+  }
+  /* the width/height attributes reserve space; the CSS sets the real shape */
+  .bb img {
+    height: auto;
+  }
+  .bb code,
+  .bb pre {
+    font-family: var(--font-mono);
+  }
+
+  .bb-acts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 28px;
+  }
+  .bb-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 20px 0 16px;
+    border-radius: 999px;
+    corner-shape: round;
+    background: var(--bb-led);
+    color: #0a0a0a;
+    font-weight: 700;
+    font-size: 0.9375rem;
+    text-decoration: none;
+    box-shadow: 0 0 0 0 var(--bb-led-soft);
+    transition:
+      box-shadow 0.25s ease-out,
+      background-color 0.2s ease-out,
+      color 0.2s ease-out;
+  }
+  .bb-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .bb-btn-ghost {
+    background: transparent;
+    color: var(--bb-ink);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.22);
+  }
+  .bb-btn-ghost svg path {
+    fill: currentColor;
+    stroke: none;
+  }
+  @media (hover: hover) {
+    .bb-btn:hover {
+      box-shadow: 0 0 24px 2px var(--bb-led-soft);
+    }
+    .bb-btn-ghost:hover {
+      color: var(--bb-led);
+      box-shadow: inset 0 0 0 1px var(--bb-led);
+    }
+  }
+  .bb-btn:focus-visible,
+  .bb-other:focus-visible,
+  .bb-reset:focus-visible {
+    outline: 2px solid var(--bb-led);
+    outline-offset: 3px;
+  }
+  .bb-reel {
+    position: relative;
+    margin: 0;
+    aspect-ratio: 1;
+    max-height: 480px;
+    justify-self: end;
+    border-radius: calc(16px * var(--sq));
+    overflow: hidden;
+    background: transparent;
+  }
+  /* the render melts into the card: no frame, its edges fade to the same black */
+  .bb-reel img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    --fade-x: linear-gradient(90deg, transparent, #000 14%, #000 86%, transparent);
+    --fade-y: linear-gradient(transparent, #000 10%, #000 94%, transparent);
+    -webkit-mask-image: var(--fade-x), var(--fade-y);
+    -webkit-mask-composite: source-in;
+    mask-image: var(--fade-x), var(--fade-y);
+    mask-composite: intersect;
+  }
+  .bb-reel figcaption {
+    position: absolute;
+    left: 14px;
+    bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px 7px 10px;
+    border-radius: 999px;
+    corner-shape: round;
+    background: rgb(10 10 10 / 0.78);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--bb-ink);
+  }
+  .bb-reel figcaption i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    corner-shape: round;
+    background: var(--bb-led);
+    box-shadow: 0 0 8px var(--bb-led);
+  }
+  /* the facts the lede doesn't already give, in one plain line */
+  .bb-slate {
+    max-width: 48ch;
+    margin: 16px 0 0;
+    padding-top: 12px;
+    border-top: 1px solid var(--bb-line);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--bb-ink-3);
+  }
+
+  /* ---------- the rail: a column of LEDs ---------- */
+  .bb-rail-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 6;
+    height: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease-out;
+  }
+  .bb-rail-wrap:global(.is-on) {
+    opacity: 1;
+  }
+  .bb-rail {
+    position: absolute;
+    right: clamp(10px, 1.4vw, 20px);
+    top: calc((100svh - var(--pm-inset, 20px) * 2) / 2);
+    translate: 0 -50%;
+  }
+  .bb-rail-wrap:global(.is-on) .bb-rail {
+    pointer-events: auto;
+  }
+  .bb-rail ol {
+    position: relative;
+    display: grid;
+    margin: 0;
+    padding: 12px 12px;
+    list-style: none;
+    border-radius: calc(10px * var(--sq));
+    background: rgb(14 14 14 / 0.9);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow:
+      0 0 0 1px var(--bb-line),
+      0 18px 36px -18px rgb(0 0 0 / 0.8);
+  }
+  .bb-rail a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-height: 30px;
+    color: var(--bb-ink-3);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .bb-rail a::after {
+    content: '';
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    corner-shape: round;
+    background: rgb(255 255 255 / 0.12);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.06);
+    transition:
+      background-color 0.2s ease-out,
+      box-shadow 0.25s ease-out;
+  }
+  .bb-rail a:global(.is-active)::after {
+    background: var(--bb-led);
+    box-shadow:
+      0 0 0 3px rgb(255 59 48 / 0.18),
+      0 0 12px 2px var(--bb-led-soft);
+  }
+  .bb-rail-name {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition:
+      max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      margin 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.25s ease-out,
+      color 0.2s ease-out;
+  }
+  .bb-rail:hover .bb-rail-name,
+  .bb-rail:focus-within .bb-rail-name {
+    max-width: 200px;
+    margin-right: 12px;
+    opacity: 1;
+  }
+  .bb-rail-no {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+  }
+  .bb-rail a:global(.is-active) .bb-rail-name {
+    color: var(--bb-led);
+  }
+  @media (hover: hover) {
+    .bb-rail a:hover:not(:global(.is-active)) .bb-rail-name {
+      color: var(--bb-ink);
+    }
+  }
+  .bb-rail a:focus-visible {
+    outline: 2px solid var(--bb-led);
+    outline-offset: 2px;
+    border-radius: calc(3px * var(--sq));
+  }
+  .bb-rail-now {
+    position: absolute;
+    top: var(--now-y, 50%);
+    right: calc(100% + 10px);
+    padding: 6px 11px;
+    border-radius: calc(4px * var(--sq));
+    background: var(--bb-led);
+    color: #0a0a0a;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    translate: 6px -50%;
+    transition:
+      opacity 0.12s ease-out,
+      translate 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+      top 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .bb-rail:global(.is-telling):not(:hover):not(:focus-within) .bb-rail-now {
+    opacity: 1;
+    translate: 0 -50%;
+  }
+  @media (pointer: coarse) {
+    .bb-rail a {
+      min-height: 36px;
+    }
+  }
+  @media (max-width: 560px) {
+    .bb-rail {
+      right: 3px;
+    }
+    .bb-rail ol {
+      padding: 7px 6px;
+    }
+    .bb-rail a::after {
+      width: 7px;
+      height: 7px;
+    }
+  }
+
+  /* ---------- the two boxes ---------- */
+  .bb-sim {
+    --dev: clamp(128px, 19vw, 228px);
+    position: relative;
+    padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 56px) clamp(20px, 3vw, 36px);
+    border-radius: calc(18px * var(--sq));
+    background:
+      radial-gradient(60% 70% at 50% 30%, rgb(255 255 255 / 0.05), transparent 70%),
+      var(--bb-panel);
+    box-shadow: 0 0 0 1px var(--bb-line);
+  }
+  .bb-sim-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(24px, 1fr) auto;
+    align-items: start;
+    justify-content: center;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .bb-dev[data-dev='you'] {
+    grid-column: 1;
+  }
+  .bb-dev[data-dev='friend'] {
+    grid-column: 3;
+  }
+  .bb-dev {
+    grid-row: 1;
+    display: grid;
+    justify-items: center;
+    width: var(--dev);
+  }
+  .bb-dev-box {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1.06;
+  }
+  /* the ply band, seen from above: warm wood with a darker rim where the band wraps the corners */
+  .bb-ply {
+    position: absolute;
+    inset: 0;
+    border-radius: 24%;
+    corner-shape: round;
+    background:
+      repeating-linear-gradient(96deg, rgb(120 80 40 / 0.07) 0 2px, transparent 2px 9px),
+      linear-gradient(160deg, var(--bb-ply), var(--bb-ply-2));
+    box-shadow:
+      inset 0 0 0 2px rgb(90 60 30 / 0.35),
+      inset 0 -6px 12px rgb(90 60 30 / 0.25),
+      0 18px 30px -14px rgb(0 0 0 / 0.8);
+  }
+  .bb-frost {
+    position: absolute;
+    inset: 7%;
+    display: grid;
+    place-items: center;
+    border-radius: 20%;
+    corner-shape: round;
+    background: radial-gradient(80% 80% at 40% 30%, #fbfaf7, var(--bb-frost));
+    box-shadow:
+      inset 0 0 0 1px rgb(0 0 0 / 0.06),
+      inset 0 2px 6px rgb(255 255 255 / 0.8);
+  }
+  .bb-matrix {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 7%;
+    width: 52%;
+    aspect-ratio: 1;
+  }
+  .bb-matrix i {
+    border-radius: 50%;
+    corner-shape: round;
+    background: rgb(120 110 100 / 0.07); /* the dark LEDs, just visible through the top */
+    transition:
+      background-color 0.12s ease-out,
+      box-shadow 0.12s ease-out;
+  }
+  /* lit pixels glow through the white top, soft at the edges like the real thing */
+  .bb-matrix i:global(.on) {
+    background: #ff4a3d;
+    box-shadow:
+      0 0 3px 1px rgb(255 59 48 / 0.85),
+      0 0 9px 3px rgb(255 80 70 / 0.35);
+    filter: blur(0.4px);
+  }
+  .bb-knob {
+    position: absolute;
+    right: 18%;
+    bottom: -7%;
+    width: 22%;
+    aspect-ratio: 1;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    corner-shape: round;
+    background:
+      radial-gradient(circle at 40% 35%, #d8b56a, #8f6a2c 70%),
+      #a07a35;
+    box-shadow:
+      0 0 0 2px rgb(60 40 15 / 0.6),
+      0 6px 10px -2px rgb(0 0 0 / 0.7);
+    cursor: grab;
+    touch-action: none;
+    rotate: var(--turn, 0deg);
+    transition:
+      rotate 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+      scale 0.12s ease-out;
+  }
+  .bb-knob::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    corner-shape: round;
+    background: repeating-conic-gradient(rgb(60 40 15 / 0.35) 0 6deg, transparent 6deg 14deg);
+    mask: radial-gradient(circle, transparent 58%, #000 60%);
+  }
+  .bb-knob span {
+    position: absolute;
+    left: 50%;
+    top: 12%;
+    width: 2px;
+    height: 30%;
+    translate: -50% 0;
+    border-radius: 2px;
+    background: #fff6e0;
+  }
+  .bb-knob:global(.is-held) {
+    cursor: grabbing;
+    transition: scale 0.12s ease-out;
+  }
+  .bb-knob:global(.is-pressed) {
+    scale: 0.88;
+  }
+  .bb-knob:focus-visible {
+    outline: 2px solid var(--bb-led);
+    outline-offset: 4px;
+  }
+  /* the touch sensor hangs off the box on its wires: a small blue board with a printed pad */
+  .bb-pad {
+    position: relative;
+    justify-self: start;
+    width: 30%;
+    aspect-ratio: 0.92;
+    margin: 14% 0 0 6%;
+    padding: 0;
+    border: 0;
+    border-radius: 9%;
+    background: linear-gradient(160deg, #2d63c8, #1a3f8f);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.4),
+      0 8px 14px -6px rgb(0 0 0 / 0.8);
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .bb-pad::before {
+    /* its wires up into the box */
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    width: 10px;
+    height: 44%;
+    translate: -50% 0;
+    background:
+      linear-gradient(90deg, #e25a2c 0 2px, transparent 2px 4px, #f2c94c 4px 6px, transparent 6px 8px, #333 8px 10px);
+    border-radius: 2px 2px 0 0;
+  }
+  .bb-pad span {
+    position: absolute;
+    inset: 20%;
+    border-radius: 50%;
+    corner-shape: round;
+    border: 2px solid #e8d28a;
+    box-shadow: inset 0 0 0 4px rgb(232 210 138 / 0.15);
+  }
+  .bb-pad:global(.is-tap) span {
+    animation: bb-tap 0.3s ease-out;
+  }
+  @keyframes bb-tap {
+    0% {
+      background: rgb(255 255 255 / 0.5);
+    }
+    100% {
+      background: transparent;
+    }
+  }
+  .bb-pad:focus-visible {
+    outline: 2px solid var(--bb-led);
+    outline-offset: 4px;
+  }
+  .bb-dev-name {
+    margin: 14px 0 0;
+    font-size: 0.8125rem;
+    color: var(--bb-ink-3);
+  }
+  /* the buzz: a second of shaking, with rings coming off the box */
+  .bb-buzz {
+    position: absolute;
+    inset: 0;
+    border-radius: 24%;
+    corner-shape: round;
+    pointer-events: none;
+  }
+  .bb-dev:global(.is-buzz) .bb-dev-box {
+    animation: bb-shake 0.07s linear infinite;
+  }
+  .bb-dev:global(.is-buzz) .bb-buzz {
+    animation: bb-ring 0.5s ease-out 2;
+  }
+  .bb-dev:global(.is-ping) .bb-buzz {
+    box-shadow: 0 0 0 3px var(--bb-led);
+  }
+  @keyframes bb-shake {
+    0% {
+      translate: 0 0;
+    }
+    25% {
+      translate: 1.5px -1px;
+    }
+    50% {
+      translate: -1.5px 1px;
+    }
+    75% {
+      translate: 1px 1.5px;
+    }
+    100% {
+      translate: 0 0;
+    }
+  }
+  @keyframes bb-ring {
+    0% {
+      box-shadow: 0 0 0 0 rgb(255 255 255 / 0.4);
+    }
+    100% {
+      box-shadow: 0 0 0 18px rgb(255 255 255 / 0);
+    }
+  }
+  /* the air between the boxes, where the note travels */
+  .bb-air {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
+    align-self: start;
+    margin-top: calc(var(--dev) * 0.47);
+    height: 0;
+    border-top: 1px dashed rgb(255 255 255 / 0.18);
+    margin-inline: 10px;
+  }
+  .bb-air span {
+    position: absolute;
+    left: 50%;
+    bottom: 8px;
+    translate: -50% 0;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    color: var(--bb-ink-3);
+    white-space: nowrap;
+  }
+  .bb-air i {
+    position: absolute;
+    top: 0;
+    left: 0;
+    translate: -50% -50%;
+    display: grid;
+    place-items: center;
+    min-width: 26px;
+    height: 26px;
+    padding: 0 6px;
+    border-radius: 999px;
+    corner-shape: round;
+    background: var(--bb-led);
+    color: #0a0a0a;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.75rem;
+    font-weight: 700;
+    box-shadow: 0 0 16px 3px var(--bb-led-soft);
+    opacity: 0;
+  }
+
+  .bb-sim-foot {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(16px, 3vw, 40px);
+    margin-top: clamp(28px, 4vw, 48px);
+    padding-top: clamp(20px, 3vw, 28px);
+    border-top: 1px solid var(--bb-line);
+  }
+  .bb-steps {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: bb-step;
+  }
+  .bb-steps li {
+    counter-increment: bb-step;
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 10px;
+    align-items: baseline;
+    padding: 6px 0;
+    font-size: 0.9375rem;
+    color: var(--bb-ink-3);
+    transition: color 0.2s ease-out;
+  }
+  .bb-steps li::before {
+    content: counter(bb-step, decimal-leading-zero);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--bb-ink-3);
+  }
+  .bb-steps li:global(.is-now) {
+    color: var(--bb-ink);
+    font-weight: 600;
+  }
+  .bb-steps li:global(.is-now)::before {
+    color: var(--bb-led);
+  }
+  .bb-steps li:global(.is-done) {
+    color: var(--bb-ink-3);
+    text-decoration: line-through;
+    text-decoration-color: rgb(255 59 48 / 0.6);
+  }
+  .bb-reset {
+    margin-top: 14px;
+    padding: 8px 14px;
+    border: 1px solid rgb(255 255 255 / 0.18);
+    border-radius: 999px;
+    corner-shape: round;
+    background: transparent;
+    color: var(--bb-ink-2);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+  @media (hover: hover) {
+    .bb-reset:hover {
+      color: var(--bb-led);
+      border-color: var(--bb-led);
+    }
+  }
+  .bb-serial {
+    min-width: 0;
+    border-radius: calc(10px * var(--sq));
+    background: #070707;
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+    overflow: hidden;
+  }
+  .bb-serial-h {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--bb-line);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    color: var(--bb-ink-3);
+  }
+  .bb-serial-h span:first-child {
+    color: var(--bb-ink-2);
+  }
+  .bb-serial ol {
+    display: grid;
+    align-content: end;
+    min-height: calc(7 * 1.6em + 20px);
+    margin: 0;
+    padding: 10px 14px;
+    list-style: none;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--bb-ink);
+  }
+  .bb-serial :global(li) {
+    display: flex;
+    gap: 10px;
+    white-space: pre;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .bb-serial :global(li span) {
+    flex: none;
+    width: 6ch;
+    color: var(--bb-ink-3);
+  }
+  .bb-serial :global(li.is-friend span) {
+    color: #ff8a80;
+  }
+  .bb-serial ol:empty::before {
+    content: '>>> waiting for the dial';
+    color: var(--bb-ink-3);
+  }
+  .bb-note {
+    max-width: 64ch;
+    margin: 18px 0 0;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--bb-ink-3);
+  }
+
+  /* ---------- inside: the pin map ---------- */
+  .bb-pins {
+    --board: clamp(96px, 13vw, 170px);
+    position: relative;
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* the board itself: one tall PCB down the right that every wire runs into */
+  .bb-pins::after {
+    content: 'ARDUINO NANO ESP32';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: var(--board);
+    display: grid;
+    place-items: center;
+    padding-left: calc(var(--board) * 0.62);
+    border-radius: calc(10px * var(--sq));
+    background:
+      radial-gradient(circle, rgb(255 255 255 / 0.08) 1.2px, transparent 1.6px) 0 0 / 12px 12px,
+      linear-gradient(170deg, #0e6f78, #0a4d55);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.12),
+      0 20px 40px -20px rgb(0 0 0 / 0.8);
+    writing-mode: vertical-rl;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.24em;
+    color: rgb(255 255 255 / 0.7);
+    z-index: 0;
+  }
+  .bb-pins li {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(40px, 1fr) calc(var(--board) * 0.62);
+    align-items: center;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--bb-line);
+    margin-right: calc(var(--board) * 0.38);
+  }
+  .bb-pins li:last-child {
+    border-bottom: 0;
+  }
+  .bb-part {
+    display: grid;
+    gap: 4px;
+    padding-right: 16px;
+  }
+  .bb-part b {
+    font-size: 1.125rem;
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    letter-spacing: -0.015em;
+  }
+  .bb-chip {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bb-ink-3);
+  }
+  .bb-part-d {
+    color: var(--bb-ink-2);
+    line-height: 1.5;
+    font-size: 0.9375rem;
+  }
+  .bb-wire {
+    position: relative;
+    height: 3px;
+  }
+  .bb-wire i {
+    position: absolute;
+    inset: 0;
+    border-radius: 3px;
+    background: var(--wire);
+    transform-origin: left center;
+    box-shadow: 0 0 10px -2px var(--wire);
+  }
+  .is-air .bb-wire i {
+    background: repeating-linear-gradient(90deg, var(--wire) 0 6px, transparent 6px 11px);
+    box-shadow: none;
+  }
+  .bb-pinset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: flex-start;
+    padding-left: 8px;
+  }
+  .bb-pinset code {
+    padding: 3px 7px;
+    border-radius: calc(4px * var(--sq));
+    background: rgb(0 0 0 / 0.55);
+    box-shadow: inset 0 0 0 1px var(--wire);
+    font-size: 0.75rem;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  /* ---------- the film ---------- */
+  .bb-film {
+    margin: 0;
+    overflow: hidden;
+    border-radius: calc(14px * var(--sq));
+    background: #000;
+    box-shadow: 0 0 0 1px var(--bb-line);
+  }
+  .bb-film video {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+
+  /* ---------- pixels ---------- */
+  .bb-sheet {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    gap: clamp(8px, 1.2vw, 16px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .bb-sheet li {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 9%;
+    padding: 14%;
+    aspect-ratio: 1;
+    border-radius: calc(10px * var(--sq));
+    background: var(--bb-panel);
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+  }
+  .bb-sheet i,
+  .bb-flip-grid i {
+    border-radius: 50%;
+    corner-shape: round;
+    background: rgb(255 255 255 / 0.05);
+    transition:
+      background-color 0.25s ease-out,
+      box-shadow 0.25s ease-out;
+  }
+  .bb-sheet:not(:global(.is-armed)) i:global(.on),
+  .bb-sheet li:global(.is-lit) i:global(.on),
+  .bb-flip-grid i:global(.on) {
+    background: var(--bb-led);
+    box-shadow: 0 0 6px 1px var(--bb-led-soft);
+  }
+  .bb-flip {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    gap: clamp(28px, 5vw, 72px);
+    align-items: center;
+    margin-top: clamp(56px, 9vh, 96px);
+  }
+  .bb-flip-copy p + p {
+    max-width: 46ch;
+    margin: 16px 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--bb-ink-2);
+  }
+  .bb-flip-copy code {
+    padding: 1px 6px;
+    border-radius: calc(4px * var(--sq));
+    background: var(--bb-panel-2);
+    color: var(--bb-led);
+  }
+  .bb-flip-pair {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(14px, 2.4vw, 32px);
+  }
+  .bb-ascii {
+    margin: 0;
+    padding: 16px 18px;
+    border-radius: calc(10px * var(--sq));
+    background: #070707;
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+    font-size: clamp(0.8125rem, 1.3vw, 1rem);
+    line-height: 1.35;
+    letter-spacing: 0.2em;
+    color: var(--bb-ink);
+  }
+  .bb-ascii-h {
+    letter-spacing: 0;
+    color: var(--bb-ink-3);
+  }
+  .bb-arrow {
+    font-size: 1.5rem;
+    color: var(--bb-led);
+  }
+  .bb-flip-led {
+    display: grid;
+    place-items: center;
+    padding: clamp(14px, 2vw, 24px);
+    border-radius: calc(14px * var(--sq));
+    background: var(--bb-panel);
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+    perspective: 700px;
+  }
+  .bb-flip-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 9%;
+    width: min(100%, 240px);
+    aspect-ratio: 1;
+    /* drawn upside down, as in the code; the scroll turns it the right way up */
+    rotate: x var(--flip, 180deg);
+  }
+
+  /* ---------- one system ---------- */
+  .bb-sys {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: start;
+  }
+  .bb-seq {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 24px;
+    row-gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  /* the two lanes: a line down each box's column */
+  .bb-seq::before,
+  .bb-seq::after {
+    content: '';
+    position: absolute;
+    top: 34px;
+    bottom: 0;
+    width: 1px;
+    background: var(--bb-line);
+  }
+  .bb-seq::before {
+    left: calc(25% - 6px);
+  }
+  .bb-seq::after {
+    left: calc(75% + 6px);
+  }
+  .bb-lane {
+    position: relative;
+    z-index: 1;
+    padding-bottom: 10px;
+    text-align: center;
+    font-size: 0.8125rem;
+    color: var(--bb-ink-3);
+  }
+  .bb-ev {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    gap: 2px;
+    padding: 10px 14px;
+    border-radius: calc(10px * var(--sq));
+    background: var(--bb-panel-2);
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+    transition:
+      box-shadow 0.3s ease-out,
+      opacity 0.3s ease-out;
+  }
+  .bb-ev.is-you {
+    grid-column: 1;
+  }
+  .bb-ev.is-friend {
+    grid-column: 2;
+  }
+  .bb-ev.is-msg {
+    grid-column: 1 / -1;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .bb-ev b {
+    font-size: 0.9375rem;
+    font-weight: 700;
+  }
+  .bb-ev code {
+    font-size: 0.75rem;
+    color: var(--bb-ink-3);
+  }
+  .bb-ev:global(.is-lit):not(.is-msg) {
+    box-shadow:
+      inset 0 0 0 1px rgb(255 59 48 / 0.6),
+      0 0 24px -8px var(--bb-led-soft);
+  }
+  .bb-msg {
+    position: relative;
+    display: block;
+    height: 30px;
+    margin: 0 calc(25% - 6px);
+  }
+  .bb-msg::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    border-top: 1px dashed rgb(255 59 48 / 0.5);
+  }
+  .bb-msg::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-top: 1px solid var(--bb-led);
+    border-right: 1px solid var(--bb-led);
+    translate: 0 -50%;
+  }
+  .to-r .bb-msg::after {
+    right: 0;
+    rotate: 45deg;
+  }
+  .to-l .bb-msg::after {
+    left: 0;
+    rotate: -135deg;
+  }
+  .bb-msg code {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    translate: -50% -50%;
+    padding: 2px 8px;
+    border-radius: 999px;
+    corner-shape: round;
+    background: var(--bb-bg);
+    box-shadow: inset 0 0 0 1px rgb(255 59 48 / 0.5);
+    font-size: 0.75rem;
+    color: var(--bb-led);
+  }
+  .bb-msg i {
+    position: absolute;
+    top: 50%;
+    left: var(--p, 0%);
+    width: 8px;
+    height: 8px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    corner-shape: round;
+    background: var(--bb-led);
+    box-shadow: 0 0 10px 2px var(--bb-led-soft);
+    opacity: var(--o, 0);
+  }
+  .bb-loop {
+    margin: 0;
+  }
+  .bb-loop pre {
+    margin: 0;
+    padding: 18px 20px;
+    border-radius: calc(12px * var(--sq));
+    background: #070707;
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--bb-ink);
+  }
+  .bb-loop .k {
+    color: #ff8a80;
+  }
+  .bb-loop .c {
+    color: var(--bb-ink-3);
+  }
+  .bb-loop .n {
+    color: #f6c343;
+  }
+
+  .bb-others {
+    margin: clamp(88px, 14vh, 140px) var(--bb-pad) 0;
+    padding: 32px 0 clamp(100px, 14vh, 140px);
+    border-top: 1px solid var(--bb-line);
+  }
+  .bb-others-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .bb-other {
+    display: grid;
+    gap: 6px;
+    padding: 18px 20px;
+    border: 1px solid var(--bb-line);
+    border-radius: calc(8px * var(--sq));
+    background: var(--bb-panel);
+    color: var(--bb-ink);
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease-out;
+  }
+  .bb-other span {
+    font-size: 0.8125rem;
+    color: var(--bb-ink-3);
+  }
+  .bb-other b {
+    font-size: 1.0625rem;
+    font-weight: 600;
+  }
+  @media (hover: hover) {
+    .bb-other:hover {
+      border-color: var(--bb-led);
+    }
+  }
+
+
+  /* ---------- the signal: a red line down the margins ---------- */
+  .bb-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .bb-line path {
+    fill: none;
+    stroke: var(--bb-led);
+    stroke-linecap: round;
+  }
+  .bb-line-path {
+    stroke-width: 2;
+  }
+  .bb-line-glow {
+    stroke-width: 9;
+    opacity: 0.16;
+  }
+  .bb-line-tip {
+    fill: #ffd9d6;
+    stroke: var(--bb-led);
+    stroke-width: 2;
+  }
+  .bb-line-halo {
+    fill: rgb(255 59 48 / 0.28);
+  }
+  /* content sits above the line, so it runs behind the photos and panels */
+  .bb-hero,
+  .bb-ch,
+  .bb-others {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- hero ---------- */
+  .bb-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(28px, 4vw, 64px);
+    align-items: center;
+    padding: clamp(48px, 8vh, 88px) var(--bb-pad) 0;
+  }
+  .bb-title {
+    margin: 0;
+    line-height: 0;
+  }
+  .bb-title img {
+    width: clamp(200px, 26vw, 380px);
+    height: auto;
+  }
+  .bb-tag {
+    margin: clamp(16px, 2.4vh, 24px) 0 0;
+    font-size: clamp(1.4rem, 2.3vw, 2rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    letter-spacing: -0.025em;
+    line-height: 1;
+    text-wrap: balance;
+  }
+  .bb-lede {
+    max-width: 48ch;
+    margin: 18px 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--bb-ink-2);
+    text-wrap: pretty;
+  }
+
+  /* ---------- chapters ---------- */
+  .bb-ch {
+    scroll-margin-top: 0;
+  }
+  .bb-chead {
+    position: relative;
+    display: grid;
+    gap: 12px;
+    padding: clamp(80px, 12vh, 128px) var(--bb-pad) 0;
+  }
+  .bb-course {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bb-ink-3);
+    transition: color 0.4s ease-out;
+  }
+  .bb-course span {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--bb-ink-3);
+  }
+  .bb-course i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    corner-shape: round;
+    background: rgb(255 255 255 / 0.14);
+    transition:
+      background-color 0.3s ease-out,
+      box-shadow 0.4s ease-out;
+  }
+  /* the chapter's LED switches on when the signal reaches it */
+  .bb-chead:not(:global(.is-armed)) .bb-course,
+  .bb-chead:global(.is-lit) .bb-course {
+    color: var(--bb-led);
+  }
+  .bb-chead:not(:global(.is-armed)) .bb-course i,
+  .bb-chead:global(.is-lit) .bb-course i,
+  .bb-others .bb-course i {
+    background: var(--bb-led);
+    box-shadow: 0 0 12px 2px var(--bb-led-soft);
+  }
+  .bb-ctitle {
+    max-width: 16ch;
+    margin: 0;
+    font-size: clamp(2.2rem, 5vw, 4.25rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    line-height: 0.96;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .bb-block {
+    padding: clamp(36px, 6vh, 64px) var(--bb-pad) 0;
+  }
+  .bb-big {
+    max-width: 34ch;
+    margin: 0;
+    font-size: clamp(1.25rem, 2.1vw, 1.75rem);
+    font-weight: 700;
+    font-stretch: var(--bb-wide);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .bb-lead-line {
+    max-width: 34ch;
+    color: var(--bb-ink-2);
+  }
+  .bb-body {
+    max-width: 62ch;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--bb-ink-2);
+    text-wrap: pretty;
+  }
+  .bb-body b {
+    color: var(--bb-ink);
+    font-weight: 600;
+  }
+  /* a part of a chapter: its heading on the left, what it's about on the right */
+  .bb-bhead {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    gap: clamp(16px, 4vw, 64px);
+    align-items: end;
+    margin-bottom: clamp(24px, 4vh, 40px);
+  }
+  .bb-h {
+    margin: 0;
+    font-size: clamp(1.4rem, 2.5vw, 2.125rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  /* ---------- the problem: three steps, the way the film opens ---------- */
+  .bb-story {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(14px, 2vw, 28px);
+    margin: 0;
+    list-style: none;
+  }
+  .bb-frame figure {
+    display: grid;
+    gap: 14px;
+    margin: 0;
+  }
+  .bb-frame-pic {
+    display: block;
+    overflow: hidden;
+    border-radius: calc(12px * var(--sq));
+    background: var(--bb-panel);
+  }
+  .bb-frame-pic img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+  .bb-frame figcaption {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: start;
+  }
+  .bb-frame-n {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    corner-shape: round;
+    box-shadow: inset 0 0 0 1px var(--bb-led);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--bb-led);
+  }
+  .bb-frame-t {
+    font-size: clamp(1.0625rem, 1.5vw, 1.3125rem);
+    font-weight: 700;
+    font-stretch: var(--bb-wide);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+  .bb-verdict {
+    max-width: 22ch;
+    margin: 0 0 0 auto;
+    font-size: clamp(1.6rem, 3.2vw, 2.75rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    line-height: 1;
+    letter-spacing: -0.035em;
+    text-align: right;
+    text-wrap: balance;
+  }
+
+  /* ---------- the brief ---------- */
+  .bb-idea {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(28px, 5vw, 80px);
+    align-items: center;
+  }
+  .bb-idea-copy {
+    display: grid;
+    gap: 22px;
+  }
+  .bb-idea-fig {
+    margin: 0;
+    overflow: hidden;
+    border-radius: calc(14px * var(--sq));
+  }
+  .bb-idea-fig img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: 60% 50%;
+  }
+  .bb-rules {
+    display: grid;
+    gap: 0.06em;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .bb-rules li {
+    display: flex;
+    align-items: center;
+    gap: 0.3em;
+    font-size: clamp(1.9rem, 4.2vw, 3.5rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+  }
+  .bb-rules i {
+    flex: none;
+    width: 0.24em;
+    height: 0.24em;
+    border-radius: 50%;
+    corner-shape: round;
+    background: var(--bb-led);
+    box-shadow: 0 0 14px 3px var(--bb-led-soft);
+  }
+
+  /* ---------- the box: the film's frames, played by the scroll ---------- */
+  .bb-play {
+    display: grid;
+    grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+    gap: clamp(24px, 3.6vw, 56px);
+    align-items: center;
+  }
+  .bb-play-fig {
+    margin: 0;
+  }
+  .bb-play-fig img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: calc(14px * var(--sq));
+    background: var(--bb-panel);
+  }
+  .bb-play-fig figcaption,
+  .bb-sheetfig figcaption,
+  .bb-stack figcaption {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    color: var(--bb-ink-3);
+  }
+  .bb-beats {
+    display: grid;
+    gap: clamp(22px, 4vh, 40px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .bb-beats li {
+    display: grid;
+    gap: 8px;
+    padding-left: 26px;
+    position: relative;
+    transition: opacity 0.35s ease-out;
+  }
+  .bb-beats li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    corner-shape: round;
+    background: rgb(255 255 255 / 0.14);
+    transition:
+      background-color 0.3s ease-out,
+      box-shadow 0.3s ease-out;
+  }
+  .bb-beats b {
+    font-size: clamp(1.4rem, 2.4vw, 2rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .bb-beats span {
+    max-width: 30ch;
+    line-height: 1.5;
+    color: var(--bb-ink-2);
+  }
+  .bb-beats:global(.is-armed) li:not(:global(.is-on)) {
+    opacity: 0.22;
+  }
+  .bb-beats:not(:global(.is-armed)) li::before,
+  .bb-beats li:global(.is-on)::before {
+    background: var(--bb-led);
+    box-shadow: 0 0 12px 2px var(--bb-led-soft);
+  }
+  .bb-film-block .bb-bhead {
+    align-items: end;
+  }
+
+  /* ---------- the build log ---------- */
+  .bb-log {
+    display: grid;
+    margin: 0;
+    list-style: none;
+  }
+  .bb-day {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 9fr);
+    gap: clamp(16px, 3vw, 48px);
+    padding: clamp(22px, 3.4vh, 34px) 0;
+    border-top: 1px solid var(--bb-line);
+  }
+  .bb-day:last-child {
+    border-bottom: 1px solid var(--bb-line);
+  }
+  .bb-day-h {
+    display: grid;
+    align-content: start;
+    gap: 4px;
+    margin: 0;
+  }
+  .bb-day-h b {
+    font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    letter-spacing: -0.035em;
+    line-height: 0.9;
+  }
+  .bb-day-h span {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bb-ink-3);
+  }
+  .bb-day-list {
+    position: relative;
+    display: grid;
+    gap: 18px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .bb-entry {
+    display: grid;
+    grid-template-columns: 52px 12px minmax(0, 1fr);
+    column-gap: 14px;
+    align-items: start;
+  }
+  .bb-entry-at {
+    grid-column: 1;
+    grid-row: 1;
+    padding-top: 3px;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    color: var(--bb-ink-3);
+  }
+  .bb-entry-led {
+    grid-column: 2;
+    grid-row: 1;
+    width: 10px;
+    height: 10px;
+    margin-top: 7px;
+    border-radius: 50%;
+    corner-shape: round;
+    background: rgb(255 255 255 / 0.14);
+    transition:
+      background-color 0.3s ease-out,
+      box-shadow 0.4s ease-out;
+  }
+  .bb-log:not(:global(.is-armed)) .bb-entry-led,
+  .bb-entry:global(.is-lit) .bb-entry-led {
+    background: var(--bb-led);
+    box-shadow: 0 0 10px 2px var(--bb-led-soft);
+  }
+  .bb-entry-body {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 12px;
+    row-gap: 8px;
+  }
+  .bb-entry-body p {
+    flex: 1 1 32ch;
+    max-width: 58ch;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.5;
+    color: var(--bb-ink);
+    transition: color 0.4s ease-out;
+  }
+  .bb-log:global(.is-armed) .bb-entry:not(:global(.is-lit)) p {
+    color: var(--bb-ink-3);
+  }
+  .bb-entry-file {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    padding: 3px 8px;
+    border-radius: calc(4px * var(--sq));
+    background: var(--bb-panel-2);
+    color: var(--bb-ink-3);
+  }
+  .bb-entry-code {
+    flex: 1 1 100%;
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: calc(8px * var(--sq));
+    background: #070707;
+    box-shadow:
+      inset 2px 0 0 var(--bb-led),
+      inset 0 0 0 1px var(--bb-line);
+    overflow-x: auto;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: #ffb4ad;
+  }
+
+  /* ---------- from numbers to icons ---------- */
+  .bb-morph {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    margin: 0 auto clamp(48px, 8vh, 80px);
+    padding: clamp(28px, 4vw, 48px);
+    max-width: 520px;
+    border-radius: calc(18px * var(--sq));
+    background: var(--bb-panel);
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+  }
+  .bb-morph-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 9%;
+    width: min(100%, 260px);
+    aspect-ratio: 1;
+  }
+  .bb-morph-grid i {
+    position: relative;
+    border-radius: 50%;
+    corner-shape: round;
+    background: rgb(255 255 255 / 0.05);
+  }
+  .bb-morph-grid i::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    corner-shape: round;
+    background: var(--bb-led);
+    box-shadow: 0 0 8px 1px var(--bb-led-soft);
+    opacity: 0;
+    transition: opacity 0.12s linear;
+  }
+  .bb-morph-grid:not(:global(.is-armed)) i:global(.b)::after,
+  .bb-morph-grid i:global(.on)::after {
+    opacity: 1;
+  }
+  .bb-morph-cap {
+    display: grid;
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--bb-ink-3);
+  }
+  .bb-morph-cap > span {
+    grid-area: 1 / 1;
+    text-align: center;
+  }
+  .bb-morph-cap b {
+    color: var(--bb-led);
+    font-weight: 400;
+  }
+  .bb-morph-a {
+    opacity: calc(1 - var(--mm, 1));
+  }
+  .bb-morph-b {
+    opacity: var(--mm, 1);
+  }
+
+  /* ---------- cut flat, bent round ---------- */
+  .bb-cutrow {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(20px, 3vw, 44px);
+    align-items: stretch;
+  }
+  .bb-sheetfig,
+  .bb-stack {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: clamp(18px, 2.6vw, 36px);
+    border-radius: calc(16px * var(--sq));
+    background:
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px) 0 0 / 24px 24px,
+      linear-gradient(90deg, rgb(255 255 255 / 0.035) 1px, transparent 1px) 0 0 / 24px 24px,
+      var(--bb-panel);
+    box-shadow: inset 0 0 0 1px var(--bb-line);
+  }
+  .bb-sheetfig svg,
+  .bb-stack svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    flex: 1;
+    overflow: visible;
+  }
+  .bb-sheetfig figcaption,
+  .bb-stack figcaption {
+    margin-top: auto;
+    padding-top: 16px;
+  }
+  /* the cut: a faint outline, and the laser tracing over it as the scroll runs (--p, 0 to 1); each part
+     has its own window [--a, --b] so they cut one after another */
+  .bb-cut-base,
+  .bb-cut-line {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .bb-cut-base {
+    stroke: rgb(214 177 124 / 0.22);
+    stroke-width: 1;
+  }
+  .bb-cut-line {
+    stroke: var(--bb-ply);
+    stroke-width: 1.35;
+    stroke-dasharray: 1 1;
+    stroke-dashoffset: calc(1 - clamp(0, (var(--p, 1) - var(--a)) / (var(--b) - var(--a)), 1));
+  }
+  .bb-cut-face {
+    fill: rgb(214 177 124 / 0.06);
+  }
+  .bb-cut-break {
+    fill: none;
+    stroke: var(--bb-ink-3);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .bb-dim path {
+    fill: none;
+    stroke: var(--bb-ink-3);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .bb-dim text {
+    fill: var(--bb-ink-2);
+    font-family: var(--font-mono);
+    font-size: 6.5px;
+    letter-spacing: 0.04em;
+    text-anchor: middle;
+  }
+  /* the stack: the parts in isometric, pulled apart by the scroll (--e, 0 assembled to 1 apart) */
+  .bb-layer,
+  .bb-key-m {
+    transform: translateY(calc(var(--k) * var(--e, 1) * 1px));
+  }
+  .bb-layer path,
+  .bb-key-m path {
+    vector-effect: non-scaling-stroke;
+  }
+  .bb-l-ply {
+    fill: #2a2117;
+    stroke: var(--bb-ply);
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+  }
+  .bb-l-ring {
+    fill: none;
+    stroke: rgb(214 177 124 / 0.42);
+    stroke-width: 0.8;
+    stroke-linejoin: round;
+  }
+  .bb-l-ring:global(.is-edge) {
+    stroke: var(--bb-ply);
+    stroke-width: 1.2;
+  }
+  .bb-l-board {
+    fill: #0e1a2e;
+    stroke: #3a5a8a;
+    stroke-width: 1;
+  }
+  .bb-l-dot {
+    fill: rgb(255 255 255 / 0.12);
+  }
+  .bb-l-dot:global(.on) {
+    fill: var(--bb-led);
+  }
+  .bb-l-top {
+    fill: rgb(239 236 230 / 0.86);
+    stroke: #fff;
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+  }
+  .bb-key-m {
+    opacity: var(--e, 1);
+  }
+  .bb-key-m path {
+    fill: none;
+    stroke: var(--bb-ink-3);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+  }
+  .bb-key-m circle {
+    fill: var(--bb-bg);
+    stroke: var(--bb-led);
+    stroke-width: 1;
+  }
+  .bb-key-m text {
+    fill: var(--bb-led);
+    font-family: var(--font-mono);
+    font-size: 8px;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .bb-stack-key {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .bb-stack-key li {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+  .bb-stack-key li > span:first-child {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    corner-shape: round;
+    box-shadow: inset 0 0 0 1px var(--bb-led);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--bb-led);
+    translate: 0 4px;
+  }
+  .bb-stack-key b {
+    font-weight: 700;
+  }
+  .bb-stack-key em {
+    background: none;
+    color: var(--bb-ink-3);
+  }
+  .bb-box-photo {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(16px, 3vw, 44px);
+    align-items: end;
+    margin: clamp(20px, 3vw, 44px) 0 0;
+  }
+  .bb-box-photo img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border-radius: calc(14px * var(--sq));
+  }
+  .bb-box-photo b {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--bb-ink);
+    font-size: clamp(1.25rem, 2vw, 1.625rem);
+    font-weight: 700;
+    font-stretch: var(--bb-wide);
+    letter-spacing: -0.02em;
+  }
+  .bb-box-photo figcaption {
+    max-width: 30ch;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--bb-ink-2);
+  }
+  .bb-loop figcaption {
+    margin-top: 12px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--bb-ink-3);
+  }
+  .bb-sheet {
+    margin-top: clamp(28px, 4vh, 40px);
+  }
+
+  /* ---------- afterwards: what it taught me, as statements ---------- */
+  .bb-learn {
+    display: grid;
+    margin: 0;
+    list-style: none;
+  }
+  .bb-learn li {
+    display: grid;
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: clamp(14px, 3vw, 48px);
+    align-items: end;
+    padding: clamp(22px, 3.4vh, 34px) 0;
+    border-top: 1px solid var(--bb-line);
+  }
+  .bb-learn li:last-child {
+    border-bottom: 1px solid var(--bb-line);
+  }
+  .bb-learn b {
+    font-size: clamp(1.4rem, 2.6vw, 2.25rem);
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+    letter-spacing: -0.035em;
+    line-height: 0.98;
+    text-wrap: balance;
+  }
+  .bb-learn p {
+    max-width: 44ch;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.55;
+    color: var(--bb-ink-2);
+  }
+  .bb-v2 {
+    display: grid;
+    grid-template-columns: minmax(0, 0.75fr) minmax(0, 1.25fr);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: center;
+  }
+  .bb-v2-copy {
+    display: grid;
+    gap: 18px;
+  }
+  .bb-v2 :global(.mv) {
+    margin: 0;
+  }
+  .bb-team {
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .bb-team img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: calc(14px * var(--sq));
+  }
+  .bb-team figcaption {
+    display: grid;
+    gap: 4px;
+    margin-top: 16px;
+  }
+  .bb-team b {
+    font-size: 1.125rem;
+    font-weight: 800;
+    font-stretch: var(--bb-wide);
+  }
+  .bb-team figcaption span {
+    max-width: 64ch;
+    line-height: 1.55;
+    color: var(--bb-ink-2);
+  }
+
+  /* ---------- narrower ---------- */
+  @media (max-width: 900px) {
+    .bb-hero,
+    .bb-idea,
+    .bb-flip,
+    .bb-sys,
+    .bb-v2,
+    .bb-play,
+    .bb-cutrow,
+    .bb-bhead {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .bb-reel {
+      order: -1;
+      justify-self: stretch;
+      max-height: none;
+    }
+    .bb-sheet {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .bb-beats {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .bb-beats li {
+      padding-left: 0;
+      padding-top: 22px;
+    }
+    .bb-beats li::before {
+      top: 0;
+    }
+    .bb-beats b {
+      font-size: clamp(1.25rem, 4.6vw, 1.75rem);
+    }
+    .bb-beats span {
+      font-size: 0.875rem;
+    }
+    .bb-learn li {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 640px) {
+    .bb-story {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 14px;
+    }
+    .bb-frame figure {
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      align-items: center;
+    }
+    .bb-frame figcaption {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+    }
+    .bb-verdict {
+      margin: 0;
+      text-align: left;
+    }
+    .bb-day {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 16px;
+    }
+    .bb-day-h {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .bb-entry {
+      grid-template-columns: 44px 10px minmax(0, 1fr);
+      column-gap: 10px;
+    }
+    .bb-entry-body p {
+      font-size: 1rem;
+    }
+    .bb-sim {
+      --dev: min(40vw, 150px);
+      padding-inline: 12px;
+    }
+    .bb-sim-stage {
+      grid-template-columns: auto minmax(14px, 1fr) auto;
+    }
+    .bb-air {
+      margin-inline: 4px;
+    }
+    .bb-air span {
+      display: none;
+    }
+    .bb-sim-foot {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .bb-serial-h span:last-child {
+      display: none;
+    }
+    /* phones: no room for the board strip; each wire ends at its pins instead */
+    .bb-pins::after {
+      display: none;
+    }
+    .bb-pins li {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'part part'
+        'wire pins';
+      row-gap: 12px;
+      margin-right: 0;
+    }
+    .bb-part {
+      grid-area: part;
+    }
+    .bb-wire {
+      grid-area: wire;
+    }
+    .bb-pinset {
+      grid-area: pins;
+      justify-content: flex-end;
+    }
+    .bb-flip-pair {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+    .bb-arrow {
+      display: none;
+    }
+    .bb-ascii {
+      padding: 12px;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+    }
+    .bb-seq {
+      column-gap: 12px;
+    }
+    .bb-ev {
+      padding: 9px 10px;
+    }
+    .bb-ev b {
+      font-size: 0.875rem;
+    }
+    .bb-box-photo {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .bb-beats {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .bb-beats li {
+      grid-template-columns: auto minmax(0, 1fr);
+      align-items: baseline;
+      column-gap: 12px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bb-flip-grid {
+      --flip: 180deg;
+    }
+  }
+</style>

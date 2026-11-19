@@ -3,7 +3,6 @@ import Base from '../layouts/Base.astro';
 import SheetFrame from '../components/SheetFrame.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import Icon from '../components/Icon.astro';
 import { site } from '../data/site';
 import { withBase } from '../lib/url';
 ---
@@ -13,17 +12,14 @@ import { withBase } from '../lib/url';
   <Header back />
   <main id="main" class="nf">
     <div class="nf-copy">
-      <p class="nf-code">Error 404 · Sheet not found</p>
-      <h1 class="nf-title" data-words="load">Not on <span class="hl-block">file</span></h1>
+      <p class="nf-code">Error 404</p>
+      <h1 class="nf-title" data-words="load">Not on file</h1>
       <p class="nf-note">
         Every drawer's been checked and this sheet isn't in any of them. The link may be old, or the page has moved.
       </p>
       <div class="nf-actions">
-        <a class="nf-btn" href={withBase('/')} data-magnet>
-          <span class="nf-btn-label">Front page</span>
-          <Icon name="arrow-up-right" />
-        </a>
-        <a class="nf-link bracket" href={withBase('/projects/')}>All projects</a>
+        <a class="nf-link bracket" href={withBase('/')} data-magnet>Front page</a>
+        <a class="nf-link bracket" href={withBase('/projects/')} data-magnet>All projects</a>
       </div>
     </div>
 
@@ -80,10 +76,7 @@ import { withBase } from '../lib/url';
   }
   .nf-code {
     margin: 0 0 18px;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.9375rem;
     color: var(--sand-3);
   }
   .nf-title {
@@ -105,50 +98,22 @@ import { withBase } from '../lib/url';
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 14px 22px;
+    gap: 6px 10px;
     margin-top: clamp(28px, 5vh, 44px);
   }
-  .nf-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 22px;
-    border-radius: calc(var(--radius-slab) * var(--sq));
-    background: var(--slate-2);
-    border-top: 1px solid var(--slate-edge);
-    box-shadow: var(--slab-shadow);
-    color: var(--sand);
-    text-decoration: none;
-    transition:
-      transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
-      background-color 240ms ease-out;
-  }
-  .nf-btn-label {
-    font-stretch: 125%;
-    font-weight: 640;
-    font-size: 1.0625rem;
-    letter-spacing: -0.01em;
-    text-transform: uppercase;
-  }
-  .nf-btn :global(.icon) {
-    color: var(--accent);
-    transition: transform var(--dur-base) var(--ease-out);
-  }
-  @media (hover: hover) {
-    .nf-btn:hover {
-      background: var(--slate-3);
-    }
-    .nf-btn:hover :global(.icon) {
-      transform: translate(2px, -2px);
-    }
-  }
   .nf-link {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
+    font-size: 0.875rem;
+    font-weight: 560;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--sand-2);
-    text-decoration: none;
+    color: var(--sand);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.4em;
+    text-decoration-color: rgb(var(--ink-rgb) / 0.35);
+  }
+  .nf-actions .nf-link:first-child {
+    margin-left: -0.9em; /* the bracket padding: the word lines up with the copy */
   }
 
   /* the drawing, in the site's own lines: sand for the chest, the accent for the one bright edge */

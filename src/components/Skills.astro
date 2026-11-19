@@ -1,13 +1,13 @@
 ---
-import Icon from './Icon.astro';
 import WireLogo from './WireLogo.astro';
 import { skills } from '../data/skills';
 import { withBase } from '../lib/url';
 
-// sheet numbers, as on a drawing set: S-01, S-02…
-const sheet = (i: number) => `S-${String(i + 1).padStart(2, '0')}`;
 // only finished pieces count as works; the rest are still in drafting
 const built = (s: (typeof skills)[number]) => s.works.filter((w) => !w.pending).length;
+
+// tools as a phrase: "Fusion 360 and Blender", "Fineliner, markers and pens"
+const phrase = (list: string[]) => (list.length < 2 ? list.join('') : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`);
 
 // the hover peek: one small thumbnail from each finished work in the skill (its first image, the
 // middle screen of a prototype, or a film's poster), from /skills/peek
@@ -32,7 +32,7 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
 
 <section class="skills" id="skills" aria-labelledby="skills-title">
   <div class="skills-head">
-    <h2 id="skills-title" class="skills-title" data-words><span class="hl-block">Skills</span></h2>
+    <h2 id="skills-title" class="skills-title" data-words>Skills</h2>
     <p class="skills-note">What I <span class="hl">can do</span>, as a set of sheets. Open one to see the work.</p>
   </div>
 
@@ -48,15 +48,6 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
           </div>
         ))
       }
-      <p class="view-label">
-        {
-          skills.map((s, i) => (
-            <span class:list={{ 'is-on': i === 0 }} data-view-label={s.slug}>
-              {sheet(i)} · {s.name}
-            </span>
-          ))
-        }
-      </p>
     </div>
 
     <ol class="index" data-panel>
@@ -64,13 +55,12 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
         skills.map((s, i) => (
           <li>
             <a href={`#skill-${s.slug}`} class="row" data-open-project={`skill-${s.slug}`} data-pick={s.slug} data-wire-host>
-              <span class="row-no">{sheet(i)}</span>
               <span class="row-ico">
                 <WireLogo paths={s.logo} label="" />
               </span>
               <span class="row-text">
                 <span class="row-name">{s.name}</span>
-                <span class="row-tools">{s.tools.join(' · ')}</span>
+                <span class="row-tools">{phrase(s.tools)}</span>
               </span>
               {pile(s).length > 0 && (
                 <span class="row-peek" aria-hidden="true">
@@ -84,8 +74,7 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
                   ))}
                 </span>
               )}
-              <span class:list={['row-state', { 'is-pending': !built(s) }]}>{built(s) ? `${String(built(s)).padStart(2, '0')} works` : 'In drafting'}</span>
-              <Icon name="arrow-up-right" />
+              {!built(s) && <span class="row-state is-pending">In drafting</span>}
             </a>
           </li>
         ))
@@ -99,7 +88,6 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
   document.querySelectorAll<HTMLElement>('[data-skill-set]').forEach((set) => {
     const pick = (slug: string) => {
       set.querySelectorAll<HTMLElement>('[data-view]').forEach((v) => v.classList.toggle('is-on', v.dataset.view === slug));
-      set.querySelectorAll<HTMLElement>('[data-view-label]').forEach((v) => v.classList.toggle('is-on', v.dataset.viewLabel === slug));
       set.querySelectorAll<HTMLElement>('[data-pick]').forEach((r) => r.classList.toggle('is-on', r.dataset.pick === slug));
     };
     set.querySelectorAll<HTMLElement>('[data-pick]').forEach((row) => {
@@ -231,21 +219,6 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
     bottom: 16px;
     right: 16px;
   }
-  .view-label {
-    position: absolute;
-    left: 36px;
-    bottom: 13px;
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--sand-3);
-  }
-  .view-label span:not(.is-on) {
-    display: none;
-  }
-
   /* index: one row per sheet */
   .index {
     display: grid;
@@ -261,7 +234,7 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
   .row {
     position: relative;
     display: grid;
-    grid-template-columns: 52px 44px minmax(0, 1fr) auto 14px;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
     align-items: center;
     gap: clamp(12px, 1.6vw, 22px);
     padding: clamp(16px, 2.6vh, 26px) 4px;
@@ -269,13 +242,6 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
     text-decoration: none;
     background: var(--slate-2); /* the card grows out of this colour */
     --wire-ink: var(--sand-2);
-  }
-  .row-no {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    color: var(--sand-3);
-    transition: color var(--dur-base) var(--ease-out);
   }
   .row-ico {
     display: block;
@@ -296,14 +262,11 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
     transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
   }
   .row-tools {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
     color: var(--sand-3);
   }
   /* the peek: hovering a sheet tips its works out of the row's right end, small, tilted and
-     overlapping, where the work count sits (which steps aside for them) */
+     overlapping */
   .row-peek {
     position: absolute;
     top: 50%;
@@ -355,12 +318,6 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
         transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) calc(var(--i) * 0.06s),
         opacity 0.2s ease-out calc(var(--i) * 0.06s);
     }
-    .row:has(.row-peek):hover .row-state,
-    .row:has(.row-peek):focus-visible .row-state,
-    .row:has(.row-peek):hover > :global(.icon),
-    .row:has(.row-peek):focus-visible > :global(.icon) {
-      opacity: 0;
-    }
   }
   @media (hover: none) {
     .row-peek {
@@ -375,13 +332,9 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
   }
 
   .row-state {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
     color: var(--sand-2);
     white-space: nowrap;
-    transition: opacity 0.2s var(--ease-out);
   }
   /* dashed means not yet drawn */
   .row-state.is-pending {
@@ -389,25 +342,11 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
     border-bottom: 1px dashed var(--sand-3);
     color: var(--sand-3);
   }
-  .row :global(.icon) {
-    color: var(--sand-3);
-    transition:
-      transform var(--dur-base) var(--ease-out),
-      color var(--dur-base) var(--ease-out);
-  }
-  .row.is-on .row-no,
-  .row:focus-visible .row-no {
-    color: var(--accent);
-  }
   .row.is-on .row-name {
     transform: translateX(6px);
   }
   .row.is-on {
     --wire-ink: var(--accent);
-  }
-  .row.is-on :global(.icon) {
-    color: var(--accent);
-    transform: translate(2px, -2px);
   }
   .row:focus-visible {
     outline-offset: -2px;
@@ -427,12 +366,8 @@ const pile = (sk: (typeof skills)[number]): Shot[] =>
       display: none;
     }
     .row {
-      grid-template-columns: 40px minmax(0, 1fr);
+      grid-template-columns: 36px minmax(0, 1fr);
       gap: 4px 14px;
-    }
-    .row-no,
-    .row :global(.icon) {
-      display: none;
     }
     .row-ico {
       grid-row: span 2;

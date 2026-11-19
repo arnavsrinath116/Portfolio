@@ -10,10 +10,10 @@ const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURICompon
 <footer class="site-footer" id="contact" aria-labelledby="footer-title" data-footer>
   <div class="contact-slab" data-contact data-dim="h-right">
     <div class="contact-main">
-      <h2 id="footer-title" class="footer-lead" data-words>Let’s get in <span class="hl-block">touch.</span></h2>
-      <a class="footer-email bracket" href={compose} target="_blank" rel="noopener" data-magnet>
-        {site.email}
-        <Icon name="arrow-up-right" size={16} />
+      <h2 id="footer-title" class="footer-lead">To talk about a project or a role, write to me.</h2>
+      <a class="footer-email" href={compose} target="_blank" rel="noopener" data-magnet>
+        <span>{site.email}</span>
+        <Icon name="arrow-up-right" />
       </a>
     </div>
 
@@ -27,27 +27,21 @@ const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURICompon
         <a class="bracket" href={withBase(site.resume)} target="_blank" rel="noopener" data-magnet>Résumé <Icon name="arrow-up-right" /></a>
       </li>
       <li>
-        <a class="bracket" href="#top" data-magnet data-to-top>Back to top <Icon name="arrow-up" /></a>
+        <a class="bracket" href="#top" data-magnet data-to-top>Back to top</a>
       </li>
     </ul>
-
-    <p class="footer-clock">
-      <span class="clock-label">Local time · {site.city}</span>
-      <time data-clock data-tz={site.timeZone}>--:--:--</time>
-    </p>
-  </div>
-
-  <div class="wordmark-wrap" data-wordmark-wrap>
-    <svg class="wordmark" viewBox="0 0 1000 150" preserveAspectRatio="xMidYMid meet" role="img" aria-label={site.name} data-wordmark>
-      <g class="guides" data-wm-guides></g>
-      <text class="wm-text" x="0" y="132" data-wm-text>{site.name.toUpperCase()}</text>
-      <g class="points" data-wm-points></g>
-    </svg>
   </div>
 
   <div class="footer-base">
+    <!-- the A.S. cube from the header, drawn flat in isometric -->
+    <svg class="footer-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <path class="fm-top" d="M16 4 27 10.3 16 16.6 5 10.3Z" />
+      <path d="M5 10.3V23L16 29.3 27 23V10.3M16 16.6V29.3" />
+      <text transform="matrix(0.866 0.5 0 1 10.5 20.4)">A</text>
+      <text transform="matrix(0.866 -0.5 0 1 21.5 20.4)">S</text>
+    </svg>
     <span>© {year} {site.name}</span>
-    <span>{site.disciplines.join(' · ')}</span>
+    <span class="footer-disc">Product, UX and HMI design</span>
   </div>
 </footer>
 
@@ -61,7 +55,7 @@ const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURICompon
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: minmax(0, 7fr) minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 32px clamp(24px, 4vw, 64px);
     align-items: end;
     padding: clamp(28px, 4vw, 56px);
@@ -70,43 +64,55 @@ const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURICompon
     border-top: 1px solid var(--slate-edge);
     box-shadow: var(--slab-shadow);
   }
+  .contact-main {
+    min-width: 0;
+    container-type: inline-size;
+  }
   .footer-lead {
-    font-stretch: 112%;
-    font-weight: 560;
-    font-size: clamp(1.6rem, 3.1vw, 2.75rem);
-    line-height: 1.04;
-    letter-spacing: -0.02em;
-    max-width: 18ch;
-    text-wrap: balance;
+    margin: 0;
+    font-size: clamp(1rem, 1.4vw, 1.125rem);
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--sand-2);
   }
+  /* the address is the headline: as large as the slab allows, always on one line */
   .footer-email {
-    margin: 22px 0 0 -0.9em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.25em;
+    margin-top: 10px;
     font-stretch: 112%;
-    font-weight: 520;
-    font-size: clamp(1.125rem, 1.9vw, 1.625rem);
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    font-size: clamp(1rem, 6cqi, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.025em;
+    white-space: nowrap;
     color: var(--sand);
-    text-decoration: underline 1px var(--sand-3);
-    text-underline-offset: 0.28em;
-    overflow-wrap: anywhere;
-  }
-  /* phones: the address scales to stay on one line rather than breaking mid-domain */
-  @media (max-width: 520px) {
-    .footer-email {
-      font-size: clamp(0.75rem, 3.7vw, 1.125rem);
-      white-space: nowrap;
-      overflow-wrap: normal;
-    }
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.16em;
+    text-decoration-color: rgb(var(--ink-rgb) / 0.3);
+    transition:
+      color var(--dur-base) var(--ease-out),
+      text-decoration-color var(--dur-base) var(--ease-out);
   }
   .footer-email :global(.icon) {
     flex: none;
+    width: 0.5em;
+    height: 0.5em;
+    color: var(--accent);
+    transition: transform var(--dur-base) var(--ease-out);
   }
   .footer-email:focus-visible {
     color: var(--accent);
   }
   @media (hover: hover) {
     .footer-email:hover {
-      text-decoration-color: transparent;
+      color: var(--accent);
+      text-decoration-color: currentColor;
+    }
+    .footer-email:hover :global(.icon) {
+      transform: translate(2px, -2px);
     }
   }
   .footer-links {
@@ -114,78 +120,57 @@ const compose = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURICompon
     flex-direction: column;
     align-items: flex-start;
     gap: 4px; /* room between the links' hover rings */
-    margin-left: -0.9em;
+    margin-right: -0.9em;
     font-size: 0.9375rem;
   }
   .footer-links a {
     gap: 0.55em;
   }
-  .footer-clock {
-    display: grid;
-    gap: 4px;
-    justify-items: end;
-    text-align: right;
-    font-size: 0.8125rem;
-    color: var(--sand-3);
-  }
-  .footer-clock time {
-    color: var(--sand);
-    font-size: 1.0625rem;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .wordmark-wrap {
-    margin-top: clamp(56px, 10vh, 110px);
-  }
-  .wordmark {
-    display: block;
-    width: 100%;
-    height: auto;
-    overflow: visible;
-  }
-  .wm-text {
-    font-family: var(--font-letter);
-    font-stretch: 125%;
-    font-weight: 640;
-    font-size: 150px;
-    fill: transparent;
-    stroke: var(--sand);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-  .wordmark :global(.guide) {
-    stroke: var(--line);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
-  .wordmark :global(.cpoint) {
-    stroke: var(--accent);
-    stroke-width: 1;
-    vector-effect: non-scaling-stroke;
-  }
 
   .footer-base {
     display: flex;
     flex-wrap: wrap;
-    justify-content: space-between;
-    gap: 8px 24px;
-    margin-top: 28px;
+    align-items: center;
+    gap: 8px 14px;
+    margin-top: clamp(40px, 7vh, 72px);
     padding-top: 14px;
     border-top: 1px solid var(--line);
     font-size: 0.8125rem;
     color: var(--sand-3);
   }
+  .footer-mark {
+    width: 28px;
+    height: 28px;
+    fill: none;
+    stroke: var(--sand-2);
+    stroke-width: 1.2;
+    stroke-linejoin: round;
+  }
+  .footer-mark .fm-top {
+    stroke: var(--accent);
+  }
+  .footer-mark text {
+    fill: var(--sand-2);
+    stroke: none;
+    font-family: var(--font-letter);
+    font-stretch: 125%;
+    font-weight: 700;
+    font-size: 8px;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+  .footer-disc {
+    margin-left: auto;
+  }
 
-  @media (max-width: 860px) {
+  @media (max-width: 700px) {
     .contact-slab {
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
     }
-    .contact-main {
-      grid-column: 1 / -1;
-    }
-    .footer-clock {
-      justify-items: start;
-      text-align: left;
+    .footer-links {
+      flex-direction: row;
+      flex-wrap: wrap;
+      margin: 0 0 0 -0.9em;
     }
   }
 </style>

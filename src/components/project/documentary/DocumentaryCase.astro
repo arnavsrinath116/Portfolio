@@ -41,12 +41,6 @@ const kit: [string, string, string?][] = [
   ['1', 'GoPro Hero 7'],
 ];
 
-const slate = [
-  ['Programme', 'Discover India · FLAME University'],
-  ['Fieldwork', 'Kannur, Kerala · 20–28 Feb 2026'],
-  ['My role', 'Documentary co-lead · writer & camera'],
-  ['Team', '13 students · mentor Prof. Priya Joshi'],
-];
 
 // the full ritual arc, as all thirteen of us watched it
 const arc = [
@@ -86,8 +80,8 @@ const teams: { title: string; people: Member[] }[] = [
     title: 'Documentary',
     people: [
       { name: 'Simran Vyas', role: 'Documentary POC' },
-      { name: 'Arnav Srinath', role: 'Co-POC · writer & camera', me: true },
-      { name: 'Bhanu Tarun Krishna Veeramachaneni', role: 'Documentary · writing' },
+      { name: 'Arnav Srinath', role: 'Co-POC, writer and camera', me: true },
+      { name: 'Bhanu Tarun Krishna Veeramachaneni', role: 'Documentary and writing' },
     ],
   },
   {
@@ -101,7 +95,7 @@ const teams: { title: string; people: Member[] }[] = [
     title: 'Writing the report',
     people: [
       { name: 'Srishti Sudharsan', role: 'Writing POC' },
-      { name: 'Radha Kulkarni', role: 'Writing co-POC · logistics' },
+      { name: 'Radha Kulkarni', role: 'Writing co-POC and logistics' },
       { name: 'Richa Sajai', role: 'Writing' },
       { name: 'Divyanshi Nigam', role: 'Writing' },
       { name: 'Nitiksha Thukrul', role: 'Writing' },
@@ -112,7 +106,7 @@ const teams: { title: string; people: Member[] }[] = [
     people: [
       { name: 'Muktak Joshi', role: 'Logistics POC' },
       { name: 'Vikhyat Upadhyay', role: 'Finance POC' },
-      { name: 'Suhani Aggarwal', role: 'Finance · logistics' },
+      { name: 'Suhani Aggarwal', role: 'Finance and logistics' },
     ],
   },
 ];
@@ -135,10 +129,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
         <span class="dc-mark dc-tl"></span><span class="dc-mark dc-tr"></span>
         <span class="dc-mark dc-bl"></span><span class="dc-mark dc-br"></span>
         <span class="dc-rec"><i></i>Rec</span>
-        <span class="dc-tc">Kannur · Feb 2026</span>
+        <span class="dc-tc">Kannur, Feb 2026</span>
       </span>
       <div class="dc-titlecard">
-        <p class="dc-kicker">{project.discipline} · A documentary</p>
+        <p class="dc-kicker">A {project.discipline.toLowerCase()} documentary</p>
         <h2 class="dc-title" id="dc-title">{project.title}</h2>
       </div>
       <button type="button" class="dc-play" data-dc-play data-film-src={FILM} data-magnet>
@@ -153,16 +147,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
         nine days in Kannur studying that transformation, and made a report and a film of it side by side. I co-led the documentary:{' '}
         <em>I wrote it and shot it.</em>
       </p>
-      <dl class="dc-slate">
-        {
-          slate.map(([k, v]) => (
-            <div>
-              <dt>{k}</dt>
-              <dd>{v}</dd>
-            </div>
-          ))
-        }
-      </dl>
+      <!-- the facts the lede doesn't already give, in one plain line -->
+      <p class="dc-slate">Fieldwork in Kannur, Kerala, 20–28 Feb 2026. Mentored by Prof. Priya Joshi.</p>
       <div class="dc-paper-acts">
         <button type="button" class="dc-btn" data-dc-read data-magnet>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5C6.5 4.5 9.5 4.5 12 6c2.5-1.5 5.5-1.5 8-.5v13c-2.5-1-5.5-1-8 .5-2.5-1.5-5.5-1.5-8-.5z M12 6v13.5"></path></svg>
@@ -172,7 +158,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11m0 0-4.5-4.5M12 15l4.5-4.5M5 19.5h14"></path></svg>
           Download PDF
         </a>
-        <span class="dc-paper-meta">100 pages · 4.3 MB</span>
+        <span class="dc-paper-meta">100 pages, 4.3 MB</span>
       </div>
       <!-- the programme it was made for, credited with its own marks -->
       <div class="dc-made">
@@ -297,7 +283,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
           </figure>
           <div class="dc-ch-body">
             <header class="dc-ch-head">
-              <p class="dc-rno">Chapter {pad(i + 1)} · {c.sub}</p>
+              <p class="dc-rno">Chapter {i + 1}: {c.sub}</p>
               <h3 class="dc-ch-t" id={`dc-${c.key}-t`}>
                 {c.title}
               </h3>
@@ -307,7 +293,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
               <>
                 <blockquote class="dc-verse">
                   “Those who worship with their eyes will be worshipped with eyes.”
-                  <cite>Kandu vazhipadu cheyyunnavare kandu vazhipadu cheyyum · the verse the report opens on</cite>
+                  <cite>Kandu vazhipadu cheyyunnavare kandu vazhipadu cheyyum, the verse the report opens on</cite>
                 </blockquote>
                 <div class="dc-copy">
                   <p>
@@ -529,7 +515,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
               <li><b>A documentary</b>written and shot in Kannur</li>
               <li>
                 <button type="button" class="dc-out-read" data-dc-read>
-                  <b>A 100-page report</b>for FLAME’s Discover India Program · read it
+                  <b>A 100-page report</b>for FLAME’s Discover India Program. Read it here
                 </button>
               </li>
               <li><b>A final presentation</b>to the university</li>
@@ -550,7 +536,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
             <figure class="dc-group">
               <img src={img('group')} alt="The thirteen of us, Group 42, together in Kannur" width="800" height="705" loading="lazy" decoding="async" />
               <figcaption>
-                <span class="dc-label">Group 42 · Kannur, February 2026</span>
+                <span class="dc-label">Group 42, Kannur, February 2026</span>
                 <b>Thirteen students, one mentor, nine days.</b>
               </figcaption>
             </figure>
@@ -816,10 +802,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
   .dc-kicker {
     margin-bottom: 12px;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--dc-tungsten);
   }
   .dc-title {
@@ -891,37 +874,19 @@ const pad = (n: number) => String(n).padStart(2, '0');
     line-height: 1.6;
     color: var(--dc-ink-2);
   }
-  /* the slate: the clapperboard's facts, ruled in chalk */
+  /* the facts, in one plain line beside the lede */
   .dc-slate {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    border: 1px solid var(--dc-line);
-    border-radius: calc(4px * var(--sq));
-  }
-  .dc-slate div {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--dc-line);
-  }
-  .dc-slate div:nth-child(odd) {
-    border-right: 1px solid var(--dc-line);
-  }
-  .dc-slate div:nth-last-child(-n + 2):nth-child(odd),
-  .dc-slate div:last-child {
-    border-bottom: 0;
-  }
-  .dc-slate dt,
-  .dc-label {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    max-width: 40ch;
+    padding-top: 14px;
+    border-top: 1px solid var(--dc-line);
+    font-size: 0.9375rem;
+    line-height: 1.5;
     color: var(--dc-ink-3);
   }
-  .dc-slate dd {
-    margin-top: 4px;
-    font-size: 0.9375rem;
+  .dc-label {
+    font-size: 0.8125rem;
     font-weight: 600;
-    line-height: 1.35;
+    color: var(--dc-ink-3);
   }
 
   /* ---------- the report: read it, or take it ---------- */
@@ -1054,10 +1019,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     min-width: 0;
   }
   .dc-reader-t span {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--dc-tungsten);
   }
   .dc-reader-t b {
@@ -1269,10 +1231,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     border-bottom: 1px solid var(--dc-line);
   }
   .dc-rno {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--dc-tungsten);
   }
   .dc-h {
@@ -1369,12 +1328,9 @@ const pad = (n: number) => String(n).padStart(2, '0');
     font-weight: 600;
   }
   .dc-kit i {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
     font-style: normal;
     font-weight: 400;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
     color: var(--dc-tungsten);
   }
 
@@ -1408,10 +1364,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
   }
   .dc-ch-cover figcaption {
     margin-top: 10px;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--dc-ink-3);
   }
   .dc-ch-body {
@@ -1447,13 +1400,10 @@ const pad = (n: number) => String(n).padStart(2, '0');
   .dc-verse cite {
     display: block;
     margin-top: 12px;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
     font-style: normal;
     font-weight: 400;
-    letter-spacing: 0.08em;
     line-height: 1.5;
-    text-transform: uppercase;
     color: var(--dc-ink-3);
   }
   /* three ways of seeing one ritual */
@@ -1541,10 +1491,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     border-block: 1px solid var(--dc-line);
   }
   .dc-shift span {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--dc-ink-3);
   }
   /* the strike is drawn, so it can be struck out with the scroll (--strike, 0 → 1) */
@@ -1688,10 +1635,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     mix-blend-mode: screen;
   }
   .dc-dias span {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--dc-ink-2);
   }
 
@@ -1844,11 +1788,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
     color: var(--dc-ink-3);
   }
   .dc-person-role {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
+    font-size: 0.8125rem;
     line-height: 1.4;
-    text-transform: uppercase;
     color: var(--dc-ink-3);
   }
   .dc-person b {
@@ -1961,10 +1902,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     transition: border-color 0.2s ease-out;
   }
   .dc-other span {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: var(--dc-ink-3);
   }
   .dc-other b {
@@ -2054,15 +1992,8 @@ const pad = (n: number) => String(n).padStart(2, '0');
     .dc-rnote {
       grid-column: auto;
     }
-    .dc-slate,
     .dc-shift {
       grid-template-columns: minmax(0, 1fr);
-    }
-    .dc-slate div:nth-child(odd) {
-      border-right: 0;
-    }
-    .dc-slate div:nth-last-child(-n + 2):nth-child(odd) {
-      border-bottom: 1px solid var(--dc-line);
     }
   }
   @media (prefers-reduced-motion: reduce) {

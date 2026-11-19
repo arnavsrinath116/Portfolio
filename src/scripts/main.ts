@@ -13,15 +13,14 @@ import { initModelViewers } from './modelViewer';
 import { initCookedCase } from './cookedCase';
 import { initTrackerCase } from './trackerCase';
 import { initDocumentaryCase } from './documentaryCase';
+import { initBlackboxCase } from './blackboxCase';
 import { initSkillDims } from './skillDims';
 import { initHighlights } from './highlights';
 import { initSelectRing } from './selectRing';
 import { initHeroJet } from './heroJet';
-import { initFooter } from './footer';
 import { initNav } from './nav';
 import { initHeader } from './header';
 import { initFrame } from './frame';
-import { initClock } from './clock';
 import { initWordReveal } from './wordReveal';
 import { initAbout } from './about';
 import { initMusicRoom } from './musicRoom';
@@ -48,7 +47,6 @@ if (!lite) {
 
 initFrame();
 initHeader();
-initClock();
 initNav({ lenis });
 // armed before first paint settles, so the blocks never flash full and then empty
 initHighlights({ reduce });
@@ -67,9 +65,9 @@ document.fonts.ready.then(() => {
   initCookedCase({ reduce });
   initTrackerCase({ reduce });
   initDocumentaryCase({ reduce });
+  initBlackboxCase({ reduce });
   initSkillDims({ reduce });
   initProjectModal({ lenis, reduce });
-  initFooter({ reduce });
   playIntro();
   ScrollTrigger.refresh();
 });

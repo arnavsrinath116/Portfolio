@@ -26,12 +26,6 @@ const chapters = [
   { key: 'music', tab: 'Music', url: 'music', icon: 'M2.8 10.5V8.2a5.2 5.2 0 0 1 10.4 0v2.3M2.8 10.2h2.1v3.6H2.8ZM11.1 10.2h2.1v3.6h-2.1Z' },
 ];
 
-const facts = [
-  { dt: 'Name', dd: site.name },
-  { dt: 'Studying', dd: 'FLAME University' },
-  { dt: 'Based in', dd: site.city },
-  { dt: 'Works in', dd: site.disciplines.join(' · ') },
-];
 // where I've studied and who I've learned from, newest first. `year` is the big label on the
 // left and `when` the line under it; a `sub` entry happened within the one above it
 const log: { year?: string; when?: string; title: string; org: string; state: string; links?: { label: string; href: string; solid?: boolean; download?: boolean; newTab?: boolean }[] }[] = [
@@ -39,7 +33,7 @@ const log: { year?: string; when?: string; title: string; org: string; state: st
     year: 'Now',
     when: '2024 – 2028',
     title: 'B.Des Experience Design',
-    org: 'FLAME University, Pune · minor in Business Analytics',
+    org: 'FLAME University, Pune, with a minor in Business Analytics',
     state: 'now',
     links: [{ label: 'Résumé', href: withBase(site.resume), newTab: true }],
   },
@@ -54,7 +48,7 @@ const log: { year?: string; when?: string; title: string; org: string; state: st
     year: '2025',
     when: '2 months',
     title: 'NGO work',
-    org: 'AAS · Aim for the Awareness of Society',
+    org: 'AAS (Aim for the Awareness of Society)',
     state: 'sub',
   },
   {
@@ -66,27 +60,27 @@ const log: { year?: string; when?: string; title: string; org: string; state: st
   },
 ];
 const tools = [
-  { no: 'T-01', name: 'Fusion 360', use: 'Parts that print and fit' },
-  { no: 'T-02', name: 'Blender', use: 'Renders and motion' },
-  { no: 'T-03', name: 'Figma', use: 'Screens and prototypes' },
-  { no: 'T-04', name: 'Illustrator', use: 'Posters, icons, diagrams' },
+  { name: 'Fusion 360', use: 'Parts that print and fit' },
+  { name: 'Blender', use: 'Renders and motion' },
+  { name: 'Figma', use: 'Screens and prototypes' },
+  { name: 'Illustrator', use: 'Posters, icons, diagrams' },
 ];
 const shots = [
   { src: '/skills/photography/debrecen-02-yellow-e36.webp', alt: 'A yellow BMW E36 drifting, panned' },
   { src: '/skills/photography/debrecen-03-blue-s14.webp', alt: 'A blue and lime Nissan drift car, panned' },
 ];
 const interests = [
-  { no: 'O-01', name: 'Cars', note: 'and the engines inside them' },
-  { no: 'O-02', name: 'Planes', note: 'I still look up at every one' },
-  { no: 'O-03', name: 'Graphic design', note: 'posters and type' },
-  { no: 'O-04', name: 'Motion', note: 'what makes a thing feel alive' },
-  { no: 'O-05', name: 'Photography', note: 'mostly cars, at speed' },
+  { name: 'Cars', note: 'and the engines inside them' },
+  { name: 'Planes', note: 'I still look up at every one' },
+  { name: 'Graphic design', note: 'posters and type' },
+  { name: 'Motion', note: 'what makes a thing feel alive' },
+  { name: 'Photography', note: 'mostly cars, at speed' },
 ];
 ---
 
 <section class="ab" id="about" aria-labelledby="about-title" data-about-me>
   <div class="ab-head">
-    <h2 id="about-title" class="ab-title" data-words>About <span class="hl-block">me</span></h2>
+    <h2 id="about-title" class="ab-title" data-words>About me</h2>
     <p class="ab-note">Five tabs, always open: who I am, where I’ve been, what I <span class="hl">work with</span>, what I do off the clock, and what’s playing.</p>
   </div>
 
@@ -150,26 +144,16 @@ const interests = [
                   )
                 }
               </span>
-              <figcaption class="ab-cap">Fig. 1 · {site.name}</figcaption>
+              <figcaption class="ab-cap">Fig. 1, {site.name}</figcaption>
             </figure>
             <div class="ab-col">
-              <p class="ab-kick">01 · About me</p>
               <p class="ab-lead">I’m Arnav, a designer who works across the <span class="hl">physical</span> and the <span class="hl">digital</span>.</p>
               <p class="ab-text">
                 I model the object in CAD, wire up its electronics, and design the screen you control it with. Most of what I make
                 starts with something I love: cars and the engines inside them, planes, and the graphics and motion that make a
                 thing feel alive.
               </p>
-              <dl class="ab-tb">
-                {
-                  facts.map((f) => (
-                    <div>
-                      <dt>{f.dt}</dt>
-                      <dd>{f.dd}</dd>
-                    </div>
-                  ))
-                }
-              </dl>
+              <p class="ab-facts">Studying B.Des Experience Design at FLAME University. Based in Pune and Goa, working in product, UX and HMI design.</p>
             </div>
           </div>
         </article>
@@ -178,8 +162,7 @@ const interests = [
         <article class="ab-chap" id="ab-log" role="tabpanel" data-about-chap="1">
           <div class="ab-two">
             <div>
-              <p class="ab-kick">02 · Work log</p>
-              <h3 class="ab-h">Where I’ve <span class="hl">been designing</span></h3>
+              <h3 class="ab-h">Where I’ve been designing</h3>
               <p class="ab-text">Where I’ve studied, and who I’ve learned from.</p>
             </div>
             <ol class="ab-tl">
@@ -201,6 +184,7 @@ const interests = [
                           {e.links.map((l) => (
                             <a class:list={['ab-pill', { 'is-solid': l.solid }]} href={l.href} download={l.download} target={l.newTab ? '_blank' : undefined} rel={l.newTab ? 'noopener' : undefined}>
                               {l.label}
+                              {l.newTab && <Icon name="arrow-up-right" />}
                             </a>
                           ))}
                         </p>
@@ -217,14 +201,12 @@ const interests = [
         <article class="ab-chap" id="ab-kit" role="tabpanel" data-about-chap="2">
           <div class="ab-two">
             <div>
-              <p class="ab-kick">03 · The kit</p>
-              <h3 class="ab-h">The tools I <span class="hl">think with</span></h3>
+              <h3 class="ab-h">The tools I think with</h3>
               <div class="ab-reg">
                 <ol>
                   {
                     tools.map((t) => (
                       <li class="is-short">
-                        <span class="ab-no">{t.no}</span>
                         <span class="ab-org">{t.name}</span>
                         <span class="ab-role">{t.use}</span>
                       </li>
@@ -238,7 +220,7 @@ const interests = [
                 shots.map((s, i) => (
                   <figure class="ab-shot">
                     <img src={withBase(s.src)} alt={s.alt} loading="lazy" decoding="async" />
-                    <figcaption>Fig. {i + 2} · Debrecen</figcaption>
+                    <figcaption>Fig. {i + 2}, Debrecen</figcaption>
                   </figure>
                 ))
               }
@@ -251,8 +233,7 @@ const interests = [
         <article class="ab-chap" id="ab-off" role="tabpanel" data-about-chap="3">
           <div class="ab-two">
             <div>
-              <p class="ab-kick">04 · Off the clock</p>
-              <h3 class="ab-h">What I do <span class="hl">off the clock</span></h3>
+              <h3 class="ab-h">What I do off the clock</h3>
               <p class="ab-text">Most of my projects start here.</p>
               <p class="ab-links">
                 <a class="ab-link" href={`mailto:${site.email}`}>
@@ -262,12 +243,10 @@ const interests = [
               </p>
             </div>
             <div class="ab-reg">
-              <p class="ab-reg-head"><span>No.</span><span>Interest</span></p>
               <ol>
                 {
                   interests.map((o) => (
                     <li class="is-short">
-                      <span class="ab-no">{o.no}</span>
                       <span class="ab-org">{o.name}</span>
                       <span class="ab-role">{o.note}</span>
                     </li>
@@ -282,8 +261,7 @@ const interests = [
           <div class="ab-room" data-room>
             <canvas class="ab-room-canvas" data-room-canvas aria-label="A 3D room with a record player and a rack of records. Drag a record onto the player, or click one, to play it."></canvas>
             <div class="ab-room-head">
-              <p class="ab-kick">05 · Music</p>
-              <h3 class="ab-h">What’s playing <span class="hl">while I draw</span></h3>
+              <h3 class="ab-h">What’s playing while I draw</h3>
               <p class="ab-room-tip"><span class="ab-tip-fine">Drag a record onto the player, or click one. Throw anything.</span><span class="ab-tip-touch">Tap a record to play it.</span></p>
             </div>
             <div class="ab-room-bar">
@@ -300,7 +278,7 @@ const interests = [
       </div>
 
       <!-- what's next -->
-      <button type="button" class="ab-next" data-about-next>Next · {chapters[1].tab} →</button>
+      <button type="button" class="ab-next" data-about-next>Next: {chapters[1].tab}</button>
     </div>
     <div class="ab-dashes">{chapters.map((c, i) => <button type="button" class:list={{ 'is-on': i === 0 }} aria-label={c.tab} data-about-dash={i}></button>)}</div>
   </div>
@@ -681,19 +659,6 @@ const interests = [
     gap: clamp(28px, 5vw, 80px);
     align-items: center;
   }
-  .ab-kick,
-  .ab-tb dt,
-  .ab-reg-head {
-    margin: 0;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--sand-3);
-  }
-  .ab-kick {
-    margin-bottom: 14px;
-  }
   .ab-h {
     margin: 0;
     font-stretch: 125%;
@@ -801,46 +766,22 @@ const interests = [
   .ab-cap {
     position: absolute;
     left: 14px;
-    bottom: 12px;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    bottom: 10px;
+    font-size: 0.75rem;
     color: var(--sand-3);
   }
 
-  /* title block: cells, as on a drawing */
-  .ab-tb {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: clamp(20px, 3vh, 28px) 0 0;
-    border: 1px solid var(--line);
-  }
-  .ab-tb > div {
-    padding: 10px 14px 12px;
-  }
-  .ab-tb > div:nth-child(even) {
-    border-left: 1px solid var(--line);
-  }
-  .ab-tb > div:nth-child(n + 3) {
+  /* the facts, said once, under the paragraph */
+  .ab-facts {
+    max-width: 58ch;
+    margin: clamp(18px, 2.6vh, 24px) 0 0;
+    padding-top: 14px;
     border-top: 1px solid var(--line);
-  }
-  .ab-tb dd {
-    margin: 6px 0 0;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    color: var(--sand);
+    font-size: 0.9375rem;
+    line-height: 1.55;
   }
 
-  /* registers: numbered rows, like the skills index */
-  .ab-reg-head {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--line);
-  }
   .ab-reg ol {
     margin: 0;
     padding: 0;
@@ -851,21 +792,15 @@ const interests = [
   }
   .ab-reg li {
     display: grid;
-    grid-template-columns: 52px minmax(0, 1fr) auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto;
     align-items: baseline;
     gap: 14px;
     padding: 14px 0;
     border-bottom: 1px solid var(--line-faint);
   }
   .ab-reg li.is-short {
-    grid-template-columns: 52px minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     padding: 11px 0;
-  }
-  .ab-no {
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    letter-spacing: 0.06em;
-    color: var(--sand-3);
   }
   .ab-org {
     font-stretch: 125%;
@@ -875,10 +810,7 @@ const interests = [
     text-transform: uppercase;
   }
   .ab-role {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
     color: var(--sand-3);
     text-align: right;
   }
@@ -909,9 +841,8 @@ const interests = [
   }
   .ab-tl-span {
     font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
     color: var(--sand-3);
   }
   .is-now .ab-tl-year {
@@ -987,15 +918,12 @@ const interests = [
   .ab-pill {
     display: inline-flex;
     align-items: center;
-    padding: 7px 14px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    corner-shape: round;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    text-decoration: none;
+    gap: 6px;
+    font-size: 0.875rem;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.35em;
+    text-decoration-color: rgb(var(--ink-rgb) / 0.3);
     color: var(--accent);
     transition:
       border-color var(--dur-base) var(--ease-out),
@@ -1009,7 +937,7 @@ const interests = [
   }
   @media (hover: hover) {
     .ab-pill:hover {
-      border-color: var(--accent);
+      text-decoration-color: currentColor;
     }
     .ab-pill.is-solid:hover {
       background: transparent;
@@ -1036,10 +964,7 @@ const interests = [
   .ab-shot figcaption,
   .ab-shots-note {
     margin: 8px 0 0;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.75rem;
     color: var(--sand-3);
   }
   .ab-shots-note {
@@ -1126,12 +1051,6 @@ const interests = [
     pointer-events: none;
     color: #14171a;
   }
-  .ab-room-head .ab-kick {
-    margin-bottom: 8px;
-  }
-  .ab-room-head .ab-kick {
-    color: rgb(20 23 26 / 0.55);
-  }
   .ab-room-head .ab-h {
     font-size: clamp(1.05rem, 1.7vw, 1.45rem);
   }
@@ -1140,10 +1059,7 @@ const interests = [
   }
   .ab-room-tip {
     margin: 10px 0 0;
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
     color: rgb(20 23 26 / 0.55);
   }
   .ab-tip-touch {
@@ -1172,10 +1088,7 @@ const interests = [
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
     color: #14171a;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.8125rem;
   }
   .ab-room-now {
     min-width: 13ch;
@@ -1229,10 +1142,7 @@ const interests = [
     display: grid;
     place-items: center;
     margin: 0;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    font-size: 0.875rem;
     color: rgb(20 23 26 / 0.5);
     pointer-events: none;
   }
@@ -1283,16 +1193,16 @@ const interests = [
     right: 18px;
     bottom: 16px;
     margin: 0;
-    padding: 7px 14px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    corner-shape: round;
-    background: var(--slate-2);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
+    padding: 6px 2px;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: 0.875rem;
     color: var(--sand-2);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.35em;
+    text-decoration-color: rgb(var(--ink-rgb) / 0.3);
     cursor: pointer;
     transition:
       color var(--dur-base) var(--ease-out),
@@ -1301,7 +1211,7 @@ const interests = [
   @media (hover: hover) {
     .ab-next:hover {
       color: var(--accent);
-      border-color: var(--accent);
+      text-decoration-color: currentColor;
     }
   }
   .ab-dashes {
@@ -1358,14 +1268,11 @@ const interests = [
   @media (max-width: 600px) {
     .ab-reg li,
     .ab-reg li.is-short {
-      grid-template-columns: 44px minmax(0, 1fr) auto;
+      grid-template-columns: minmax(0, 1fr);
       gap: 4px 12px;
     }
-    .ab-reg-head {
-      grid-template-columns: 44px 1fr;
-    }
     .ab-reg li .ab-role {
-      grid-column: 2;
+      grid-column: 1;
       grid-row: 2;
       text-align: left;
     }

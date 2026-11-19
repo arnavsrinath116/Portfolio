@@ -614,7 +614,7 @@ async function build(host: HTMLElement, reduce: boolean) {
     if (!playing) nowEl.textContent = 'Pick a record';
     else {
       const t = TRACKS[playing.track!];
-      nowEl.textContent = `${t.title} · ${t.artist}`;
+      nowEl.textContent = `${t.title} by ${t.artist}`;
     }
     host.classList.toggle('is-playing', !!playing && !paused);
     if (toggle) {
